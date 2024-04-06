@@ -186,6 +186,13 @@
 						</configuration>
 					</execution>
 				</executions>
+				<configuration>
+					<excludes>
+						<exclude>**/MaBillsApplication.java</exclude>
+						<exclude>src/**/mabills/configuration/**</exclude>
+						<exclude>src/**/mabills/api/dto/**</exclude>
+					</excludes>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
