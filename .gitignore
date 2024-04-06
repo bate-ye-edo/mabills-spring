@@ -32,3 +32,4 @@ build/
 ### VS Code ###
 .vscode/
 .mvn/
+src/main/java/es/upm/mabills/api/resources/TestResource.java
