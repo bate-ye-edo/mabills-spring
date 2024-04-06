@@ -2,7 +2,7 @@ name: Spring Test - Sonar
 on:
   push:
     branches:
-      - develop
+      - master
 jobs:
   test:
     name: Test - SonarCloud Scan
