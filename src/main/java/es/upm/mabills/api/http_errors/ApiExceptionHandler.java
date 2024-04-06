@@ -1,8 +1,8 @@
 package es.upm.mabills.api.http_errors;
 
-import es.upm.mabills.exceptions.UserNotFoundException;
 import org.apache.logging.log4j.LogManager;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -20,14 +20,14 @@ public class ApiExceptionHandler {
         return new ErrorMessage(exception, HttpStatus.UNAUTHORIZED.value()).toString();
     }
 
-    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler({
-            UserNotFoundException.class
+            BadCredentialsException.class
     })
     @ResponseBody
-    public ErrorMessage userNotFound(Exception exception) {
-        LogManager.getLogger(this.getClass()).debug(() -> "User not found: " + exception.getMessage());
-        return new ErrorMessage(exception, HttpStatus.NOT_FOUND.value());
+    public ErrorMessage badCredentials(Exception exception) {
+        LogManager.getLogger(this.getClass()).debug(() -> "Bad credentials: " + exception.getMessage());
+        return new ErrorMessage(exception, HttpStatus.BAD_REQUEST.value());
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -36,7 +36,7 @@ public class ApiExceptionHandler {
     })
     @ResponseBody
     public ErrorMessage exception(Exception exception) {
-        exception.printStackTrace();
+        LogManager.getLogger(this.getClass()).error(() -> "Error: " + exception.getMessage());
         return new ErrorMessage(exception, HttpStatus.INTERNAL_SERVER_ERROR.value());
     }
 

@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 @Profile("test")
 public class DatabaseSeeder {
@@ -33,6 +35,12 @@ public class DatabaseSeeder {
                 .password("password")
                 .email("email")
                 .build();
-        this.userRepository.save(userEntity);
+        UserEntity encodedPasswordUser = UserEntity.builder()
+                .username("encodedPasswordUser")
+                .mobile("666666666")
+                .password("$2a$10$KyShpWQl4pS7KybIIZLkZ.6Mo2YBkPFuXT82cEOguWW3lpSMHgSEe")
+                .email("email")
+                .build();
+        this.userRepository.saveAll(List.of(userEntity, encodedPasswordUser));
     }
 }
