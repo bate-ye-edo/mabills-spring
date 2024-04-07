@@ -28,10 +28,13 @@ public class UserEntity {
     @NonNull
     private String password;
     @NonNull
+    @Column(unique = true, nullable = false)
     private String email;
     @NonNull
     private String mobile;
-    public UserEntity(User user) {
+
+    public UserEntity(User user, String encodedPassword) {
         BeanUtils.copyProperties(user, this);
+        this.password = encodedPassword;
     }
 }

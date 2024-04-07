@@ -39,7 +39,7 @@ public class DatabaseSeeder {
                 .username("encodedPasswordUser")
                 .mobile("666666666")
                 .password("$2a$10$KyShpWQl4pS7KybIIZLkZ.6Mo2YBkPFuXT82cEOguWW3lpSMHgSEe")
-                .email("email")
+                .email("newEmail")
                 .build();
         this.userRepository.saveAll(List.of(userEntity, encodedPasswordUser));
     }

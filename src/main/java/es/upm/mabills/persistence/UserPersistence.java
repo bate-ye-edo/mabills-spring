@@ -1,7 +1,9 @@
 package es.upm.mabills.persistence;
 
+import es.upm.mabills.exceptions.UserAlreadyExistsException;
 import es.upm.mabills.model.User;
-import es.upm.mabills.persistence.mappers.UserMapper;
+import es.upm.mabills.mappers.UserMapper;
+import es.upm.mabills.persistence.entities.UserEntity;
 import es.upm.mabills.persistence.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -19,5 +21,15 @@ public class UserPersistence {
 
     public User findUserByUsername(String username) {
         return userMapper.toUser(userRepository.findByUsername(username));
+    }
+
+    public User registerUser(User user, String encodedPassword) {
+        assertUserNotExists(user);
+        return userMapper.toUser(userRepository.save(new UserEntity(user, encodedPassword)));
+    }
+    private void assertUserNotExists(User user) {
+        if (findUserByUsername(user.getUsername()) != null) {
+            throw new UserAlreadyExistsException(user.getUsername());
+        }
     }
 }

@@ -1,5 +1,6 @@
 package es.upm.mabills.services;
 
+import es.upm.mabills.exceptions.UserAlreadyExistsException;
 import es.upm.mabills.model.User;
 import es.upm.mabills.persistence.UserPersistence;
 import io.vavr.control.Try;
@@ -39,5 +40,17 @@ public class UserService {
         return Try.of(() -> userPersistence.findUserByUsername(username))
             .filter(user -> passwordEncoder.matches(password, user.getPassword()))
             .getOrElseThrow(() -> new BadCredentialsException(INVALID_CREDENTIALS));
+    }
+
+    public String register(User user) {
+        return Try.of(()->jwtService.createToken(
+                    userPersistence.registerUser(user, encodePassword(user.getPassword()))
+                        .getUsername()
+                ))
+                .getOrElseThrow(() -> new UserAlreadyExistsException(user.getUsername()));
+    }
+
+    private String encodePassword(String password) {
+        return passwordEncoder.encode(password);
     }
 }
