@@ -29,7 +29,7 @@ public class UserResource {
 
     @PreAuthorize("permitAll()")
     @PostMapping(UserResource.LOGIN)
-    public TokenDto login(@Validated @RequestBody LoginDto loginDto) {
+    public TokenDto loginUser(@Validated @RequestBody LoginDto loginDto) {
         return TokenDto.builder()
                 .token(userService.login(loginDto.getUsername(), loginDto.getPassword()))
                 .build();
@@ -37,7 +37,7 @@ public class UserResource {
 
     @PreAuthorize("permitAll()")
     @PostMapping(UserResource.REGISTER)
-    public TokenDto register(@Validated @RequestBody RegisterDto registerDto) {
+    public TokenDto registerUser(@Validated @RequestBody RegisterDto registerDto) {
         return TokenDto.builder()
                 .token(userService.register(userMapper.toUser(registerDto)))
                 .build();
