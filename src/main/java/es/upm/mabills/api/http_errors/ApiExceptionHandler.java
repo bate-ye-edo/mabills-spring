@@ -65,6 +65,7 @@ public class ApiExceptionHandler {
         LogManager.getLogger(this.getClass()).error(() -> "Error: " + exception.getMessage());
         return new ErrorMessage(exception, HttpStatus.INTERNAL_SERVER_ERROR.value());
     }
+
     private List<String> getErrorFieldNames(BindingResult bindingResult) {
         return bindingResult.getFieldErrors()
                 .stream()

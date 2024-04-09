@@ -58,12 +58,19 @@ class JwtServiceTest {
     }
 
     @Test
+    void testIsExpiredToken() {
+        JwtService tokenService = new JwtService(TEST_SECRET, TEST_ISSUER, TEST_EXPIRATION);
+        String expiredToken = tokenService.createToken(USERNAME);
+        assertTrue(tokenService.isTokenExpired(expiredToken));
+    }
+
+    @Test
     void testExtractUserNameFromTokenWhenTokenEmpty() {
-        assertEquals("", jwtService.user(EMPTY_TOKEN));
+        assertEquals("", jwtService.username(EMPTY_TOKEN));
     }
 
     @Test
     void testExtractUserNameFromTokenWhenTokenCorrect() {
-        assertEquals(USERNAME, jwtService.user(this.token));
+        assertEquals(USERNAME, jwtService.username(this.token));
     }
 }

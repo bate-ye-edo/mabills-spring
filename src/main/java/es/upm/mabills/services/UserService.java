@@ -1,6 +1,5 @@
 package es.upm.mabills.services;
 
-import es.upm.mabills.exceptions.UserAlreadyExistsException;
 import es.upm.mabills.model.User;
 import es.upm.mabills.persistence.UserPersistence;
 import io.vavr.control.Try;
@@ -16,12 +15,15 @@ public class UserService {
     private final UserPersistence userPersistence;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final TokenCacheService tokenCacheService;
 
     @Autowired
-    public UserService(UserPersistence userPersistence, JwtService jwtService, PasswordEncoder passwordEncoder) {
+    public UserService(UserPersistence userPersistence, JwtService jwtService,
+                       PasswordEncoder passwordEncoder, TokenCacheService tokenCacheService) {
         this.userPersistence = userPersistence;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
+        this.tokenCacheService = tokenCacheService;
     }
 
     public String login(String username, String password) {
@@ -43,14 +45,18 @@ public class UserService {
     }
 
     public String register(User user) {
-        return Try.of(()->jwtService.createToken(
-                    userPersistence.registerUser(user, encodePassword(user.getPassword()))
-                        .getUsername()
-                ))
-                .getOrElseThrow(() -> new UserAlreadyExistsException(user.getUsername()));
+        return jwtService.createToken(userPersistence
+                .registerUser(user, encodePassword(user.getPassword()))
+                .getUsername());
     }
 
     private String encodePassword(String password) {
         return passwordEncoder.encode(password);
+    }
+
+    public String refreshToken(String token) {
+        String extractedToken = jwtService.extractToken(token);
+        tokenCacheService.blackListToken(extractedToken);
+        return jwtService.createToken(jwtService.username(extractedToken));
     }
 }

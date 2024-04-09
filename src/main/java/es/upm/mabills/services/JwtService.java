@@ -37,19 +37,23 @@ public class JwtService {
         }
     }
 
-    public String createToken(String user) {
+    public String createToken(String username) {
         return JWT.create()
                 .withIssuer(this.issuer)
                 .withIssuedAt(new Date())
                 .withNotBefore(new Date())
                 .withExpiresAt(new Date(System.currentTimeMillis() + this.expire * 1000L))
-                .withClaim(USER_CLAIM, user)
+                .withClaim(USER_CLAIM, username)
                 .withClaim(ROLE_CLAIM, ROLE_USER)
                 .sign(Algorithm.HMAC256(this.secret));
     }
 
     public boolean isValidToken(String token) {
         return this.validateTokenExists(token) && this.validateDecodedTokenExpirationDate(token);
+    }
+
+    public boolean isTokenExpired(String token) {
+        return !this.validateDecodedTokenExpirationDate(token);
     }
 
     private boolean validateTokenExists(String token) {
@@ -62,7 +66,7 @@ public class JwtService {
                 .orElse(false);
     }
 
-    public String user(String authorization) {
+    public String username(String authorization) {
         return this.verify(authorization)
                 .map(jwt -> jwt.getClaim(USER_CLAIM).asString())
                 .orElse("");

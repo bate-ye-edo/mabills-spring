@@ -1,6 +1,7 @@
 package es.upm.mabills.api.resources;
 
 import es.upm.mabills.api.ApiTestConfig;
+import es.upm.mabills.api.RestClientTestService;
 import es.upm.mabills.api.dtos.LoginDto;
 import es.upm.mabills.api.dtos.RegisterDto;
 import es.upm.mabills.api.dtos.TokenDto;
@@ -16,7 +17,9 @@ import reactor.core.publisher.Mono;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 @ApiTestConfig
@@ -26,6 +29,9 @@ class UserResourceIT {
 
     @Autowired
     private WebTestClient webTestClient;
+
+    @Autowired
+    private RestClientTestService restClientTestService;
 
     private LoginDto loginDto;
 
@@ -128,6 +134,47 @@ class UserResourceIT {
                     assertFalse(v.getErrorFieldNames().isEmpty());
                     assertEquals("mobile", v.getErrorFieldNames().get(0));
                 });
+    }
+
+    @Test
+    void testRefreshTokenSuccess(){
+        WebTestClient client = restClientTestService.login(this.webTestClient);
+        String oldToken = restClientTestService.extractTokenFromHeaders();
+        assertRefreshSuccess(client, oldToken);
+    }
+
+    @Test
+    void testRefreshTokenBlackListed() {
+        WebTestClient client = restClientTestService.login(this.webTestClient);
+        String oldToken = restClientTestService.extractTokenFromHeaders();
+        assertRefreshSuccess(client, oldToken);
+        assertRefreshFailed(client);
+    }
+
+    @Test
+    void testRefreshTokenFailedNotLogged() {
+        assertRefreshFailed(this.webTestClient);
+    }
+
+    private void assertRefreshFailed(WebTestClient client) {
+        client
+            .get().uri(UserResource.USERS+UserResource.REFRESH_TOKEN)
+            .exchange()
+            .expectStatus()
+            .isUnauthorized();
+    }
+
+    private void assertRefreshSuccess(WebTestClient webTestClient, String oldToken) {
+        webTestClient
+            .get().uri(UserResource.USERS+UserResource.REFRESH_TOKEN)
+            .exchange()
+            .expectStatus()
+            .isOk()
+            .expectBody(TokenDto.class)
+            .value(tokenDto -> {
+                assertNotNull(tokenDto);
+                assertNotEquals(oldToken, tokenDto.getToken());
+            });
     }
 
     private RegisterDto createBadMobileRegisterUser() {

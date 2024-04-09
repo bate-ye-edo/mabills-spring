@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @UnitTestConfig
@@ -24,12 +25,19 @@ class UserServiceTest {
     private static final String TEST_PASSWORD = "password";
     private static final String TEST_TOKEN = "token";
     private static final String TEST_NOT_EXISTS_USERNAME = "NotExistsUsername";
+
     @MockBean
     private JwtService jwtService;
+
     @MockBean
     private UserPersistence userPersistence;
+
     @MockBean
     private PasswordEncoder passwordEncoder;
+
+    @MockBean
+    private TokenCacheService tokenCacheService;
+
     @Autowired
     private UserService userService;
 
@@ -41,6 +49,7 @@ class UserServiceTest {
                 .build());
         when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
         when(jwtService.createToken(anyString())).thenReturn("token");
+        doNothing().when(tokenCacheService).blackListToken(anyString());
     }
 
     @Test
@@ -74,6 +83,13 @@ class UserServiceTest {
     void testRegisterFailureUserAlreadyExists() {
         when(userPersistence.registerUser(any(), anyString())).thenThrow(new DataIntegrityViolationException(""));
         assertThrows(UserAlreadyExistsException.class, () -> userService.register(buildNewRegisterUser()));
+    }
+
+    @Test
+    void testRefreshTokenSuccess() {
+        when(jwtService.extractToken(anyString())).thenReturn(TEST_TOKEN);
+        when(jwtService.username(anyString())).thenReturn(TEST_USERNAME);
+        assertEquals(TEST_TOKEN, userService.refreshToken(TEST_TOKEN));
     }
 
     private User buildNewRegisterUser() {
