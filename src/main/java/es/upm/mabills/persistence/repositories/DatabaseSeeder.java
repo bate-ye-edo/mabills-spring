@@ -41,6 +41,12 @@ public class DatabaseSeeder {
                 .password("$2a$10$KyShpWQl4pS7KybIIZLkZ.6Mo2YBkPFuXT82cEOguWW3lpSMHgSEe")
                 .email("newEmail")
                 .build();
-        this.userRepository.saveAll(List.of(userEntity, encodedPasswordUser));
+        UserEntity otherUser = UserEntity.builder()
+                .username("otherUser")
+                .mobile("6666666616")
+                .password("$2a$10$KyShpWQl4pS7KybIIZLkZ.6Mo2YBkPFuXT82cEOguWW3lpSMHgSEe")
+                .email("otherEmail")
+                .build();
+        this.userRepository.saveAll(List.of(userEntity, encodedPasswordUser, otherUser));
     }
 }

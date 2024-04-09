@@ -8,7 +8,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -81,7 +80,7 @@ class UserServiceTest {
 
     @Test
     void testRegisterFailureUserAlreadyExists() {
-        when(userPersistence.registerUser(any(), anyString())).thenThrow(new DataIntegrityViolationException(""));
+        when(userPersistence.registerUser(any(), anyString())).thenThrow(new UserAlreadyExistsException(""));
         assertThrows(UserAlreadyExistsException.class, () -> userService.register(buildNewRegisterUser()));
     }
 

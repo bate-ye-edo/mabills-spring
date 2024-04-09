@@ -19,7 +19,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 @ApiTestConfig
@@ -138,14 +137,14 @@ class UserResourceIT {
 
     @Test
     void testRefreshTokenSuccess(){
-        WebTestClient client = restClientTestService.login(this.webTestClient);
+        WebTestClient client = restClientTestService.loginDefault(this.webTestClient);
         String oldToken = restClientTestService.extractTokenFromHeaders();
         assertRefreshSuccess(client, oldToken);
     }
 
     @Test
     void testRefreshTokenBlackListed() {
-        WebTestClient client = restClientTestService.login(this.webTestClient);
+        WebTestClient client = restClientTestService.login(this.webTestClient, getOtherLoginDto());
         String oldToken = restClientTestService.extractTokenFromHeaders();
         assertRefreshSuccess(client, oldToken);
         assertRefreshFailed(client);
@@ -154,6 +153,13 @@ class UserResourceIT {
     @Test
     void testRefreshTokenFailedNotLogged() {
         assertRefreshFailed(this.webTestClient);
+    }
+
+    private LoginDto getOtherLoginDto() {
+        return LoginDto.builder()
+                .username("otherUser")
+                .password("password")
+                .build();
     }
 
     private void assertRefreshFailed(WebTestClient client) {

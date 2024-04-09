@@ -27,6 +27,7 @@ public class UserPersistence {
         assertUserNotExists(user);
         return userMapper.toUser(userRepository.save(new UserEntity(user, encodedPassword)));
     }
+
     private void assertUserNotExists(User user) {
         if (findUserByUsername(user.getUsername()) != null) {
             throw new UserAlreadyExistsException(user.getUsername());

@@ -33,22 +33,39 @@ public class RestClientTestService {
         headers = new HttpHeaders();
     }
 
-    public WebTestClient login(WebTestClient webTestClient) {
-        TokenDto tokenDto = webTestClient
-                .post().uri(UserResource.USERS+UserResource.LOGIN)
-                .body(Mono.just(loginDto), LoginDto.class)
-                .exchange()
-                .expectStatus()
-                .isOk()
-                .expectBody(TokenDto.class)
-                .returnResult()
-                .getResponseBody();
+    public WebTestClient loginDefault(WebTestClient webTestClient) {
+        return getWebTestClientWithToken(webTestClient,
+                getToken(webTestClient, null));
+    }
+
+    public WebTestClient login(WebTestClient webTestClient, LoginDto login) {
+        return getWebTestClientWithToken(webTestClient,
+                getToken(webTestClient, login));
+    }
+
+    private WebTestClient getWebTestClientWithToken(WebTestClient webTestClient, TokenDto tokenDto) {
         assertNotNull(tokenDto);
         clearHeaders();
         addTokenToHeaders(tokenDto.getToken());
         return webTestClient.mutate()
                 .defaultHeader(this.authorizationHeader, this.tokenPrefix + tokenDto.getToken())
                 .build();
+    }
+
+    private TokenDto getToken(WebTestClient webTestClient, LoginDto login) {
+        return webTestClient
+                .post().uri(UserResource.USERS+UserResource.LOGIN)
+                .body(Mono.just(getDefaultLoginDtoIfNull(login)), LoginDto.class)
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody(TokenDto.class)
+                .returnResult()
+                .getResponseBody();
+    }
+
+    private LoginDto getDefaultLoginDtoIfNull(LoginDto login) {
+        return login == null ? this.loginDto : login;
     }
 
     private void addTokenToHeaders(String token) {
