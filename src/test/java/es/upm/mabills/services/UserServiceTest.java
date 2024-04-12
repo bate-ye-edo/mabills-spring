@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @UnitTestConfig
@@ -89,6 +90,13 @@ class UserServiceTest {
         when(jwtService.extractToken(anyString())).thenReturn(TEST_TOKEN);
         when(jwtService.username(anyString())).thenReturn(TEST_USERNAME);
         assertEquals(TEST_TOKEN, userService.refreshToken(TEST_TOKEN));
+    }
+
+    @Test
+    void testLogoutSuccess() {
+        when(jwtService.extractToken(anyString())).thenReturn(TEST_TOKEN);
+        userService.logout(TEST_TOKEN);
+        verify(tokenCacheService).blackListToken(TEST_TOKEN);
     }
 
     private User buildNewRegisterUser() {

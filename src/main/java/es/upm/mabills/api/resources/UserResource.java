@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +22,7 @@ public class UserResource {
     public static final String USERS = "/users";
     public static final String LOGIN = "/login";
     public static final String REFRESH_TOKEN = "/refresh-token";
+    public static final String LOGOUT = "/logout";
 
     private final UserService userService;
     private final UserMapper userMapper;
@@ -51,12 +51,17 @@ public class UserResource {
                 .build();
     }
 
-    @GetMapping(UserResource.REFRESH_TOKEN)
+    @PostMapping(UserResource.REFRESH_TOKEN)
     public TokenDto refreshUserToken(HttpServletRequest request) {
         return TokenDto.builder()
                 .token(userService.refreshToken(
                     request.getHeader(jwtHeader)
                 ))
                 .build();
+    }
+
+    @PostMapping(UserResource.LOGOUT)
+    public void logoutUser(HttpServletRequest request) {
+        userService.logout(request.getHeader(jwtHeader));
     }
 }

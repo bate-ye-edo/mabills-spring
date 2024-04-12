@@ -155,6 +155,20 @@ class UserResourceIT {
         assertRefreshFailed(this.webTestClient);
     }
 
+    @Test
+    void testLogoutSuccess() {
+        WebTestClient client = restClientTestService.loginDefault(this.webTestClient);
+        client
+            .post().uri(UserResource.USERS+UserResource.LOGOUT)
+            .exchange()
+            .expectStatus()
+            .isOk();
+        client.post().uri(UserResource.USERS+UserResource.REFRESH_TOKEN)
+            .exchange()
+            .expectStatus()
+            .isUnauthorized();
+    }
+
     private LoginDto getOtherLoginDto() {
         return LoginDto.builder()
                 .username("otherUser")
@@ -164,7 +178,7 @@ class UserResourceIT {
 
     private void assertRefreshFailed(WebTestClient client) {
         client
-            .get().uri(UserResource.USERS+UserResource.REFRESH_TOKEN)
+            .post().uri(UserResource.USERS+UserResource.REFRESH_TOKEN)
             .exchange()
             .expectStatus()
             .isUnauthorized();
@@ -172,7 +186,7 @@ class UserResourceIT {
 
     private void assertRefreshSuccess(WebTestClient webTestClient, String oldToken) {
         webTestClient
-            .get().uri(UserResource.USERS+UserResource.REFRESH_TOKEN)
+            .post().uri(UserResource.USERS+UserResource.REFRESH_TOKEN)
             .exchange()
             .expectStatus()
             .isOk()

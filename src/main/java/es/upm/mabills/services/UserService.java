@@ -63,4 +63,8 @@ public class UserService {
         tokenCacheService.blackListToken(extractedToken);
         return jwtService.createToken(jwtService.username(extractedToken));
     }
+
+    public void logout(String header) {
+        tokenCacheService.blackListToken(jwtService.extractToken(header));
+    }
 }
