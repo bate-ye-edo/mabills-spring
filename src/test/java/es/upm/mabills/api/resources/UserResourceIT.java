@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @ApiTestConfig
 class UserResourceIT {
     private static final String ENCODED_PASSWORD_USER = "encodedPasswordUser";
+    private static final String LOGOUT_USER = "logOutUser";
     private static final String PASSWORD = "password";
 
     @Autowired
@@ -157,7 +158,7 @@ class UserResourceIT {
 
     @Test
     void testLogoutSuccess() {
-        WebTestClient client = restClientTestService.loginDefault(this.webTestClient);
+        WebTestClient client = restClientTestService.login(this.webTestClient, getLogoutDto());
         client
             .post().uri(UserResource.USERS+UserResource.LOGOUT)
             .exchange()
@@ -167,6 +168,13 @@ class UserResourceIT {
             .exchange()
             .expectStatus()
             .isUnauthorized();
+    }
+
+    private LoginDto getLogoutDto() {
+        return LoginDto.builder()
+                .username(LOGOUT_USER)
+                .password(PASSWORD)
+                .build();
     }
 
     private LoginDto getOtherLoginDto() {

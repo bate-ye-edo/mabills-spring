@@ -13,6 +13,7 @@ import java.util.List;
 @Profile("test")
 public class DatabaseSeeder {
     private static final Logger LOGGER = LogManager.getLogger(DatabaseSeeder.class);
+    private static final String ENCODED_PASSWORD = "$2a$10$KyShpWQl4pS7KybIIZLkZ.6Mo2YBkPFuXT82cEOguWW3lpSMHgSEe";
     private final UserRepository userRepository;
     @Autowired
     public DatabaseSeeder(UserRepository userRepository) {
@@ -38,15 +39,21 @@ public class DatabaseSeeder {
         UserEntity encodedPasswordUser = UserEntity.builder()
                 .username("encodedPasswordUser")
                 .mobile("666666666")
-                .password("$2a$10$KyShpWQl4pS7KybIIZLkZ.6Mo2YBkPFuXT82cEOguWW3lpSMHgSEe")
+                .password(ENCODED_PASSWORD)
                 .email("newEmail")
                 .build();
         UserEntity otherUser = UserEntity.builder()
                 .username("otherUser")
                 .mobile("6666666616")
-                .password("$2a$10$KyShpWQl4pS7KybIIZLkZ.6Mo2YBkPFuXT82cEOguWW3lpSMHgSEe")
+                .password(ENCODED_PASSWORD)
                 .email("otherEmail")
                 .build();
-        this.userRepository.saveAll(List.of(userEntity, encodedPasswordUser, otherUser));
+        UserEntity logOutUser = UserEntity.builder()
+                .username("logOutUser")
+                .mobile("6666666616")
+                .password(ENCODED_PASSWORD)
+                .email("logoutEmail")
+                .build();
+        this.userRepository.saveAll(List.of(userEntity, encodedPasswordUser, otherUser, logOutUser));
     }
 }
