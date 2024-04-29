@@ -33,10 +33,13 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         return this.userBuilder(user.getUsername(), user.getPassword());
     }
 
-    private org.springframework.security.core.userdetails.User userBuilder(String username, String password) {
+    private UserDetails userBuilder(String username, String password) {
         List<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority(ROLE_USER));
-        return new org.springframework.security.core.userdetails.User(username, password, true, true,
-                true, true, authorities);
+        return org.springframework.security.core.userdetails.User
+                .withUsername(username)
+                .password(password)
+                .authorities(authorities)
+                .build();
     }
 }

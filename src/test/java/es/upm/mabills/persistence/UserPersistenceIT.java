@@ -28,6 +28,11 @@ class UserPersistenceIT {
     }
 
     @Test
+    void testFindUserIdByUsername() {
+        assertTrue(userPersistence.findUserIdByUsername("username") > 0);
+    }
+
+    @Test
     void testFindUserByUsernameNotFound() {
         assertNull(userPersistence.findUserByUsername("notFound"));
     }

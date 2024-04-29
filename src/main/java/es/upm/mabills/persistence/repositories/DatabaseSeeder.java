@@ -1,5 +1,6 @@
 package es.upm.mabills.persistence.repositories;
 
+import es.upm.mabills.persistence.entities.ExpenseCategoryEntity;
 import es.upm.mabills.persistence.entities.UserEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,19 +16,25 @@ public class DatabaseSeeder {
     private static final Logger LOGGER = LogManager.getLogger(DatabaseSeeder.class);
     private static final String ENCODED_PASSWORD = "$2a$10$KyShpWQl4pS7KybIIZLkZ.6Mo2YBkPFuXT82cEOguWW3lpSMHgSEe";
     private final UserRepository userRepository;
+    private final ExpenseCategoryRepository expenseCategoryRepository;
+
     @Autowired
-    public DatabaseSeeder(UserRepository userRepository) {
+    public DatabaseSeeder(UserRepository userRepository, ExpenseCategoryRepository expenseCategoryRepository) {
         LOGGER.warn("----- Initialize database seeding -----");
         LogManager.getLogger();
         this.userRepository = userRepository;
+        this.expenseCategoryRepository = expenseCategoryRepository;
         this.deleteAll();
         this.seedDatabase();
         LOGGER.warn("----- End -----");
     }
+
     private void deleteAll(){
         LOGGER.warn("----- Delete database seeding -----");
+        this.expenseCategoryRepository.deleteAll();
         this.userRepository.deleteAll();
     }
+
     private void seedDatabase() {
         LOGGER.warn("----- Seeding database -----");
         UserEntity userEntity = UserEntity.builder()
@@ -55,5 +62,16 @@ public class DatabaseSeeder {
                 .email("logoutEmail")
                 .build();
         this.userRepository.saveAll(List.of(userEntity, encodedPasswordUser, otherUser, logOutUser));
+
+        // Expenses categories
+        ExpenseCategoryEntity userNameUserExpense = ExpenseCategoryEntity.builder()
+                .name("userNameUserExpenseCategory")
+                .user(userEntity)
+                .build();
+        ExpenseCategoryEntity encodedPasswordUserExpense = ExpenseCategoryEntity.builder()
+                .name("encodedPasswordUserExpenseCategory")
+                .user(encodedPasswordUser)
+                .build();
+        this.expenseCategoryRepository.saveAll(List.of(userNameUserExpense, encodedPasswordUserExpense));
     }
 }

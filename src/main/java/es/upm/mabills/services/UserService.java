@@ -48,9 +48,8 @@ public class UserService {
     public String register(User user) {
         return Try.of(()->jwtService
                         .createToken(userPersistence
-                                .registerUser(user, encodePassword(user.getPassword()))
-                                .getUsername())
-                )
+                            .registerUser(user, encodePassword(user.getPassword()))
+                            .getUsername()))
                 .getOrElseThrow(() -> new UserAlreadyExistsException(user.getUsername()));
     }
 
