@@ -6,6 +6,8 @@ import es.upm.mabills.services.ExpenseCategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
@@ -25,5 +27,10 @@ public class ExpenseCategoryResource {
     @GetMapping
     public List<ExpenseCategory> getExpenseCategories(@AuthenticationPrincipal String userName) {
         return this.expenseCategoryService.getExpenseCategoriesByUserName(userName);
+    }
+
+    @PostMapping
+    public ExpenseCategory createExpenseCategory(@AuthenticationPrincipal String userName, @RequestBody ExpenseCategory expenseCategory) {
+        return this.expenseCategoryService.createExpenseCategory(userName, expenseCategory);
     }
 }

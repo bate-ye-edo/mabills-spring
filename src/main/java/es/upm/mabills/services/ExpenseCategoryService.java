@@ -19,4 +19,8 @@ public class ExpenseCategoryService {
     public List<ExpenseCategory> getExpenseCategoriesByUserName(String username) {
         return expenseCategoryPersistence.findExpenseCategoryByUserName(username);
     }
+
+    public ExpenseCategory createExpenseCategory(String userName, ExpenseCategory expenseCategory) {
+        return expenseCategoryPersistence.createExpenseCategory(userName, expenseCategory);
+    }
 }

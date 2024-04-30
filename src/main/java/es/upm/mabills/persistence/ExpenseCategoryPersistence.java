@@ -1,8 +1,11 @@
 package es.upm.mabills.persistence;
 
+import es.upm.mabills.exceptions.ExpenseCategoryAlreadyExistsException;
 import es.upm.mabills.mappers.ExpenseCategoryMapper;
 import es.upm.mabills.model.ExpenseCategory;
+import es.upm.mabills.persistence.entities.ExpenseCategoryEntity;
 import es.upm.mabills.persistence.repositories.ExpenseCategoryRepository;
+import io.vavr.control.Try;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -24,9 +27,24 @@ public class ExpenseCategoryPersistence {
 
     public List<ExpenseCategory> findExpenseCategoryByUserName(String username) {
         return expenseCategoryRepository.findByUserId(
-            this.userPersistence.findUserIdByUsername(username))
+            userPersistence.findUserIdByUsername(username))
         .stream()
         .map(expenseCategoryMapper::toExpenseCategory)
         .toList();
+    }
+
+    public ExpenseCategory createExpenseCategory(String userName, ExpenseCategory expenseCategory) {
+        return Try.of(()->userPersistence.findUserIdByUsername(userName))
+                .andThen(userId -> assertExpenseCategoryNotExistsForUser(userId, expenseCategory.getName()))
+                .map(userId -> new ExpenseCategoryEntity(userId, expenseCategory.getName()))
+                .map(expenseCategoryRepository::save)
+                .map(expenseCategoryMapper::toExpenseCategory)
+                .get();
+    }
+
+    private void assertExpenseCategoryNotExistsForUser(int userId, String expenseCategoryName) {
+        if(expenseCategoryRepository.findByUserIdAndName(userId, expenseCategoryName) != null) {
+            throw new ExpenseCategoryAlreadyExistsException(expenseCategoryName);
+        }
     }
 }

@@ -1,5 +1,6 @@
 package es.upm.mabills.api.http_errors;
 
+import es.upm.mabills.exceptions.ExpenseCategoryAlreadyExistsException;
 import es.upm.mabills.exceptions.UserAlreadyExistsException;
 import es.upm.mabills.exceptions.UserNotFoundException;
 import org.apache.logging.log4j.LogManager;
@@ -46,6 +47,16 @@ public class ApiExceptionHandler {
     @ResponseBody
     public ErrorMessage userAlreadyExists(UserAlreadyExistsException exception) {
         LOGGER.debug(() -> "User already exists: " + exception.getMessage());
+        return new ErrorMessage(exception, HttpStatus.CONFLICT.value());
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler({
+        ExpenseCategoryAlreadyExistsException.class
+    })
+    @ResponseBody
+    public ErrorMessage expenseCategoryAlreadyExists(ExpenseCategoryAlreadyExistsException exception) {
+        LOGGER.debug(() -> "Expense category already exists: " + exception.getMessage());
         return new ErrorMessage(exception, HttpStatus.CONFLICT.value());
     }
 

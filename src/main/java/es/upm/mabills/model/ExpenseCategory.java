@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import java.sql.Timestamp;
 
@@ -14,6 +15,7 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ExpenseCategory {
+    @NonNull
     private String name;
     private Timestamp creationDate;
     private String uuid;

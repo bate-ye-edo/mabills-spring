@@ -61,7 +61,13 @@ public class DatabaseSeeder {
                 .password(ENCODED_PASSWORD)
                 .email("logoutEmail")
                 .build();
-        this.userRepository.saveAll(List.of(userEntity, encodedPasswordUser, otherUser, logOutUser));
+        UserEntity expenseCategoryUser = UserEntity.builder()
+                .username("expenseCategoryUser")
+                .mobile("123123453412")
+                .password(ENCODED_PASSWORD)
+                .email("expenseCategoryEmail")
+                .build();
+        this.userRepository.saveAll(List.of(userEntity, encodedPasswordUser, otherUser, logOutUser, expenseCategoryUser));
 
         // Expenses categories
         ExpenseCategoryEntity userNameUserExpense = ExpenseCategoryEntity.builder()
@@ -69,8 +75,8 @@ public class DatabaseSeeder {
                 .user(userEntity)
                 .build();
         ExpenseCategoryEntity encodedPasswordUserExpense = ExpenseCategoryEntity.builder()
-                .name("encodedPasswordUserExpenseCategory")
-                .user(encodedPasswordUser)
+                .name("expenseCategoryUserExpenseCategory")
+                .user(expenseCategoryUser)
                 .build();
         this.expenseCategoryRepository.saveAll(List.of(userNameUserExpense, encodedPasswordUserExpense));
     }

@@ -1,5 +1,6 @@
 package es.upm.mabills.services;
 
+import io.vavr.control.Try;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,11 +23,18 @@ public class TokenCacheService {
     }
 
     public boolean isTokenBlackListed(String token) {
-        return tokenBlackListCache.contains(token);
+        return Try.of(()->tokenBlackListCache.contains(token))
+                .peek(blackListed -> {
+                    if(Boolean.TRUE.equals(blackListed)){
+                        LOGGER.warn("Token is black listed: {}", token);
+                    }
+                })
+                .get();
     }
 
     public void blackListToken(String token) {
         tokenBlackListCache.add(token);
+        LOGGER.info("Token is in black list: {}", token);
     }
 
     @Scheduled(fixedRate = 60000)
