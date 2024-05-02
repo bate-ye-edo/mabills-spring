@@ -3,6 +3,7 @@ package es.upm.mabills.api.resources;
 import es.upm.mabills.api.ApiTestConfig;
 import es.upm.mabills.api.RestClientTestService;
 import es.upm.mabills.api.dtos.LoginDto;
+import es.upm.mabills.api.dtos.UpdateExpenseCategoryDto;
 import es.upm.mabills.model.ExpenseCategory;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,8 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -18,11 +21,13 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 @ApiTestConfig
 class ExpenseCategoryResourceIT {
     private static final String EXPENSE_CATEGORY_USER_EXPENSE_CATEGORY = "expenseCategoryUserExpenseCategory";
+    private static final String TO_UPDATE_EXPENSE_CATEGORY = "toUpdateExpenseCategory";
+    private static final String UPDATED_EXPENSE_CATEGORY = "updatedExpenseCategory";
     private static final String OTHER_USER = "otherUser";
     private static final String EXPENSE_CATEGORY_USER = "expenseCategoryUser";
     private static final String PASSWORD = "password";
     private static final String NEW_EXPENSE_CATEGORY_NAME = "newExpenseCategory";
-
+    private static final String TEST_UUID = UUID.randomUUID().toString();
     @Autowired
     private RestClientTestService restClientTestService;
 
@@ -118,5 +123,67 @@ class ExpenseCategoryResourceIT {
         return ExpenseCategory.builder()
                 .name(EXPENSE_CATEGORY_USER_EXPENSE_CATEGORY)
                 .build();
+    }
+
+    @Test
+    void updateExpenseCategoryName() {
+        ExpenseCategory expenseCategory = createExpenseCategoryToUpdate();
+        loginExpenseCategoryUser()
+                .put().uri(ExpenseCategoryResource.EXPENSE_CATEGORIES  + ExpenseCategoryResource.UUID + ExpenseCategoryResource.NAME, expenseCategory.getUuid())
+                .body(Mono.just(getUpdateExpenseCategoryDto()), UpdateExpenseCategoryDto.class)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(ExpenseCategory.class)
+                .value(v -> assertEquals(UPDATED_EXPENSE_CATEGORY, v.getName()));
+    }
+
+    private ExpenseCategory createExpenseCategoryToUpdate() {
+        return loginExpenseCategoryUser()
+                .post().uri(ExpenseCategoryResource.EXPENSE_CATEGORIES)
+                .body(Mono.just(getToUpdateExpenseCategory()), ExpenseCategory.class)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(ExpenseCategory.class)
+                .returnResult()
+                .getResponseBody();
+    }
+
+    private ExpenseCategory getToUpdateExpenseCategory() {
+        return ExpenseCategory.builder()
+                .name(TO_UPDATE_EXPENSE_CATEGORY)
+                .build();
+    }
+
+    private UpdateExpenseCategoryDto getUpdateExpenseCategoryDto() {
+        return UpdateExpenseCategoryDto.builder()
+                .name(UPDATED_EXPENSE_CATEGORY)
+                .build();
+    }
+
+    @Test
+    void updateExpenseCategoryNameUnauthorized() {
+        this.webTestClient
+                .put().uri(ExpenseCategoryResource.EXPENSE_CATEGORIES + ExpenseCategoryResource.UUID + ExpenseCategoryResource.NAME, TEST_UUID)
+                .body(Mono.just(getUpdateExpenseCategoryDto()), UpdateExpenseCategoryDto.class)
+                .exchange()
+                .expectStatus().isUnauthorized();
+    }
+
+    @Test
+    void updateExpenseCategoryNameNotFound() {
+        loginExpenseCategoryUser()
+                .put().uri(ExpenseCategoryResource.EXPENSE_CATEGORIES + ExpenseCategoryResource.UUID + ExpenseCategoryResource.NAME, TEST_UUID)
+                .body(Mono.just(getUpdateExpenseCategoryDto()), UpdateExpenseCategoryDto.class)
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
+    @Test
+    void updateExpenseCategoryNameBadRequest() {
+        loginExpenseCategoryUser()
+                .put().uri(ExpenseCategoryResource.EXPENSE_CATEGORIES + ExpenseCategoryResource.UUID + ExpenseCategoryResource.NAME, TEST_UUID)
+                .body(Mono.just(UpdateExpenseCategoryDto.builder().build()), UpdateExpenseCategoryDto.class)
+                .exchange()
+                .expectStatus().isBadRequest();
     }
 }

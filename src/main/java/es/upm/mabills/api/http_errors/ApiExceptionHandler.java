@@ -1,6 +1,7 @@
 package es.upm.mabills.api.http_errors;
 
 import es.upm.mabills.exceptions.ExpenseCategoryAlreadyExistsException;
+import es.upm.mabills.exceptions.ExpenseCategoryNotFoundException;
 import es.upm.mabills.exceptions.UserAlreadyExistsException;
 import es.upm.mabills.exceptions.UserNotFoundException;
 import org.apache.logging.log4j.LogManager;
@@ -14,12 +15,14 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import java.util.List;
 
 @ControllerAdvice
 public class ApiExceptionHandler {
     private static final Logger LOGGER = LogManager.getLogger(ApiExceptionHandler.class);
+
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     @ExceptionHandler({
         org.springframework.security.access.AccessDeniedException.class
@@ -62,7 +65,7 @@ public class ApiExceptionHandler {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler({
-        MethodArgumentNotValidException.class
+        MethodArgumentNotValidException.class,
     })
     @ResponseBody
     public ErrorMessage invalidArguments(MethodArgumentNotValidException exception) {
@@ -70,12 +73,23 @@ public class ApiExceptionHandler {
         return new ErrorMessage(exception, HttpStatus.BAD_REQUEST.value(), getErrorFieldNames(exception.getBindingResult()));
     }
 
-    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler({
-        UserNotFoundException.class
+        HandlerMethodValidationException.class
     })
     @ResponseBody
-    public ErrorMessage userNotFound(UserNotFoundException exception) {
+    public ErrorMessage invalidArguments(HandlerMethodValidationException exception) {
+        LOGGER.debug(() -> "Invalid arguments: " + exception.getMessage());
+        return new ErrorMessage(exception, HttpStatus.BAD_REQUEST.value());
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler({
+        UserNotFoundException.class,
+        ExpenseCategoryNotFoundException.class
+    })
+    @ResponseBody
+    public ErrorMessage notFoundException(RuntimeException exception) {
         LOGGER.debug(exception::getMessage);
         return new ErrorMessage(exception, HttpStatus.NOT_FOUND.value());
     }

@@ -1,18 +1,18 @@
 package es.upm.mabills.api.dtos;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoginDto {
-    @NonNull
+    @NotNull
     private String username;
-    @NonNull
+    @NotNull
     private String password;
 }
