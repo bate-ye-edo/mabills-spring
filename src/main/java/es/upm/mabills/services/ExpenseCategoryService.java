@@ -28,4 +28,8 @@ public class ExpenseCategoryService {
     public ExpenseCategory updateExpenseCategoryName(String userName, UUID uuid, String name) {
         return expenseCategoryPersistence.updateExpenseCategoryName(userName, uuid, name);
     }
+
+    public void deleteExpenseCategory(String userName, UUID uuid) {
+        expenseCategoryPersistence.deleteExpenseCategory(userName, uuid);
+    }
 }

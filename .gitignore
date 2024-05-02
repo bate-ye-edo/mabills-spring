@@ -33,3 +33,4 @@ build/
 .vscode/
 .mvn/
 src/main/java/es/upm/mabills/api/resources/TestResource.java
+src/main/java/es/upm/mabills/services/TestService.java

@@ -22,8 +22,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 class ExpenseCategoryResourceIT {
     private static final String EXPENSE_CATEGORY_USER_EXPENSE_CATEGORY = "expenseCategoryUserExpenseCategory";
     private static final String TO_UPDATE_EXPENSE_CATEGORY = "toUpdateExpenseCategory";
+    private static final String TO_DELETE_EXPENSE_CATEGORY = "toDeleteExpenseCategory";
     private static final String UPDATED_EXPENSE_CATEGORY = "updatedExpenseCategory";
-    private static final String OTHER_USER = "otherUser";
+    private static final String ONLY_USER = "onlyUser";
     private static final String EXPENSE_CATEGORY_USER = "expenseCategoryUser";
     private static final String PASSWORD = "password";
     private static final String NEW_EXPENSE_CATEGORY_NAME = "newExpenseCategory";
@@ -77,7 +78,7 @@ class ExpenseCategoryResourceIT {
 
     private LoginDto getUserWithoutCategories() {
         return LoginDto.builder()
-                .username(OTHER_USER)
+                .username(ONLY_USER)
                 .password(PASSWORD)
                 .build();
     }
@@ -127,7 +128,7 @@ class ExpenseCategoryResourceIT {
 
     @Test
     void updateExpenseCategoryName() {
-        ExpenseCategory expenseCategory = createExpenseCategoryToUpdate();
+        ExpenseCategory expenseCategory = createExpenseCategoryToUse(getToUpdateExpenseCategory());
         loginExpenseCategoryUser()
                 .put().uri(ExpenseCategoryResource.EXPENSE_CATEGORIES  + ExpenseCategoryResource.UUID + ExpenseCategoryResource.NAME, expenseCategory.getUuid())
                 .body(Mono.just(getUpdateExpenseCategoryDto()), UpdateExpenseCategoryDto.class)
@@ -137,10 +138,10 @@ class ExpenseCategoryResourceIT {
                 .value(v -> assertEquals(UPDATED_EXPENSE_CATEGORY, v.getName()));
     }
 
-    private ExpenseCategory createExpenseCategoryToUpdate() {
+    private ExpenseCategory createExpenseCategoryToUse(ExpenseCategory expenseCategory) {
         return loginExpenseCategoryUser()
                 .post().uri(ExpenseCategoryResource.EXPENSE_CATEGORIES)
-                .body(Mono.just(getToUpdateExpenseCategory()), ExpenseCategory.class)
+                .body(Mono.just(expenseCategory), ExpenseCategory.class)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(ExpenseCategory.class)
@@ -186,4 +187,36 @@ class ExpenseCategoryResourceIT {
                 .exchange()
                 .expectStatus().isBadRequest();
     }
+
+    @Test
+    void deleteExpenseCategory() {
+        ExpenseCategory expenseCategory = createExpenseCategoryToUse(getToDeleteExpenseCategory());
+        loginExpenseCategoryUser()
+                .delete().uri(ExpenseCategoryResource.EXPENSE_CATEGORIES + ExpenseCategoryResource.UUID, expenseCategory.getUuid())
+                .exchange()
+                .expectStatus().isOk();
+    }
+
+    private ExpenseCategory getToDeleteExpenseCategory() {
+        return ExpenseCategory.builder()
+                .name(TO_DELETE_EXPENSE_CATEGORY)
+                .build();
+    }
+
+    @Test
+    void deleteExpenseCategoryUnauthorized() {
+        this.webTestClient
+                .delete().uri(ExpenseCategoryResource.EXPENSE_CATEGORIES + ExpenseCategoryResource.UUID, TEST_UUID)
+                .exchange()
+                .expectStatus().isUnauthorized();
+    }
+
+    @Test
+    void deleteExpenseCategoryNotFound() {
+        loginExpenseCategoryUser()
+                .delete().uri(ExpenseCategoryResource.EXPENSE_CATEGORIES + ExpenseCategoryResource.UUID, TEST_UUID)
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
 }

@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -46,5 +47,10 @@ public class ExpenseCategoryResource {
                                                  @PathVariable("uuid") @NotNull UUID uuid,
                                                  @RequestBody @Valid UpdateExpenseCategoryDto dto) {
         return this.expenseCategoryService.updateExpenseCategoryName(userName, uuid, dto.getName());
+    }
+
+    @DeleteMapping(UUID)
+    public void deleteExpenseCategory(@AuthenticationPrincipal String userName, @PathVariable("uuid") @NotNull UUID uuid) {
+        this.expenseCategoryService.deleteExpenseCategory(userName, uuid);
     }
 }

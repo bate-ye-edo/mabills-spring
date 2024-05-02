@@ -61,4 +61,13 @@ public class ExpenseCategoryPersistence {
                 .map(expenseCategoryMapper::toExpenseCategory)
                 .getOrElseThrow(()->new ExpenseCategoryNotFoundException(uuid));
     }
+
+    public void deleteExpenseCategory(String userName, UUID uuid) {
+        int userId = userPersistence.findUserIdByUsername(userName);
+        Try.of(()->expenseCategoryRepository.findByUserIdAndUuid(userId, uuid))
+                .andThen(expenseCategoryRepository::delete)
+                .onFailure(ex -> {
+                    throw new ExpenseCategoryNotFoundException(uuid);
+                });
+    }
 }

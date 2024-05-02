@@ -19,6 +19,7 @@ class ExpenseCategoryPersistenceIT {
     private static final String USERNAME = "username";
     private static final String OTHER_USER = "otherUser";
     private static final String TO_UPDATE_EXPENSE_CATEGORY_USER = "toUpdateExpenseCategoryUser";
+    private static final String TO_DELETE_EXPENSE_CATEGORY = "toDeleteExpenseCategory";
 
     private static final String USERNAME_USER_EXPENSE_CATEGORY = "userNameUserExpenseCategory";
     private static final String NEW_EXPENSE_CATEGORY = "newExpenseCategory";
@@ -67,18 +68,41 @@ class ExpenseCategoryPersistenceIT {
 
     @Test
     void testUpdateExpenseCategoryName() {
-        ExpenseCategory newExpenseCategory = expenseCategoryPersistence.createExpenseCategory(TO_UPDATE_EXPENSE_CATEGORY_USER, ExpenseCategory.builder().name(TO_UPDATE_EXPENSE_CATEGORY_USER).build());
-        ExpenseCategory updatedExpenseCategory = expenseCategoryPersistence.updateExpenseCategoryName(TO_UPDATE_EXPENSE_CATEGORY_USER, UUID.fromString(newExpenseCategory.getUuid()), NEW_EXPENSE_CATEGORY);
+        ExpenseCategory newExpenseCategory = expenseCategoryPersistence.createExpenseCategory(TO_UPDATE_EXPENSE_CATEGORY_USER,
+                ExpenseCategory.builder().name(TO_UPDATE_EXPENSE_CATEGORY_USER).build());
+        ExpenseCategory updatedExpenseCategory = expenseCategoryPersistence.updateExpenseCategoryName(TO_UPDATE_EXPENSE_CATEGORY_USER,
+                UUID.fromString(newExpenseCategory.getUuid()), NEW_EXPENSE_CATEGORY);
         assertEquals(NEW_EXPENSE_CATEGORY, updatedExpenseCategory.getName());
     }
 
     @Test
     void testUpdateExpenseCategoryNameUserNotFound() {
-        assertThrows(UserNotFoundException.class, () -> expenseCategoryPersistence.updateExpenseCategoryName(NOT_FOUND_USER, RANDOM_UUID, NEW_EXPENSE_CATEGORY));
+        assertThrows(UserNotFoundException.class, () -> expenseCategoryPersistence.updateExpenseCategoryName(NOT_FOUND_USER,
+                RANDOM_UUID, NEW_EXPENSE_CATEGORY));
     }
 
     @Test
     void testUpdateExpenseCategoryNameNotFound() {
-        assertThrows(ExpenseCategoryNotFoundException.class, () -> expenseCategoryPersistence.updateExpenseCategoryName(TO_UPDATE_EXPENSE_CATEGORY_USER, RANDOM_UUID, NEW_EXPENSE_CATEGORY));
+        assertThrows(ExpenseCategoryNotFoundException.class, () -> expenseCategoryPersistence.updateExpenseCategoryName(TO_UPDATE_EXPENSE_CATEGORY_USER,
+                RANDOM_UUID, NEW_EXPENSE_CATEGORY));
+    }
+
+    @Test
+    void testDeleteExpenseCategory() {
+        ExpenseCategory newExpenseCategory = expenseCategoryPersistence.createExpenseCategory(TO_UPDATE_EXPENSE_CATEGORY_USER,
+                ExpenseCategory.builder().name(TO_DELETE_EXPENSE_CATEGORY).build());
+        UUID uuid = UUID.fromString(newExpenseCategory.getUuid());
+        expenseCategoryPersistence.deleteExpenseCategory(TO_UPDATE_EXPENSE_CATEGORY_USER, uuid);
+        assertThrows(ExpenseCategoryNotFoundException.class, () -> expenseCategoryPersistence.deleteExpenseCategory(TO_UPDATE_EXPENSE_CATEGORY_USER, uuid));
+    }
+
+    @Test
+    void testDeleteExpenseCategoryUserNotFound() {
+        assertThrows(UserNotFoundException.class, () -> expenseCategoryPersistence.deleteExpenseCategory(NOT_FOUND_USER, RANDOM_UUID));
+    }
+
+    @Test
+    void testDeleteExpenseCategoryNotFound() {
+        assertThrows(ExpenseCategoryNotFoundException.class, () -> expenseCategoryPersistence.deleteExpenseCategory(TO_UPDATE_EXPENSE_CATEGORY_USER, RANDOM_UUID));
     }
 }
