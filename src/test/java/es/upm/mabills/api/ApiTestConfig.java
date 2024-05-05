@@ -19,6 +19,6 @@ import java.lang.annotation.Target;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient
 @TestPropertySource(locations = "classpath:test.properties")
-@ActiveProfiles("test")
+@ActiveProfiles({"test", "seederTest"})
 public @interface ApiTestConfig {
 }

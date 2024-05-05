@@ -1,5 +1,6 @@
 package es.upm.mabills.persistence.repositories;
 
+import es.upm.mabills.persistence.entities.CreditCardEntity;
 import es.upm.mabills.persistence.entities.ExpenseCategoryEntity;
 import es.upm.mabills.persistence.entities.UserEntity;
 import org.apache.logging.log4j.LogManager;
@@ -17,13 +18,16 @@ public class DatabaseSeeder {
     private static final String ENCODED_PASSWORD = "$2a$10$KyShpWQl4pS7KybIIZLkZ.6Mo2YBkPFuXT82cEOguWW3lpSMHgSEe";
     private final UserRepository userRepository;
     private final ExpenseCategoryRepository expenseCategoryRepository;
+    private final CreditCardRepository creditCardRepository;
 
     @Autowired
-    public DatabaseSeeder(UserRepository userRepository, ExpenseCategoryRepository expenseCategoryRepository) {
+    public DatabaseSeeder(UserRepository userRepository, ExpenseCategoryRepository expenseCategoryRepository,
+                          CreditCardRepository creditCardRepository) {
         LOGGER.warn("----- Initialize database seeding -----");
         LogManager.getLogger();
         this.userRepository = userRepository;
         this.expenseCategoryRepository = expenseCategoryRepository;
+        this.creditCardRepository = creditCardRepository;
         this.deleteAll();
         this.seedDatabase();
         LOGGER.warn("----- End -----");
@@ -31,6 +35,7 @@ public class DatabaseSeeder {
 
     private void deleteAll(){
         LOGGER.warn("----- Delete database seeding -----");
+        this.creditCardRepository.deleteAll();
         this.expenseCategoryRepository.deleteAll();
         this.userRepository.deleteAll();
     }
@@ -91,5 +96,13 @@ public class DatabaseSeeder {
                 .user(expenseCategoryUser)
                 .build();
         this.expenseCategoryRepository.saveAll(List.of(userNameUserExpense, expenseCategoryUserExpense));
+
+        CreditCardEntity creditCardEntity = CreditCardEntity.builder()
+                .creditCardNumber("004120003120034012")
+                .user(encodedPasswordUser)
+                .build();
+
+        this.creditCardRepository.saveAll(List.of(creditCardEntity));
+        LOGGER.warn("----- End seeding database -----");
     }
 }

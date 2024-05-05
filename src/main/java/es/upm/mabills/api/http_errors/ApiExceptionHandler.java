@@ -2,6 +2,7 @@ package es.upm.mabills.api.http_errors;
 
 import es.upm.mabills.exceptions.ExpenseCategoryAlreadyExistsException;
 import es.upm.mabills.exceptions.ExpenseCategoryNotFoundException;
+import es.upm.mabills.exceptions.MaBillsServiceException;
 import es.upm.mabills.exceptions.UserAlreadyExistsException;
 import es.upm.mabills.exceptions.UserNotFoundException;
 import org.apache.logging.log4j.LogManager;
@@ -96,6 +97,7 @@ public class ApiExceptionHandler {
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler({
+        MaBillsServiceException.class,
         Exception.class
     })
     @ResponseBody

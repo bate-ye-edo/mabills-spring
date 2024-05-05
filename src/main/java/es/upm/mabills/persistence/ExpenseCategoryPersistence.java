@@ -36,8 +36,8 @@ public class ExpenseCategoryPersistence {
         .toList();
     }
 
-    public ExpenseCategory createExpenseCategory(String userName, ExpenseCategory expenseCategory) {
-        return Try.of(()->userPersistence.findUserIdByUsername(userName))
+    public ExpenseCategory createExpenseCategory(String username, ExpenseCategory expenseCategory) {
+        return Try.of(()->userPersistence.findUserIdByUsername(username))
                 .andThen(userId -> assertExpenseCategoryNotExistsForUser(userId, expenseCategory.getName()))
                 .map(userId -> new ExpenseCategoryEntity(userId, expenseCategory.getName()))
                 .map(expenseCategoryRepository::save)
@@ -51,8 +51,8 @@ public class ExpenseCategoryPersistence {
         }
     }
 
-    public ExpenseCategory updateExpenseCategoryName(String userName, UUID uuid, String name) throws UserNotFoundException {
-        int userId = userPersistence.findUserIdByUsername(userName);
+    public ExpenseCategory updateExpenseCategoryName(String username, UUID uuid, String name) throws UserNotFoundException {
+        int userId = userPersistence.findUserIdByUsername(username);
         return Try.of(()->expenseCategoryRepository.findByUserIdAndUuid(userId, uuid))
                 .map(expenseCategoryEntity -> {
                     expenseCategoryEntity.setName(name);
@@ -62,8 +62,8 @@ public class ExpenseCategoryPersistence {
                 .getOrElseThrow(()->new ExpenseCategoryNotFoundException(uuid));
     }
 
-    public void deleteExpenseCategory(String userName, UUID uuid) {
-        int userId = userPersistence.findUserIdByUsername(userName);
+    public void deleteExpenseCategory(String username, UUID uuid) {
+        int userId = userPersistence.findUserIdByUsername(username);
         Try.of(()->expenseCategoryRepository.findByUserIdAndUuid(userId, uuid))
                 .andThen(expenseCategoryRepository::delete)
                 .onFailure(ex -> {
