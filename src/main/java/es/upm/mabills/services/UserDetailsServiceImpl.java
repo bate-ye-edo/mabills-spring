@@ -1,7 +1,7 @@
 package es.upm.mabills.services;
 
-import es.upm.mabills.model.User;
 import es.upm.mabills.persistence.UserPersistence;
+import es.upm.mabills.persistence.entities.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.GrantedAuthority;
@@ -29,7 +29,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(final String username) {
-        User user = userPersistence.findUserByUsername(username);
+        UserEntity user = userPersistence.findUserByUsername(username);
         return this.userBuilder(user.getUsername(), user.getPassword());
     }
 

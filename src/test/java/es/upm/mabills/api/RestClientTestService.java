@@ -46,9 +46,9 @@ public class RestClientTestService {
     private WebTestClient getWebTestClientWithToken(WebTestClient webTestClient, TokenDto tokenDto) {
         assertNotNull(tokenDto);
         clearHeaders();
-        addTokenToHeaders(tokenDto.getToken());
+        addTokenToHeaders(tokenDto.token());
         return webTestClient.mutate()
-                .defaultHeader(this.authorizationHeader, this.tokenPrefix + tokenDto.getToken())
+                .defaultHeader(this.authorizationHeader, this.tokenPrefix + tokenDto.token())
                 .build();
     }
 

@@ -54,7 +54,7 @@ class UserResourceIT {
             .expectBody(TokenDto.class)
             .value(v -> {
                 assertNotNull(v);
-                assertNotNull(v.getToken());
+                assertNotNull(v.token());
             });
     }
 
@@ -79,7 +79,7 @@ class UserResourceIT {
                 .expectBody(TokenDto.class)
                 .value(v -> {
                     assertNotNull(v);
-                    assertNotNull(v.getToken());
+                    assertNotNull(v.token());
                 });
     }
 
@@ -201,7 +201,7 @@ class UserResourceIT {
             .expectBody(TokenDto.class)
             .value(tokenDto -> {
                 assertNotNull(tokenDto);
-                assertNotEquals(oldToken, tokenDto.getToken());
+                assertNotEquals(oldToken, tokenDto.token());
             });
     }
 

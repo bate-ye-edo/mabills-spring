@@ -1,5 +1,6 @@
 package es.upm.mabills.persistence.repositories;
 
+import es.upm.mabills.persistence.entities.BankAccountEntity;
 import es.upm.mabills.persistence.entities.CreditCardEntity;
 import es.upm.mabills.persistence.entities.ExpenseCategoryEntity;
 import es.upm.mabills.persistence.entities.UserEntity;
@@ -19,15 +20,17 @@ public class DatabaseSeeder {
     private final UserRepository userRepository;
     private final ExpenseCategoryRepository expenseCategoryRepository;
     private final CreditCardRepository creditCardRepository;
+    private final BankAccountRepository bankAccountRepository;
 
     @Autowired
     public DatabaseSeeder(UserRepository userRepository, ExpenseCategoryRepository expenseCategoryRepository,
-                          CreditCardRepository creditCardRepository) {
+                          CreditCardRepository creditCardRepository, BankAccountRepository bankAccountRepository) {
         LOGGER.warn("----- Initialize database seeding -----");
         LogManager.getLogger();
         this.userRepository = userRepository;
         this.expenseCategoryRepository = expenseCategoryRepository;
         this.creditCardRepository = creditCardRepository;
+        this.bankAccountRepository = bankAccountRepository;
         this.deleteAll();
         this.seedDatabase();
         LOGGER.warn("----- End -----");
@@ -35,6 +38,7 @@ public class DatabaseSeeder {
 
     private void deleteAll(){
         LOGGER.warn("----- Delete database seeding -----");
+        this.bankAccountRepository.deleteAll();
         this.creditCardRepository.deleteAll();
         this.expenseCategoryRepository.deleteAll();
         this.userRepository.deleteAll();
@@ -97,12 +101,19 @@ public class DatabaseSeeder {
                 .build();
         this.expenseCategoryRepository.saveAll(List.of(userNameUserExpense, expenseCategoryUserExpense));
 
+        // Credit cards
         CreditCardEntity creditCardEntity = CreditCardEntity.builder()
                 .creditCardNumber("004120003120034012")
                 .user(encodedPasswordUser)
                 .build();
-
         this.creditCardRepository.saveAll(List.of(creditCardEntity));
+
+        // Bank accounts
+        BankAccountEntity bankAccountEntity = BankAccountEntity.builder()
+                .iban("ES004120003120034012")
+                .user(encodedPasswordUser)
+                .build();
+        this.bankAccountRepository.saveAll(List.of(bankAccountEntity));
         LOGGER.warn("----- End seeding database -----");
     }
 }

@@ -39,7 +39,7 @@ public class UserResource {
     @PostMapping(UserResource.LOGIN)
     public TokenDto loginUser(@Validated @RequestBody LoginDto loginDto) {
         return TokenDto.builder()
-                .token(userService.login(loginDto.getUsername(), loginDto.getPassword()))
+                .token(userService.login(loginDto.username(), loginDto.password()))
                 .build();
     }
 

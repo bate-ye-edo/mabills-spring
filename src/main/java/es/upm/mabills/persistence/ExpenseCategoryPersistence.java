@@ -3,10 +3,10 @@ package es.upm.mabills.persistence;
 import es.upm.mabills.exceptions.ExpenseCategoryAlreadyExistsException;
 import es.upm.mabills.exceptions.ExpenseCategoryNotFoundException;
 import es.upm.mabills.exceptions.UserNotFoundException;
-import es.upm.mabills.mappers.ExpenseCategoryMapper;
 import es.upm.mabills.model.ExpenseCategory;
 import es.upm.mabills.persistence.entities.ExpenseCategoryEntity;
 import es.upm.mabills.persistence.repositories.ExpenseCategoryRepository;
+import es.upm.mabills.persistence.repositories.UserRepository;
 import io.vavr.control.Try;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -17,54 +17,43 @@ import java.util.UUID;
 @Repository
 public class ExpenseCategoryPersistence {
     private final ExpenseCategoryRepository expenseCategoryRepository;
-    private final UserPersistence userPersistence;
-    private final ExpenseCategoryMapper expenseCategoryMapper;
+    private final UserRepository userRepository;
 
     @Autowired
-    public ExpenseCategoryPersistence(ExpenseCategoryRepository expenseCategoryRepository, UserPersistence userPersistence,
-                                      ExpenseCategoryMapper expenseCategoryMapper) {
+    public ExpenseCategoryPersistence(ExpenseCategoryRepository expenseCategoryRepository, UserRepository userRepository) {
         this.expenseCategoryRepository = expenseCategoryRepository;
-        this.userPersistence = userPersistence;
-        this.expenseCategoryMapper = expenseCategoryMapper;
+        this.userRepository = userRepository;
     }
 
-    public List<ExpenseCategory> findExpenseCategoryByUserName(String username) {
-        return expenseCategoryRepository.findByUserId(
-            userPersistence.findUserIdByUsername(username))
-        .stream()
-        .map(expenseCategoryMapper::toExpenseCategory)
-        .toList();
+    public List<ExpenseCategoryEntity> findExpenseCategoryByUserName(String username) {
+        return expenseCategoryRepository.findByUser_Username(username);
     }
 
-    public ExpenseCategory createExpenseCategory(String username, ExpenseCategory expenseCategory) {
-        return Try.of(()->userPersistence.findUserIdByUsername(username))
-                .andThen(userId -> assertExpenseCategoryNotExistsForUser(userId, expenseCategory.getName()))
-                .map(userId -> new ExpenseCategoryEntity(userId, expenseCategory.getName()))
+    public ExpenseCategoryEntity createExpenseCategory(String username, ExpenseCategory expenseCategory) {
+        assertExpenseCategoryNotExistsForUser(username, expenseCategory.getName());
+        return Try.of(()-> userRepository.findByUsername(username))
+                .map(userEntity -> new ExpenseCategoryEntity(userEntity, expenseCategory))
                 .map(expenseCategoryRepository::save)
-                .map(expenseCategoryMapper::toExpenseCategory)
-                .get();
+                .getOrElseThrow(()->new UserNotFoundException(username));
     }
 
-    private void assertExpenseCategoryNotExistsForUser(int userId, String expenseCategoryName) {
-        if(expenseCategoryRepository.findByUserIdAndName(userId, expenseCategoryName) != null) {
+    private void assertExpenseCategoryNotExistsForUser(String username, String expenseCategoryName) {
+        if(expenseCategoryRepository.findByUser_UsernameAndName(username, expenseCategoryName) != null) {
             throw new ExpenseCategoryAlreadyExistsException(expenseCategoryName);
         }
     }
 
-    public ExpenseCategory updateExpenseCategoryName(String username, UUID uuid, String name) throws UserNotFoundException {
-        int userId = userPersistence.findUserIdByUsername(username);
-        return Try.of(()->expenseCategoryRepository.findByUserIdAndUuid(userId, uuid))
+    public ExpenseCategoryEntity updateExpenseCategoryName(String username, UUID uuid, String name) throws UserNotFoundException {
+        return Try.of(()->expenseCategoryRepository.findByUser_UsernameAndUuid(username, uuid))
                 .map(expenseCategoryEntity -> {
                     expenseCategoryEntity.setName(name);
                     return expenseCategoryRepository.save(expenseCategoryEntity);
                 })
-                .map(expenseCategoryMapper::toExpenseCategory)
                 .getOrElseThrow(()->new ExpenseCategoryNotFoundException(uuid));
     }
 
     public void deleteExpenseCategory(String username, UUID uuid) {
-        int userId = userPersistence.findUserIdByUsername(username);
-        Try.of(()->expenseCategoryRepository.findByUserIdAndUuid(userId, uuid))
+        Try.of(()->expenseCategoryRepository.findByUser_UsernameAndUuid(username, uuid))
                 .andThen(expenseCategoryRepository::delete)
                 .onFailure(ex -> {
                     throw new ExpenseCategoryNotFoundException(uuid);

@@ -4,6 +4,7 @@ import es.upm.mabills.UnitTestConfig;
 import es.upm.mabills.exceptions.UserAlreadyExistsException;
 import es.upm.mabills.model.User;
 import es.upm.mabills.persistence.UserPersistence;
+import es.upm.mabills.persistence.entities.UserEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +44,7 @@ class UserServiceTest {
 
     @BeforeEach
     void setUp() {
-        when(userPersistence.findUserByUsername(anyString())).thenReturn(User.builder()
+        when(userPersistence.findUserByUsername(anyString())).thenReturn(UserEntity.builder()
                 .username(TEST_USERNAME)
                 .password(TEST_PASSWORD)
                 .build());
@@ -74,7 +75,7 @@ class UserServiceTest {
     void testRegisterSuccess() {
         when(passwordEncoder.encode(anyString())).thenReturn(TEST_PASSWORD);
         User user = buildNewRegisterUser();
-        when(userPersistence.registerUser(user, TEST_PASSWORD)).thenReturn(user);
+        when(userPersistence.registerUser(user, TEST_PASSWORD)).thenReturn(new UserEntity(user, TEST_PASSWORD));
         String token = userService.register(user);
         assertEquals(TEST_TOKEN, token);
     }

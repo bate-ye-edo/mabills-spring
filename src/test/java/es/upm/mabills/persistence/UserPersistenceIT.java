@@ -3,6 +3,7 @@ package es.upm.mabills.persistence;
 import es.upm.mabills.TestConfig;
 import es.upm.mabills.exceptions.UserAlreadyExistsException;
 import es.upm.mabills.model.User;
+import es.upm.mabills.persistence.entities.UserEntity;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,17 +20,12 @@ class UserPersistenceIT {
     @Test
     @SneakyThrows
     void testFindUserByUsername() {
-        User user = this.userPersistence.findUserByUsername("username");
+        UserEntity user = this.userPersistence.findUserByUsername("username");
         assertNotNull(user);
         assertEquals("username", user.getUsername());
         assertEquals("password", user.getPassword());
         assertEquals("email", user.getEmail());
         assertEquals("666666666", user.getMobile());
-    }
-
-    @Test
-    void testFindUserIdByUsername() {
-        assertTrue(userPersistence.findUserIdByUsername("username") > 0);
     }
 
     @Test
@@ -39,7 +35,7 @@ class UserPersistenceIT {
 
     @Test
     void testRegisterUserSuccess() {
-        User newUser = userPersistence.registerUser(buildNewRegisterUser(), NEW_REGISTER_ENCODED_PASSWORD);
+        UserEntity newUser = userPersistence.registerUser(buildNewRegisterUser(), NEW_REGISTER_ENCODED_PASSWORD);
         assertNotNull(newUser);
         assertEquals("newRegisterUser", newUser.getUsername());
         assertEquals("newRegisterUserEncodedPassword", newUser.getPassword());

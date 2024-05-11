@@ -1,17 +1,17 @@
 package es.upm.mabills.persistence;
 
 import es.upm.mabills.TestConfig;
-import es.upm.mabills.exceptions.UserNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @TestConfig
 class CreditCardPersistenceIT {
     private static final String ENCODED_PASSWORD_USER = "encodedPasswordUser";
     private static final String NOT_FOUND_USER = "notFound";
+
     @Autowired
     private CreditCardPersistence creditCardPersistence;
 
@@ -22,6 +22,6 @@ class CreditCardPersistenceIT {
 
     @Test
     void testFindCreditCardsByUserNameNotFound() {
-        assertThrows(UserNotFoundException.class, () -> creditCardPersistence.findCreditCardsByUserName(NOT_FOUND_USER));
+        assertTrue(creditCardPersistence.findCreditCardsByUserName(NOT_FOUND_USER).isEmpty());
     }
 }

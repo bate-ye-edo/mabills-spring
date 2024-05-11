@@ -1,6 +1,7 @@
 package es.upm.mabills.services;
 
 import es.upm.mabills.exceptions.UserAlreadyExistsException;
+import es.upm.mabills.mappers.UserMapper;
 import es.upm.mabills.model.User;
 import es.upm.mabills.persistence.UserPersistence;
 import io.vavr.control.Try;
@@ -17,14 +18,17 @@ public class UserService {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final TokenCacheService tokenCacheService;
+    private final UserMapper userMapper;
 
     @Autowired
     public UserService(UserPersistence userPersistence, JwtService jwtService,
-                       PasswordEncoder passwordEncoder, TokenCacheService tokenCacheService) {
+                       PasswordEncoder passwordEncoder, TokenCacheService tokenCacheService,
+                       UserMapper userMapper) {
         this.userPersistence = userPersistence;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
         this.tokenCacheService = tokenCacheService;
+        this.userMapper = userMapper;
     }
 
     public String login(String username, String password) {
@@ -42,12 +46,12 @@ public class UserService {
     private User checkPasswordAndReturnUser(String username, String password) {
         return Try.of(() -> userPersistence.findUserByUsername(username))
             .filter(user -> passwordEncoder.matches(password, user.getPassword()))
+            .map(userMapper::toUser)
             .getOrElseThrow(() -> new BadCredentialsException(INVALID_CREDENTIALS));
     }
 
     public String register(User user) {
-        return Try.of(()->jwtService
-                        .createToken(userPersistence
+        return Try.of(()->jwtService.createToken(userPersistence
                             .registerUser(user, encodePassword(user.getPassword()))
                             .getUsername()))
                 .getOrElseThrow(() -> new UserAlreadyExistsException(user.getUsername()));

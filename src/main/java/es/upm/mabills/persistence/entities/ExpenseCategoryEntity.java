@@ -1,5 +1,6 @@
 package es.upm.mabills.persistence.entities;
 
+import es.upm.mabills.model.ExpenseCategory;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -15,6 +16,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.hibernate.annotations.UuidGenerator;
+import org.springframework.beans.BeanUtils;
 
 import java.sql.Timestamp;
 import java.util.Objects;
@@ -26,7 +28,7 @@ import java.util.UUID;
 @Builder
 @Entity
 @Table(name="ExpenseCategory", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"name", "userId"})
+    @UniqueConstraint(columnNames = {"name", "username"})
 })
 public class ExpenseCategoryEntity {
     @Id
@@ -34,7 +36,6 @@ public class ExpenseCategoryEntity {
     private int id;
 
     @Column(nullable = false)
-    @NonNull
     private String name;
 
     @Column(nullable = false)
@@ -44,8 +45,7 @@ public class ExpenseCategoryEntity {
     private UUID uuid;
 
     @ManyToOne
-    @JoinColumn(name = "userId")
-    @NonNull
+    @JoinColumn(name = "username", nullable = false)
     private UserEntity user;
 
     @PrePersist
@@ -55,14 +55,8 @@ public class ExpenseCategoryEntity {
         }
     }
 
-    public ExpenseCategoryEntity(int userId, @NonNull String name) {
-        this.user = UserEntity.builder()
-                .id(userId)
-                .password("")
-                .email("")
-                .mobile("")
-                .username("")
-                .build();
-        this.name = name;
+    public ExpenseCategoryEntity(UserEntity user, @NonNull ExpenseCategory expenseCategory) {
+        BeanUtils.copyProperties(expenseCategory, this);
+        this.user = user;
     }
 }

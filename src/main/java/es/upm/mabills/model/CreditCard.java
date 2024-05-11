@@ -20,5 +20,8 @@ public class CreditCard {
     @NotBlank
     @Pattern(regexp = CREDIT_CARD_NUMBER_PATTERN)
     private String creditCardNumber;
+
+    private String uuid;
+
     private User user;
 }

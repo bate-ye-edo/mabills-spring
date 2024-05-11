@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Repository
 public interface ExpenseCategoryRepository extends JpaRepository<ExpenseCategoryEntity, Long> {
-    List<ExpenseCategoryEntity> findByUserId(int userId);
-    ExpenseCategoryEntity findByUserIdAndName(int userId, String name);
-    ExpenseCategoryEntity findByUserIdAndUuid(int userId, UUID uuid);
+    List<ExpenseCategoryEntity> findByUser_Username(String username);
+    ExpenseCategoryEntity findByUser_UsernameAndName(String username, String name);
+    ExpenseCategoryEntity findByUser_UsernameAndUuid(String username, UUID uuid);
 }

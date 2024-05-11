@@ -30,15 +30,12 @@ public class UserEntity {
     @Column(unique = true, nullable = false)
     private String username;
 
-    @NonNull
     @Column(nullable = false)
     private String password;
 
-    @NonNull
     @Column(unique = true, nullable = false)
     private String email;
 
-    @NonNull
     private String mobile;
 
     @OneToMany(mappedBy = "user")
@@ -46,6 +43,9 @@ public class UserEntity {
 
     @OneToMany(mappedBy = "user")
     private List<CreditCardEntity> creditCards;
+
+    @OneToMany(mappedBy = "user")
+    private List<BankAccountEntity> bankAccounts;
 
     public UserEntity(User user, @NonNull String encodedPassword) {
         BeanUtils.copyProperties(user, this);

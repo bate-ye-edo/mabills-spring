@@ -46,7 +46,7 @@ public class ExpenseCategoryResource {
     public ExpenseCategory updateExpenseCategory(@AuthenticationPrincipal String userName,
                                                  @PathVariable("uuid") @NotNull UUID uuid,
                                                  @RequestBody @Valid UpdateExpenseCategoryDto dto) {
-        return this.expenseCategoryService.updateExpenseCategoryName(userName, uuid, dto.getName());
+        return this.expenseCategoryService.updateExpenseCategoryName(userName, uuid, dto.name());
     }
 
     @DeleteMapping(UUID)
