@@ -5,12 +5,15 @@ import es.upm.mabills.api.dtos.LoginDto;
 import es.upm.mabills.api.dtos.RegisterDto;
 import es.upm.mabills.api.dtos.TokenDto;
 import es.upm.mabills.mappers.UserMapper;
+import es.upm.mabills.model.User;
 import es.upm.mabills.services.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -63,5 +66,10 @@ public class UserResource {
     @PostMapping(UserResource.LOGOUT)
     public void logoutUser(HttpServletRequest request) {
         userService.logout(request.getHeader(jwtHeader));
+    }
+
+    @GetMapping
+    public User getUser(@AuthenticationPrincipal String username) {
+        return this.userService.getUserByUsername(username);
     }
 }

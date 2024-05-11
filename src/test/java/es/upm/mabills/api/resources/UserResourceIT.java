@@ -7,6 +7,7 @@ import es.upm.mabills.api.dtos.RegisterDto;
 import es.upm.mabills.api.dtos.TokenDto;
 import es.upm.mabills.api.http_errors.ErrorMessage;
 import es.upm.mabills.exceptions.UserAlreadyExistsException;
+import es.upm.mabills.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +16,12 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import reactor.core.publisher.Mono;
 
+import static es.upm.mabills.TestStringUtils.assertNotBlank;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 
 @ApiTestConfig
@@ -168,6 +171,23 @@ class UserResourceIT {
             .exchange()
             .expectStatus()
             .isUnauthorized();
+    }
+
+    @Test
+    void testGetUserSuccess() {
+        restClientTestService.loginDefault(this.webTestClient)
+            .get().uri(UserResource.USERS)
+            .exchange()
+            .expectStatus()
+            .isOk()
+            .expectBody(User.class)
+            .value(user -> {
+                assertNotNull(user);
+                assertNotBlank(user.getUsername());
+                assertNotBlank(user.getEmail());
+                assertNotBlank(user.getMobile());
+                assertNull(user.getPassword());
+            });
     }
 
     private LoginDto getLogoutDto() {

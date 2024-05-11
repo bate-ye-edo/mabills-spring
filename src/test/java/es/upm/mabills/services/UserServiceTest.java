@@ -2,6 +2,7 @@ package es.upm.mabills.services;
 
 import es.upm.mabills.UnitTestConfig;
 import es.upm.mabills.exceptions.UserAlreadyExistsException;
+import es.upm.mabills.exceptions.UserNotFoundException;
 import es.upm.mabills.model.User;
 import es.upm.mabills.persistence.UserPersistence;
 import es.upm.mabills.persistence.entities.UserEntity;
@@ -13,6 +14,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -98,6 +100,23 @@ class UserServiceTest {
         when(jwtService.extractToken(anyString())).thenReturn(TEST_TOKEN);
         userService.logout(TEST_TOKEN);
         verify(tokenCacheService).blackListToken(TEST_TOKEN);
+    }
+
+    @Test
+    void testGetUserByUsername() {
+        User user = buildNewRegisterUser();
+        when(userPersistence.findUserByUsername(user.getUsername())).thenReturn(new UserEntity(user, TEST_PASSWORD));
+        User userByUsername = userService.getUserByUsername(user.getUsername());
+        assertEquals(user.getUsername(), userByUsername.getUsername());
+        assertNull(userByUsername.getPassword());
+        assertEquals(user.getEmail(), userByUsername.getEmail());
+        assertEquals(user.getMobile(), userByUsername.getMobile());
+    }
+
+    @Test
+    void testGetUserByUsernameFailure() {
+        when(userPersistence.findUserByUsername(TEST_NOT_EXISTS_USERNAME)).thenReturn(null);
+        assertThrows(UserNotFoundException.class, () -> userService.getUserByUsername(TEST_NOT_EXISTS_USERNAME));
     }
 
     private User buildNewRegisterUser() {
