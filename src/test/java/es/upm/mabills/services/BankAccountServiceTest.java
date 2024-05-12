@@ -35,8 +35,8 @@ class BankAccountServiceTest {
 
     @BeforeEach
     void setUp() {
-        when(bankAccountPersistence.findByIbanAndUserId(NOT_FOUND_USER)).thenReturn(List.of());
-        when(bankAccountPersistence.findByIbanAndUserId(ENCODED_PASSWORD_USER)).thenReturn(List.of(
+        when(bankAccountPersistence.findBankAccountsByUsername(NOT_FOUND_USER)).thenReturn(List.of());
+        when(bankAccountPersistence.findBankAccountsByUsername(ENCODED_PASSWORD_USER)).thenReturn(List.of(
             BankAccountEntity.builder()
                 .user(userEntity)
                 .creditCards(List.of(
@@ -49,14 +49,14 @@ class BankAccountServiceTest {
     }
 
     @Test
-    void testFindByIbanAndUserIdNotFoundUser() {
-        assertTrue(bankAccountService.findByIbanAndUserId(NOT_FOUND_USER).isEmpty());
+    void testFindBankAccountsByIbanAndUserIdNotFoundUser() {
+        assertTrue(bankAccountService.findBankAccountsByUsername(NOT_FOUND_USER).isEmpty());
     }
 
     @Test
-    void testFindByIbanAndUserId() {
-        List<BankAccount> bankAccounts = bankAccountService.findByIbanAndUserId(ENCODED_PASSWORD_USER);
-        assertFalse(bankAccountService.findByIbanAndUserId(ENCODED_PASSWORD_USER).isEmpty());
+    void testFindBankAccountsByUsername() {
+        List<BankAccount> bankAccounts = bankAccountService.findBankAccountsByUsername(ENCODED_PASSWORD_USER);
+        assertFalse(bankAccountService.findBankAccountsByUsername(ENCODED_PASSWORD_USER).isEmpty());
         assertEquals(1, bankAccounts.size());
         assertEquals(ENCODED_PASSWORD_USER, bankAccounts.get(0).getUser().getUsername());
         assertEquals(1, bankAccounts.get(0).getCreditCards().size());

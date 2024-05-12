@@ -18,8 +18,8 @@ public class BankAccountService {
         this.bankAccountMapper = bankAccountMapper;
     }
 
-    public List<BankAccount> findByIbanAndUserId(String username) {
-        return bankAccountPersistence.findByIbanAndUserId(username)
+    public List<BankAccount> findBankAccountsByUsername(String username) {
+        return bankAccountPersistence.findBankAccountsByUsername(username)
                 .stream()
                 .map(bankAccountMapper::toBankAccount)
                 .toList();

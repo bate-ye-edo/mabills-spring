@@ -51,12 +51,14 @@ class ExpenseCategoryResourceIT {
                     assertNotNull(expenseCategory.getUuid());
                 });
     }
+
     private WebTestClient loginExpenseCategoryUser() {
         return this.restClientTestService.login(webTestClient, LoginDto.builder()
                 .username(EXPENSE_CATEGORY_USER)
                 .password(PASSWORD)
                 .build());
     }
+
     @Test
     void getExpenseCategoriesUnauthorized() {
         this.webTestClient
@@ -96,6 +98,7 @@ class ExpenseCategoryResourceIT {
                     assertNotNull(v.getUuid());
                 });
     }
+
     private ExpenseCategory getNewExpenseCategory() {
         return ExpenseCategory.builder()
                 .name(NEW_EXPENSE_CATEGORY_NAME)

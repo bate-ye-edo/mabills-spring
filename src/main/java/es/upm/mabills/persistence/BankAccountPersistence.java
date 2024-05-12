@@ -18,7 +18,7 @@ public class BankAccountPersistence {
         this.bankAccountRepository = bankAccountRepository;
     }
 
-    public List<BankAccountEntity> findByIbanAndUserId(String username) {
+    public List<BankAccountEntity> findBankAccountsByUsername(String username) {
         return Try.of(()->bankAccountRepository.findByUser_Username(username))
                 .getOrElseThrow(MaBillsServiceException::new);
     }

@@ -15,12 +15,12 @@ class BankAccountPersistenceIT {
     private BankAccountPersistence bankAccountPersistence;
 
     @Test
-    void testFindByIbanAndUserId() {
-        assertFalse(bankAccountPersistence.findByIbanAndUserId(ENCODED_PASSWORD_USER).isEmpty());
+    void testFindBankAccountsByUsername() {
+        assertFalse(bankAccountPersistence.findBankAccountsByUsername(ENCODED_PASSWORD_USER).isEmpty());
     }
 
     @Test
-    void testFindByIbanAndUserIdNotFound() {
-        assertTrue(bankAccountPersistence.findByIbanAndUserId(NOT_FOUND_USER).isEmpty());
+    void testFindBankAccountsByUsernameNotFound() {
+        assertTrue(bankAccountPersistence.findBankAccountsByUsername(NOT_FOUND_USER).isEmpty());
     }
 }
