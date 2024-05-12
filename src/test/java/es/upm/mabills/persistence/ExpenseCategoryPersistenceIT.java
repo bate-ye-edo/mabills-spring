@@ -94,7 +94,8 @@ class ExpenseCategoryPersistenceIT {
         ExpenseCategoryEntity newExpenseCategory = expenseCategoryPersistence.createExpenseCategory(TO_UPDATE_EXPENSE_CATEGORY_USER,
                 ExpenseCategory.builder().name(TO_DELETE_EXPENSE_CATEGORY).build());
         expenseCategoryPersistence.deleteExpenseCategory(TO_UPDATE_EXPENSE_CATEGORY_USER, newExpenseCategory.getUuid());
-        assertThrows(ExpenseCategoryNotFoundException.class, () -> expenseCategoryPersistence.deleteExpenseCategory(TO_UPDATE_EXPENSE_CATEGORY_USER, newExpenseCategory.getUuid()));
+        UUID newExpenseCategoryUuid = newExpenseCategory.getUuid();
+        assertThrows(ExpenseCategoryNotFoundException.class, () -> expenseCategoryPersistence.deleteExpenseCategory(TO_UPDATE_EXPENSE_CATEGORY_USER, newExpenseCategoryUuid));
     }
 
     @Test
