@@ -3,8 +3,10 @@ package es.upm.mabills.model.custom_validations;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
+import java.util.regex.Pattern;
+
 public class NumbersOnlyValidator implements ConstraintValidator<NumbersOnly, String> {
-    private static final String NUMBERS_ONLY_REGEX = "^\\d*$";
+    private static final Pattern NUMBERS_ONLY_REGEX = Pattern.compile("^\\d*$");
 
     @Override
     public void initialize(NumbersOnly constraintAnnotation) {
@@ -16,6 +18,6 @@ public class NumbersOnlyValidator implements ConstraintValidator<NumbersOnly, St
         if (s == null) {
             return true;
         }
-        return s.matches(NUMBERS_ONLY_REGEX);
+        return NUMBERS_ONLY_REGEX.asMatchPredicate().test(s);
     }
 }
