@@ -85,7 +85,8 @@ class UserServiceTest {
     @Test
     void testRegisterFailureUserAlreadyExists() {
         when(userPersistence.registerUser(any(), anyString())).thenThrow(new UserAlreadyExistsException(""));
-        assertThrows(UserAlreadyExistsException.class, () -> userService.register(buildNewRegisterUser()));
+        User user = buildNewRegisterUser();
+        assertThrows(UserAlreadyExistsException.class, () -> userService.register(user));
     }
 
     @Test
@@ -117,6 +118,24 @@ class UserServiceTest {
     void testGetUserByUsernameFailure() {
         when(userPersistence.findUserByUsername(TEST_NOT_EXISTS_USERNAME)).thenReturn(null);
         assertThrows(UserNotFoundException.class, () -> userService.getUserByUsername(TEST_NOT_EXISTS_USERNAME));
+    }
+
+    @Test
+    void testUpdateUser() {
+        User user = buildNewRegisterUser();
+        when(userPersistence.updateUser(user.getUsername(), user)).thenReturn(new UserEntity(user, TEST_PASSWORD));
+        User updatedUser = userService.updateUser(user.getUsername(), user);
+        assertEquals(user.getUsername(), updatedUser.getUsername());
+        assertNull(updatedUser.getPassword());
+        assertEquals(user.getEmail(), updatedUser.getEmail());
+        assertEquals(user.getMobile(), updatedUser.getMobile());
+    }
+
+    @Test
+    void testUpdateUserFailure() {
+        User user = buildNewRegisterUser();
+        when(userPersistence.updateUser(TEST_USERNAME, user)).thenThrow(new UserNotFoundException(user.getUsername()));
+        assertThrows(UserNotFoundException.class, () -> userService.updateUser(TEST_USERNAME, user));
     }
 
     private User buildNewRegisterUser() {

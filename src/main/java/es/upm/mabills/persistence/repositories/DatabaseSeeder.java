@@ -88,7 +88,13 @@ public class DatabaseSeeder {
                 .password(ENCODED_PASSWORD)
                 .email("onlyUserEmail")
                 .build();
-        this.userRepository.saveAll(List.of(userEntity, encodedPasswordUser, otherUser, logOutUser, expenseCategoryUser, toUpdateExpenseCategoryUserEntity, onlyUser));
+        UserEntity toUpdateUser = UserEntity.builder()
+                .username("toUpdateUser")
+                .mobile("321123312")
+                .password(ENCODED_PASSWORD)
+                .email("toUpdateUserEmail")
+                .build();
+        this.userRepository.saveAll(List.of(userEntity, encodedPasswordUser, otherUser, logOutUser, expenseCategoryUser, toUpdateExpenseCategoryUserEntity, onlyUser, toUpdateUser));
 
         // Expenses categories
         ExpenseCategoryEntity userNameUserExpense = ExpenseCategoryEntity.builder()

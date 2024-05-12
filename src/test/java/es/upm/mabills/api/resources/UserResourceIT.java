@@ -29,6 +29,7 @@ class UserResourceIT {
     private static final String ENCODED_PASSWORD_USER = "encodedPasswordUser";
     private static final String LOGOUT_USER = "logOutUser";
     private static final String PASSWORD = "password";
+    private static final String TO_UPDATE_USER = "toUpdateUser";
 
     @Autowired
     private WebTestClient webTestClient;
@@ -188,6 +189,114 @@ class UserResourceIT {
                 assertNotBlank(user.getMobile());
                 assertNull(user.getPassword());
             });
+    }
+
+    @Test
+    void testGetUserFailedNotLogged() {
+        this.webTestClient
+            .get().uri(UserResource.USERS)
+            .exchange()
+            .expectStatus()
+            .isUnauthorized();
+    }
+
+    @Test
+    void testUpdateUser() {
+        User updatedUser = getNewToUpdateUserSuccess();
+        updateUserLogin()
+                .body(Mono.just(updatedUser), User.class)
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody(User.class)
+                .value(user -> {
+                    assertNotNull(user);
+                    assertEquals(TO_UPDATE_USER, user.getUsername());
+                    assertEquals(updatedUser.getEmail(), user.getEmail());
+                    assertEquals(updatedUser.getMobile(), user.getMobile());
+                });
+    }
+
+    @Test
+    void testUpdateUserFailedNotLogged() {
+        this.webTestClient
+            .put().uri(UserResource.USERS)
+            .body(Mono.just(getNewToUpdateUserSuccess()), User.class)
+            .exchange()
+            .expectStatus()
+            .isUnauthorized();
+    }
+
+    @Test
+    void testUpdateUserEmailFailed() {
+        updateUserLogin()
+            .body(Mono.just(getNewToUpdateUserEmailFails()), User.class)
+            .exchange()
+            .expectStatus()
+            .isBadRequest();
+    }
+
+    @Test
+    void testUpdateUserMobileFailed() {
+        updateUserLogin()
+            .body(Mono.just(getNewToUpdateUserMobileFails()), User.class)
+            .exchange()
+            .expectStatus()
+            .isBadRequest();
+    }
+
+    @Test
+    void testUpdateUserPasswordFailed() {
+        updateUserLogin()
+            .body(Mono.just(getNewToUpdateUserPasswordFails()), User.class)
+            .exchange()
+            .expectStatus()
+            .isBadRequest();
+    }
+
+    private WebTestClient.RequestBodySpec updateUserLogin() {
+        return restClientTestService.login(this.webTestClient, getToUpdateLoginDto())
+                .put().uri(UserResource.USERS);
+    }
+
+    private User getNewToUpdateUserEmailFails() {
+        return User.builder()
+                .username(TO_UPDATE_USER)
+                .email("email")
+                .mobile("1231231231231232132")
+                .build();
+    }
+
+    private User getNewToUpdateUserMobileFails() {
+        return User.builder()
+                .username(TO_UPDATE_USER)
+                .email("email@email")
+                .mobile("asdf")
+                .build();
+    }
+
+    private User getNewToUpdateUserPasswordFails() {
+        return User.builder()
+                .username(TO_UPDATE_USER)
+                .email("email@email")
+                .mobile("1231231231231232132")
+                .password("a")
+                .build();
+    }
+
+    private User getNewToUpdateUserSuccess() {
+        return User.builder()
+                .username(TO_UPDATE_USER)
+                .email("toUpdateUserEmail@hola.com")
+                .mobile("1231231231231232132")
+                .build();
+    }
+
+    private LoginDto getToUpdateLoginDto() {
+        return LoginDto.builder()
+                .username(TO_UPDATE_USER)
+                .password(PASSWORD)
+                .build();
     }
 
     private LoginDto getLogoutDto() {

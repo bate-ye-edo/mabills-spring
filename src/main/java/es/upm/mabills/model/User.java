@@ -1,10 +1,15 @@
 package es.upm.mabills.model;
 
+import es.upm.mabills.model.custom_validations.NumbersOnly;
+import es.upm.mabills.model.custom_validations.Password;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 
 @Getter
@@ -14,9 +19,18 @@ import lombok.NoArgsConstructor;
 public class User {
     @NotNull
     private String username;
+
+    @Password
+    @Setter
     private String password;
+
     @NotNull
+    @Email
+    @NotBlank
     private String email;
+
     @NotNull
+    @NumbersOnly
+    @NotBlank
     private String mobile;
 }

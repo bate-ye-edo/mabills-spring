@@ -1,7 +1,9 @@
 package es.upm.mabills.persistence;
 
 import es.upm.mabills.TestConfig;
+import es.upm.mabills.exceptions.DuplicatedEmailException;
 import es.upm.mabills.exceptions.UserAlreadyExistsException;
+import es.upm.mabills.exceptions.UserNotFoundException;
 import es.upm.mabills.model.User;
 import es.upm.mabills.persistence.entities.UserEntity;
 import lombok.SneakyThrows;
@@ -14,6 +16,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestConfig
 class UserPersistenceIT {
     private static final String NEW_REGISTER_ENCODED_PASSWORD = "newRegisterUserEncodedPassword";
+    private static final String TO_UPDATE_USER = "toUpdateUser";
+    private static final String NOT_FOUND_USER = "notFoundUser";
     @Autowired
     private UserPersistence userPersistence;
 
@@ -30,7 +34,7 @@ class UserPersistenceIT {
 
     @Test
     void testFindUserByUsernameNotFound() {
-        assertNull(userPersistence.findUserByUsername("notFound"));
+        assertNull(userPersistence.findUserByUsername(NOT_FOUND_USER));
     }
 
     @Test
@@ -45,12 +49,46 @@ class UserPersistenceIT {
 
     @Test
     void testRegisterUserUsernameAlreadyExists() {
-        assertThrows(UserAlreadyExistsException.class, () -> userPersistence.registerUser(buildUserUsernameAlreadyExists(), NEW_REGISTER_ENCODED_PASSWORD));
+        User user = buildUserUsernameAlreadyExists();
+        assertThrows(UserAlreadyExistsException.class, () -> userPersistence.registerUser(user, NEW_REGISTER_ENCODED_PASSWORD));
     }
 
     @Test
     void testRegisterUserEmailAlreadyExists() {
-        assertThrows(DataIntegrityViolationException.class, () -> userPersistence.registerUser(buildUserEmailAlreadyExists(), NEW_REGISTER_ENCODED_PASSWORD));
+        User user = buildUserEmailAlreadyExists();
+        assertThrows(DataIntegrityViolationException.class, () -> userPersistence.registerUser(user, NEW_REGISTER_ENCODED_PASSWORD));
+    }
+
+    @Test
+    void testUpdateUserSuccess() {
+        User user = buildUpdateUserNewUser();
+        UserEntity updatedUser = userPersistence.updateUser(TO_UPDATE_USER, user);
+        assertNotNull(updatedUser);
+        assertEquals(user.getUsername(), updatedUser.getUsername());
+        assertEquals(user.getPassword(), updatedUser.getPassword());
+        assertEquals(user.getEmail(), updatedUser.getEmail());
+        assertEquals(user.getMobile(), updatedUser.getMobile());
+    }
+
+    @Test
+    void testUpdateUserNotFound() {
+        User user = buildUpdateUserNewUser();
+        assertThrows(UserNotFoundException.class, () -> userPersistence.updateUser(NOT_FOUND_USER, user));
+    }
+
+    @Test
+    void testUpdateUserEmailAlreadyExists() {
+        User user = buildUserEmailAlreadyExists();
+        assertThrows(DuplicatedEmailException.class, () -> userPersistence.updateUser(TO_UPDATE_USER, user));
+    }
+
+    private User buildUpdateUserNewUser() {
+        return User.builder()
+                .username(TO_UPDATE_USER)
+                .password("newToUpdateUserEmail")
+                .email("newToUpdateUserEmail")
+                .mobile("12301239412312")
+                .build();
     }
 
     private User buildUserUsernameAlreadyExists() {

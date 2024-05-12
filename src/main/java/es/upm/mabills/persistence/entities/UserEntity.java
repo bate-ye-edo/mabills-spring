@@ -1,6 +1,7 @@
 package es.upm.mabills.persistence.entities;
 
 import es.upm.mabills.model.User;
+import io.micrometer.common.util.StringUtils;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -50,5 +51,13 @@ public class UserEntity {
     public UserEntity(User user, @NonNull String encodedPassword) {
         BeanUtils.copyProperties(user, this);
         this.password = encodedPassword;
+    }
+
+    public void updateUserEntity(User user) {
+        this.email = user.getEmail();
+        this.mobile = user.getMobile();
+        if(!StringUtils.isBlank(user.getPassword())){
+            this.password = user.getPassword();
+        }
     }
 }

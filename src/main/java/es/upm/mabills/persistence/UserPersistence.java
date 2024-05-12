@@ -1,11 +1,16 @@
 package es.upm.mabills.persistence;
 
+import es.upm.mabills.exceptions.DuplicatedEmailException;
 import es.upm.mabills.exceptions.UserAlreadyExistsException;
+import es.upm.mabills.exceptions.UserNotFoundException;
 import es.upm.mabills.model.User;
 import es.upm.mabills.persistence.entities.UserEntity;
 import es.upm.mabills.persistence.repositories.UserRepository;
+import io.vavr.control.Try;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+
+
 
 @Repository
 public class UserPersistence {
@@ -29,5 +34,18 @@ public class UserPersistence {
         if (findUserByUsername(user.getUsername()) != null) {
             throw new UserAlreadyExistsException(user.getUsername());
         }
+    }
+
+    public UserEntity updateUser(String username, User user) throws UserNotFoundException {
+        return Try.of(()->userRepository.findByUsername(username))
+                .map(userEntity ->{
+                    userEntity.updateUserEntity(user);
+                    return userEntity;
+                })
+                .onFailure(NullPointerException.class, e -> {
+                    throw new UserNotFoundException(username);
+                })
+                .andThenTry(userRepository::save)
+                .getOrElseThrow(()->new DuplicatedEmailException(user.getEmail()));
     }
 }

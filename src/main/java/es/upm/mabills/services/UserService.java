@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+import static io.micrometer.common.util.StringUtils.isBlank;
+
 @Service
 public class UserService {
     private static final String INVALID_CREDENTIALS = "Invalid credentials";
@@ -78,6 +80,15 @@ public class UserService {
         return userMapper.toUser(
                 Optional.ofNullable(userPersistence.findUserByUsername(username))
                     .orElseThrow(() -> new UserNotFoundException(username))
+        );
+    }
+
+    public User updateUser(String username, User user) {
+        if(!isBlank(user.getPassword())) {
+            user.setPassword(encodePassword(user.getPassword()));
+        }
+        return userMapper.toUser(
+            userPersistence.updateUser(username, user)
         );
     }
 }

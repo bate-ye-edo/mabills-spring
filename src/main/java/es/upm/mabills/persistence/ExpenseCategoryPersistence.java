@@ -34,7 +34,7 @@ public class ExpenseCategoryPersistence {
         return Try.of(()-> userRepository.findByUsername(username))
                 .map(userEntity -> new ExpenseCategoryEntity(userEntity, expenseCategory))
                 .map(expenseCategoryRepository::save)
-                .getOrElseThrow(()->new UserNotFoundException(username));
+                .getOrElseThrow(() -> new UserNotFoundException(username));
     }
 
     private void assertExpenseCategoryNotExistsForUser(String username, String expenseCategoryName) {
