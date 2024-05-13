@@ -87,7 +87,6 @@ public class UserService {
     }
 
     public User updateUser(String username, User user) {
-        LOGGER.info("Updating user: {}", username);
         if(!isBlank(user.getPassword())) {
             user.setPassword(encodePassword(user.getPassword()));
         }
