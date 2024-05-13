@@ -29,6 +29,7 @@ class UserResourceIT {
     private static final String ENCODED_PASSWORD_USER = "encodedPasswordUser";
     private static final String LOGOUT_USER = "logOutUser";
     private static final String PASSWORD = "password";
+    private static final String GOOD_PASSWORD = "passworD1.";
     private static final String TO_UPDATE_USER = "toUpdateUser";
 
     @Autowired
@@ -337,7 +338,7 @@ class UserResourceIT {
     private RegisterDto createBadMobileRegisterUser() {
         return RegisterDto.builder()
                 .username("badMobileRegisterUser")
-                .password("newRegisterUserPassword")
+                .password(GOOD_PASSWORD)
                 .email("email@email")
                 .mobile("6666666661a")
                 .build();
@@ -346,7 +347,7 @@ class UserResourceIT {
     private RegisterDto createBadEmailRegisterUser() {
         return RegisterDto.builder()
                 .username("badEmailRegisterUser")
-                .password("newRegisterUserPassword")
+                .password(GOOD_PASSWORD)
                 .email("email")
                 .mobile("6666666661")
                 .build();
@@ -355,7 +356,7 @@ class UserResourceIT {
     private RegisterDto createAlreadyExistsUser() {
         return RegisterDto.builder()
                 .username(ENCODED_PASSWORD_USER)
-                .password(PASSWORD)
+                .password(GOOD_PASSWORD)
                 .email("email@email")
                 .mobile("666666666")
                 .build();
@@ -364,7 +365,7 @@ class UserResourceIT {
     private RegisterDto createRegisterUserDto() {
         return RegisterDto.builder()
                 .username("newRegisterUser")
-                .password("newRegisterUserPassword")
+                .password(GOOD_PASSWORD)
                 .email("newRegisterUserEmail@email.es")
                 .mobile("6666666661")
                 .build();

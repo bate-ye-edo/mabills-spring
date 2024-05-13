@@ -1,5 +1,6 @@
 package es.upm.mabills.api.http_errors;
 
+import es.upm.mabills.exceptions.DuplicatedEmailException;
 import es.upm.mabills.exceptions.ExpenseCategoryAlreadyExistsException;
 import es.upm.mabills.exceptions.ExpenseCategoryNotFoundException;
 import es.upm.mabills.exceptions.MaBillsServiceException;
@@ -51,6 +52,16 @@ public class ApiExceptionHandler {
     @ResponseBody
     public ErrorMessage userAlreadyExists(UserAlreadyExistsException exception) {
         LOGGER.debug(() -> "User already exists: " + exception.getMessage());
+        return new ErrorMessage(exception, HttpStatus.CONFLICT.value());
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler({
+            DuplicatedEmailException.class
+    })
+    @ResponseBody
+    public ErrorMessage emailAlreadyExists(DuplicatedEmailException exception) {
+        LOGGER.debug(() -> "Email already exists: " + exception.getMessage());
         return new ErrorMessage(exception, HttpStatus.CONFLICT.value());
     }
 
