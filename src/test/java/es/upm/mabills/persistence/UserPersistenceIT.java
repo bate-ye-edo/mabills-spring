@@ -9,7 +9,6 @@ import es.upm.mabills.persistence.entities.UserEntity;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -56,7 +55,7 @@ class UserPersistenceIT {
     @Test
     void testRegisterUserEmailAlreadyExists() {
         User user = buildUserEmailAlreadyExists();
-        assertThrows(DataIntegrityViolationException.class, () -> userPersistence.registerUser(user, NEW_REGISTER_ENCODED_PASSWORD));
+        assertThrows(DuplicatedEmailException.class, () -> userPersistence.registerUser(user, NEW_REGISTER_ENCODED_PASSWORD));
     }
 
     @Test

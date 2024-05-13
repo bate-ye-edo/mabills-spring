@@ -1,5 +1,6 @@
 package es.upm.mabills.model.custom_validations;
 
+import io.micrometer.common.util.StringUtils;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
@@ -14,7 +15,7 @@ public class PasswordValidator implements ConstraintValidator<Password, String> 
 
     @Override
     public boolean isValid(String s, ConstraintValidatorContext constraintValidatorContext) {
-        if (s == null) {
+        if (StringUtils.isBlank(s)) {
             return true;
         }
         return PASSWORD_REGEX.asMatchPredicate().test(s);

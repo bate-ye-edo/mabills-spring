@@ -1,6 +1,7 @@
 package es.upm.mabills.services;
 
 import es.upm.mabills.UnitTestConfig;
+import es.upm.mabills.exceptions.DuplicatedEmailException;
 import es.upm.mabills.exceptions.UserAlreadyExistsException;
 import es.upm.mabills.exceptions.UserNotFoundException;
 import es.upm.mabills.model.User;
@@ -52,6 +53,7 @@ class UserServiceTest {
                 .build());
         when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
         when(jwtService.createToken(anyString())).thenReturn("token");
+        when(passwordEncoder.encode(anyString())).thenReturn(TEST_PASSWORD);
         doNothing().when(tokenCacheService).blackListToken(anyString());
     }
 
@@ -87,6 +89,13 @@ class UserServiceTest {
         when(userPersistence.registerUser(any(), anyString())).thenThrow(new UserAlreadyExistsException(""));
         User user = buildNewRegisterUser();
         assertThrows(UserAlreadyExistsException.class, () -> userService.register(user));
+    }
+
+    @Test
+    void testRegisterFailureEmailAlreadyExists() {
+        when(userPersistence.registerUser(any(), anyString())).thenThrow(new DuplicatedEmailException(""));
+        User user = buildNewRegisterUser();
+        assertThrows(DuplicatedEmailException.class, () -> userService.register(user));
     }
 
     @Test

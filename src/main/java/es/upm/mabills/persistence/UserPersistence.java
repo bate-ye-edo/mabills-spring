@@ -7,6 +7,8 @@ import es.upm.mabills.model.User;
 import es.upm.mabills.persistence.entities.UserEntity;
 import es.upm.mabills.persistence.repositories.UserRepository;
 import io.vavr.control.Try;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class UserPersistence {
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserPersistence.class);
     private final UserRepository userRepository;
 
     @Autowired
@@ -25,7 +28,7 @@ public class UserPersistence {
         return userRepository.findByUsername(username);
     }
 
-    public UserEntity registerUser(User user, String encodedPassword) {
+    public UserEntity registerUser(User user, String encodedPassword) throws UserAlreadyExistsException, DuplicatedEmailException {
         assertUserNotExists(user);
         return userRepository.save(new UserEntity(user, encodedPassword));
     }
@@ -34,12 +37,16 @@ public class UserPersistence {
         if (findUserByUsername(user.getUsername()) != null) {
             throw new UserAlreadyExistsException(user.getUsername());
         }
+        if (userRepository.findByEmail(user.getEmail()) != null) {
+            throw new DuplicatedEmailException(user.getEmail());
+        }
     }
 
     public UserEntity updateUser(String username, User user) throws UserNotFoundException {
         return Try.of(()->userRepository.findByUsername(username))
                 .map(userEntity ->{
                     userEntity.updateUserEntity(user);
+                    LOGGER.info("User {} updated", userEntity.getUsername());
                     return userEntity;
                 })
                 .onFailure(NullPointerException.class, e -> {

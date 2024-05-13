@@ -17,7 +17,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class User {
-    @NotNull
     private String username;
 
     @Password

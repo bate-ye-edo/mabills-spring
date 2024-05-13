@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-
 import java.util.List;
 
 @Getter
@@ -26,8 +25,15 @@ public class ErrorMessage {
     }
     ErrorMessage(Exception exception, Integer code, List<String> errorFieldNames) {
         this.error = exception.getClass().getSimpleName();
-        this.message = null;
         this.code = code;
         this.errorFieldNames = errorFieldNames;
+        buildInvalidFieldsMessage();
+    }
+    private void buildInvalidFieldsMessage() {
+        this.message = "Invalid Request: some fields are not valid. Fields: [";
+        if (this.errorFieldNames != null) {
+            this.message += String.join(", ", this.errorFieldNames);
+        }
+        this.message += "]";
     }
 }
