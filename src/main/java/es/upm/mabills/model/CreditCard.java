@@ -23,5 +23,5 @@ public class CreditCard {
 
     private String uuid;
 
-    private User user;
+    private BankAccount bankAccount;
 }

@@ -16,9 +16,11 @@ import java.util.List;
 
 import static es.upm.mabills.services.JwtService.ROLE_USER;
 
+@SuppressWarnings("DeprecatedIsStillUsed")
 @Service
 @Transactional
 @Qualifier("users")
+@Deprecated(forRemoval = true)
 public class UserDetailsServiceImpl implements UserDetailsService {
     private final UserPersistence userPersistence;
 

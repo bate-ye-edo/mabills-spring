@@ -2,6 +2,7 @@ package es.upm.mabills.api.resources;
 
 import es.upm.mabills.api.Rest;
 import es.upm.mabills.model.BankAccount;
+import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.services.BankAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,8 +23,8 @@ public class BankAccountResource {
     }
 
     @GetMapping
-    public List<BankAccount> getUserBankAccounts(@AuthenticationPrincipal String username) {
-        return bankAccountService.findBankAccountsByUsername(username);
+    public List<BankAccount> getUserBankAccounts(@AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return bankAccountService.findBankAccountsByUsername(userPrincipal.getUsername());
     }
 
 }

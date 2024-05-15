@@ -5,8 +5,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
-public interface CreditCardRepository extends JpaRepository<CreditCardEntity, Integer>{
-    List<CreditCardEntity> findByUser_Username(String username);
+public interface CreditCardRepository extends JpaRepository<CreditCardEntity, UUID>{
+    List<CreditCardEntity> findByUserId(int userId);
+    CreditCardEntity findByUserIdAndCreditCardNumber(int userId, String creditCardNumber);
 }

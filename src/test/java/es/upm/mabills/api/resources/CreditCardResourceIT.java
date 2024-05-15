@@ -3,6 +3,7 @@ package es.upm.mabills.api.resources;
 import es.upm.mabills.api.ApiTestConfig;
 import es.upm.mabills.api.RestClientTestService;
 import es.upm.mabills.api.dtos.LoginDto;
+import es.upm.mabills.model.BankAccount;
 import es.upm.mabills.model.CreditCard;
 import es.upm.mabills.services.TokenCacheService;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -18,6 +21,10 @@ import static org.mockito.Mockito.when;
 class CreditCardResourceIT {
     private static final String ONLY_USER = "onlyUser";
     private static final String PASSWORD = "password";
+    private static final String NEW_CREDIT_CARD_NUMBER = "0000000000000000";
+    private static final String OTHER_CREDIT_CARD_NUMBER = "0000000000000001";
+    private static final String NOT_FOUND_BANK_ACCOUNT_UUID = "00000-0000-0000-0000-000000000001";
+    private static final String NOT_FOUND_BANK_ACCOUNT_IBAN = "ES0000000000000000000000";
 
     @Autowired
     private RestClientTestService restClientTestService;
@@ -27,6 +34,7 @@ class CreditCardResourceIT {
 
     @MockBean
     private TokenCacheService tokenCacheService;
+
 
     @BeforeEach
     void setUp() {
@@ -42,7 +50,9 @@ class CreditCardResourceIT {
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(CreditCard.class)
-                .hasSize(1);
+                .value(creditCards -> {
+                    assertFalse(creditCards.isEmpty());
+                });
     }
 
     @Test
@@ -63,6 +73,52 @@ class CreditCardResourceIT {
                 .expectStatus().isOk()
                 .expectBodyList(CreditCard.class)
                 .hasSize(0);
+    }
+
+    @Test
+    void testCreateCreditCardSuccess() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .post()
+                .uri(CreditCardResource.CREDIT_CARDS)
+                .bodyValue(CreditCard.builder()
+                        .creditCardNumber(NEW_CREDIT_CARD_NUMBER)
+                        .build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(CreditCard.class)
+                .value(creditCard -> {
+                    assertEquals(NEW_CREDIT_CARD_NUMBER, creditCard.getCreditCardNumber());
+                });
+    }
+
+    @Test
+    void testCreateCreditCardUnauthorized() {
+        webTestClient
+                .post()
+                .uri(CreditCardResource.CREDIT_CARDS)
+                .bodyValue(CreditCard.builder()
+                        .creditCardNumber(NEW_CREDIT_CARD_NUMBER)
+                        .build())
+                .exchange()
+                .expectStatus().isUnauthorized();
+    }
+
+    @Test
+    void testCreateCreditCardBankAccountNotFound() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .post()
+                .uri(CreditCardResource.CREDIT_CARDS)
+                .bodyValue(CreditCard.builder()
+                        .creditCardNumber(OTHER_CREDIT_CARD_NUMBER)
+                        .bankAccount(BankAccount.builder()
+                                .uuid(NOT_FOUND_BANK_ACCOUNT_UUID)
+                                .iban(NOT_FOUND_BANK_ACCOUNT_IBAN)
+                                .build())
+                        .build())
+                .exchange()
+                .expectStatus().isNotFound();
     }
 
     private LoginDto getOnlyUserLoginDto() {

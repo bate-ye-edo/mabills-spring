@@ -3,6 +3,7 @@ package es.upm.mabills.api.resources;
 import es.upm.mabills.api.Rest;
 import es.upm.mabills.api.dtos.UpdateExpenseCategoryDto;
 import es.upm.mabills.model.ExpenseCategory;
+import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.services.ExpenseCategoryService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -33,24 +34,24 @@ public class ExpenseCategoryResource {
     }
 
     @GetMapping
-    public List<ExpenseCategory> getExpenseCategories(@AuthenticationPrincipal String userName) {
-        return this.expenseCategoryService.getExpenseCategoriesByUserName(userName);
+    public List<ExpenseCategory> getExpenseCategories(@AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return this.expenseCategoryService.getExpenseCategoriesByUserName(userPrincipal.getUsername());
     }
 
     @PostMapping
-    public ExpenseCategory createExpenseCategory(@AuthenticationPrincipal String userName, @RequestBody @Valid ExpenseCategory expenseCategory) {
-        return this.expenseCategoryService.createExpenseCategory(userName, expenseCategory);
+    public ExpenseCategory createExpenseCategory(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestBody @Valid ExpenseCategory expenseCategory) {
+        return this.expenseCategoryService.createExpenseCategory(userPrincipal.getUsername(), expenseCategory);
     }
 
     @PutMapping(UUID + NAME)
-    public ExpenseCategory updateExpenseCategory(@AuthenticationPrincipal String userName,
+    public ExpenseCategory updateExpenseCategory(@AuthenticationPrincipal UserPrincipal userPrincipal,
                                                  @PathVariable("uuid") @NotNull UUID uuid,
                                                  @RequestBody @Valid UpdateExpenseCategoryDto dto) {
-        return this.expenseCategoryService.updateExpenseCategoryName(userName, uuid, dto.name());
+        return this.expenseCategoryService.updateExpenseCategoryName(userPrincipal.getUsername(), uuid, dto.name());
     }
 
     @DeleteMapping(UUID)
-    public void deleteExpenseCategory(@AuthenticationPrincipal String userName, @PathVariable("uuid") @NotNull UUID uuid) {
-        this.expenseCategoryService.deleteExpenseCategory(userName, uuid);
+    public void deleteExpenseCategory(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("uuid") @NotNull UUID uuid) {
+        this.expenseCategoryService.deleteExpenseCategory(userPrincipal.getUsername(), uuid);
     }
 }

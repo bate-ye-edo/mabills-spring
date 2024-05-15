@@ -6,6 +6,7 @@ import es.upm.mabills.api.dtos.RegisterDto;
 import es.upm.mabills.api.dtos.TokenDto;
 import es.upm.mabills.mappers.UserMapper;
 import es.upm.mabills.model.User;
+import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.services.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,12 +71,12 @@ public class UserResource {
     }
 
     @GetMapping
-    public User getUser(@AuthenticationPrincipal String username) {
-        return this.userService.getUserByUsername(username);
+    public User getUser(@AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return this.userService.getUserByUsername(userPrincipal.getUsername());
     }
 
     @PutMapping
-    public User updateUser(@AuthenticationPrincipal String username, @Validated @RequestBody User user) {
-        return this.userService.updateUser(username, user);
+    public User updateUser(@AuthenticationPrincipal UserPrincipal userPrincipal, @Validated @RequestBody User user) {
+        return this.userService.updateUser(userPrincipal.getUsername(), user);
     }
 }

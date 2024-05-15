@@ -2,6 +2,7 @@ package es.upm.mabills.services;
 
 import es.upm.mabills.mappers.CreditCardMapper;
 import es.upm.mabills.model.CreditCard;
+import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.CreditCardPersistence;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,10 +19,15 @@ public class CreditCardService {
         this.creditCardMapper = creditCardMapper;
     }
 
-    public List<CreditCard> findCreditCardsByUserName(String username) {
-        return creditCardPersistence.findCreditCardsByUserName(username)
+    public List<CreditCard> findCreditCardsForUser(UserPrincipal user) {
+        return creditCardPersistence.findCreditCardsForUser(user)
                 .stream()
                 .map(creditCardMapper::toCreditCard)
                 .toList();
+    }
+
+
+    public CreditCard createCreditCard(UserPrincipal user, CreditCard creditCard) {
+        return creditCardMapper.toCreditCard(creditCardPersistence.createCreditCard(user, creditCard));
     }
 }

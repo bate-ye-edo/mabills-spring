@@ -1,7 +1,11 @@
 package es.upm.mabills.configuration;
 
+import es.upm.mabills.exceptions.UserNotFoundException;
+import es.upm.mabills.model.UserPrincipal;
+import es.upm.mabills.persistence.UserPersistence;
 import es.upm.mabills.services.JwtService;
 import es.upm.mabills.services.TokenCacheService;
+import io.vavr.control.Try;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,11 +30,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String AUTHORIZATION = "Authorization";
     private final JwtService jwtService;
     private final TokenCacheService tokenCacheService;
-
+    private final UserPersistence userPersistence;
     @Autowired
-    public JwtAuthenticationFilter(JwtService jwtService, TokenCacheService tokenCacheService) {
+    public JwtAuthenticationFilter(JwtService jwtService, TokenCacheService tokenCacheService, UserPersistence userPersistence) {
         this.jwtService = jwtService;
         this.tokenCacheService = tokenCacheService;
+        this.userPersistence = userPersistence;
     }
 
     @Override
@@ -41,9 +46,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             GrantedAuthority authority = new SimpleGrantedAuthority(ROLE_USER);
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
-                            jwtService.username(token),
-                            token,
-                            List.of(authority));
+                            buildUserPrincipal(jwtService.username(token)), token, List.of(authority));
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
         chain.doFilter(request, response);
@@ -51,5 +54,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private boolean isValidToken(String token) {
         return !tokenCacheService.isTokenBlackListed(token) && jwtService.isValidToken(token);
+    }
+
+    private UserPrincipal buildUserPrincipal(String username) {
+        return Try.of(() -> userPersistence.findUserByUsername(username))
+                .map(userEntity -> UserPrincipal.builder()
+                        .id(userEntity.getId())
+                        .username(userEntity.getUsername())
+                        .build())
+                .getOrElseThrow(() -> new UserNotFoundException(username));
     }
 }

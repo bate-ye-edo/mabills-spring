@@ -3,7 +3,6 @@ package es.upm.mabills.persistence.entities;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -29,9 +28,6 @@ import java.util.UUID;
 })
 public class BankAccountEntity {
     @Id
-    @GeneratedValue
-    private int id;
-
     @UuidGenerator
     private UUID uuid;
 
@@ -42,6 +38,6 @@ public class BankAccountEntity {
     private List<CreditCardEntity> creditCards;
 
     @ManyToOne
-    @JoinColumn(name = "username", nullable = false)
+    @JoinColumn(name = "userId", nullable = false)
     private UserEntity user;
 }
