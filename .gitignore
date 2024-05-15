@@ -34,3 +34,6 @@ build/
 .mvn/
 src/main/java/es/upm/mabills/api/resources/TestResource.java
 src/main/java/es/upm/mabills/services/TestService.java
+
+## Dev
+src/main/resources/application-dev.properties
