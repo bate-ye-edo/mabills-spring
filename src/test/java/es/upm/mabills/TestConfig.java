@@ -17,6 +17,6 @@ import java.lang.annotation.Target;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @TestPropertySource(locations = "classpath:test.properties")
-@ActiveProfiles({"test", "seederTest"})
+@ActiveProfiles("test")
 public @interface TestConfig {
 }

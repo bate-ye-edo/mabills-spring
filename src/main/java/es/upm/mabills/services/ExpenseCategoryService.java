@@ -13,6 +13,7 @@ import java.util.UUID;
 public class ExpenseCategoryService {
     private final ExpenseCategoryPersistence expenseCategoryPersistence;
     private final ExpenseCategoryMapper expenseCategoryMapper;
+
     @Autowired
     public ExpenseCategoryService(ExpenseCategoryPersistence expenseCategoryPersistence, ExpenseCategoryMapper expenseCategoryMapper) {
         this.expenseCategoryPersistence = expenseCategoryPersistence;

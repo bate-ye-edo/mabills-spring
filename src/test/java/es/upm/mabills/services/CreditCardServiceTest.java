@@ -7,6 +7,7 @@ import es.upm.mabills.exceptions.UserNotFoundException;
 import es.upm.mabills.model.CreditCard;
 import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.CreditCardPersistence;
+import es.upm.mabills.persistence.entities.BankAccountEntity;
 import es.upm.mabills.persistence.entities.CreditCardEntity;
 import es.upm.mabills.persistence.entities.UserEntity;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -29,9 +31,8 @@ class CreditCardServiceTest {
     private static final String ENCODED_PASSWORD_USER = "encodedPasswordUser";
     private static final int ENCODED_USER_ID = 1111;
     private static final String NEW_CREDIT_CARD_NUMBER = "123456789012";
-    private static final String NOT_EXISTS_BANK_ACCOUNT_UUID = "000000-0000-0000-0000-000000000001";
+    private static final String NOT_EXISTS_BANK_ACCOUNT_UUID = "00000000-0000-0000-0000-000000000002";
     private static final String NOT_EXISTS_BANK_ACCOUNT_IBAN = "112312312312312312";
-
 
     private static final UserPrincipal NOT_FOUND_USER_PRINCIPAL = UserPrincipal.builder()
             .id(ENCODED_USER_ID)
@@ -117,5 +118,30 @@ class CreditCardServiceTest {
                 .build();
         when(creditCardPersistence.createCreditCard(any(), any())).thenThrow(new BankAccountNotFoundException("creditCardNumberWithoutBankAccount"));
         assertThrows(BankAccountNotFoundException.class, () -> creditCardService.createCreditCard(ENCODED_PASSWORD_USER_PRINCIPAL, creditCard));
+    }
+
+    @Test
+    void testCreateCreditCardWithBankAccountSuccess() {
+        CreditCard creditCard = CreditCard.builder()
+                .creditCardNumber(NEW_CREDIT_CARD_NUMBER)
+                .bankAccount(es.upm.mabills.model.BankAccount.builder()
+                        .uuid(NOT_EXISTS_BANK_ACCOUNT_UUID)
+                        .iban(NOT_EXISTS_BANK_ACCOUNT_IBAN)
+                        .build())
+                .build();
+        when(creditCardPersistence.createCreditCard(any(), any())).thenReturn(CreditCardEntity.builder()
+                .user(userEntity)
+                .creditCardNumber(NEW_CREDIT_CARD_NUMBER)
+                .bankAccount(
+                        BankAccountEntity.builder()
+                                .uuid(UUID.fromString(NOT_EXISTS_BANK_ACCOUNT_UUID))
+                                .iban(NOT_EXISTS_BANK_ACCOUNT_IBAN)
+                                .build()
+                )
+                .build());
+        CreditCard createdCreditCard = creditCardService.createCreditCard(ENCODED_PASSWORD_USER_PRINCIPAL, creditCard);
+        assertEquals(NEW_CREDIT_CARD_NUMBER, createdCreditCard.getCreditCardNumber());
+        assertEquals(NOT_EXISTS_BANK_ACCOUNT_UUID, createdCreditCard.getBankAccount().getUuid());
+        assertEquals(NOT_EXISTS_BANK_ACCOUNT_IBAN, createdCreditCard.getBankAccount().getIban());
     }
 }

@@ -2,6 +2,7 @@ package es.upm.mabills.services;
 
 import es.upm.mabills.mappers.BankAccountMapper;
 import es.upm.mabills.model.BankAccount;
+import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.BankAccountPersistence;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,8 +19,8 @@ public class BankAccountService {
         this.bankAccountMapper = bankAccountMapper;
     }
 
-    public List<BankAccount> findBankAccountsByUsername(String username) {
-        return bankAccountPersistence.findBankAccountsByUsername(username)
+    public List<BankAccount> findBankAccountsForUser(UserPrincipal userPrincipal) {
+        return bankAccountPersistence.findBankAccountsForUser(userPrincipal)
                 .stream()
                 .map(bankAccountMapper::toBankAccount)
                 .toList();

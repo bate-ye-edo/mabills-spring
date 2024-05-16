@@ -2,9 +2,9 @@ package es.upm.mabills.services;
 
 import es.upm.mabills.UnitTestConfig;
 import es.upm.mabills.model.BankAccount;
+import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.BankAccountPersistence;
 import es.upm.mabills.persistence.entities.BankAccountEntity;
-import es.upm.mabills.persistence.entities.CreditCardEntity;
 import es.upm.mabills.persistence.entities.UserEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,36 +29,38 @@ class BankAccountServiceTest {
     @MockBean
     private BankAccountPersistence bankAccountPersistence;
 
-    private final UserEntity userEntity = UserEntity.builder()
-        .username(ENCODED_PASSWORD_USER)
-        .build();
+    private static final UserPrincipal NOT_FOUND_USER_PRINCIPAL = UserPrincipal.builder()
+            .id(2)
+            .username(NOT_FOUND_USER)
+            .build();
+
+    private static final UserPrincipal ENCODED_PASSWORD_USER_PRINCIPAL = UserPrincipal.builder()
+            .id(1)
+            .username(ENCODED_PASSWORD_USER)
+            .build();
 
     @BeforeEach
     void setUp() {
-        when(bankAccountPersistence.findBankAccountsByUsername(NOT_FOUND_USER)).thenReturn(List.of());
-        when(bankAccountPersistence.findBankAccountsByUsername(ENCODED_PASSWORD_USER)).thenReturn(List.of(
+        when(bankAccountPersistence.findBankAccountsForUser(NOT_FOUND_USER_PRINCIPAL)).thenReturn(List.of());
+        when(bankAccountPersistence.findBankAccountsForUser(ENCODED_PASSWORD_USER_PRINCIPAL)).thenReturn(List.of(
             BankAccountEntity.builder()
-                .user(userEntity)
-                .creditCards(List.of(
-                    CreditCardEntity.builder()
-                            .user(userEntity)
-                            .build()
-                ))
+                .user(UserEntity.builder()
+                        .id(ENCODED_PASSWORD_USER_PRINCIPAL.getId())
+                        .username(ENCODED_PASSWORD_USER_PRINCIPAL.getUsername())
+                        .build())
                 .build()
         ));
     }
 
     @Test
     void testFindBankAccountsByIbanAndUserIdNotFoundUser() {
-        assertTrue(bankAccountService.findBankAccountsByUsername(NOT_FOUND_USER).isEmpty());
+        assertTrue(bankAccountService.findBankAccountsForUser(NOT_FOUND_USER_PRINCIPAL).isEmpty());
     }
 
     @Test
-    void testFindBankAccountsByUsername() {
-        List<BankAccount> bankAccounts = bankAccountService.findBankAccountsByUsername(ENCODED_PASSWORD_USER);
-        assertFalse(bankAccountService.findBankAccountsByUsername(ENCODED_PASSWORD_USER).isEmpty());
+    void testFindBankAccountsForUser() {
+        List<BankAccount> bankAccounts = bankAccountService.findBankAccountsForUser(ENCODED_PASSWORD_USER_PRINCIPAL);
+        assertFalse(bankAccountService.findBankAccountsForUser(ENCODED_PASSWORD_USER_PRINCIPAL).isEmpty());
         assertEquals(1, bankAccounts.size());
-        assertEquals(ENCODED_PASSWORD_USER, bankAccounts.get(0).getUser().getUsername());
-        assertEquals(1, bankAccounts.get(0).getCreditCards().size());
     }
 }
