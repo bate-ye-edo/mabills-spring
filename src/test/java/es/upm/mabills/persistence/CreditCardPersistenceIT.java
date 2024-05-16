@@ -1,17 +1,15 @@
 package es.upm.mabills.persistence;
 
 import es.upm.mabills.TestConfig;
-import es.upm.mabills.exceptions.BankAccountNotFoundException;
 import es.upm.mabills.exceptions.CreditCardAlreadyExistsException;
-import es.upm.mabills.exceptions.UserNotFoundException;
 import es.upm.mabills.model.BankAccount;
 import es.upm.mabills.model.CreditCard;
 import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.entities.CreditCardEntity;
-import es.upm.mabills.persistence.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,14 +31,14 @@ class CreditCardPersistenceIT {
     private CreditCardPersistence creditCardPersistence;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserPersistence userPersistence;
 
     private UserPrincipal encodedUserPrincipal;
 
     @BeforeEach
     void setUpAll() {
         encodedUserPrincipal = UserPrincipal.builder()
-                .id(userRepository.findByUsername(ENCODED_PASSWORD_USER).getId())
+                .id(userPersistence.findUserByUsername(ENCODED_PASSWORD_USER).getId())
                 .username(ENCODED_PASSWORD_USER)
                 .build();
     }
@@ -74,7 +72,7 @@ class CreditCardPersistenceIT {
     void testCreateCreditCardUserNotFound() {
         CreditCard creditCard = getNewCreditCard();
         UserPrincipal userPrincipal = getNotFoundUserPrincipal();
-        assertThrows(UserNotFoundException.class, () -> creditCardPersistence.createCreditCard(userPrincipal, creditCard));
+        assertThrows(DataIntegrityViolationException.class, () -> creditCardPersistence.createCreditCard(userPrincipal, creditCard));
     }
 
     @Test
@@ -86,7 +84,7 @@ class CreditCardPersistenceIT {
                         .iban(NOT_EXISTS_BANK_ACCOUNT_IBAN)
                         .build())
                 .build();
-        assertThrows(BankAccountNotFoundException.class, () -> creditCardPersistence.createCreditCard(encodedUserPrincipal, creditCard));
+        assertThrows(DataIntegrityViolationException.class, () -> creditCardPersistence.createCreditCard(encodedUserPrincipal, creditCard));
     }
 
     private CreditCard getNewCreditCard() {

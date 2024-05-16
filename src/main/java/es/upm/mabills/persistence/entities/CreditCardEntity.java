@@ -21,7 +21,7 @@ import java.util.UUID;
 @Builder
 @Entity
 @Table(name="CreditCard", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"creditCardNumber", "username"})
+    @UniqueConstraint(columnNames = {"creditCardNumber", "userId"})
 })
 public class CreditCardEntity {
     @Id

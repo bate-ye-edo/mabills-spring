@@ -37,11 +37,12 @@ public class DatabaseSeeder {
     }
 
     private void deleteAll(){
-        LOGGER.warn("----- Delete database seeding -----");
-        this.bankAccountRepository.deleteAll();
+        LOGGER.warn("----- Remove data from database -----");
         this.creditCardRepository.deleteAll();
+        this.bankAccountRepository.deleteAll();
         this.expenseCategoryRepository.deleteAll();
         this.userRepository.deleteAll();
+        LOGGER.warn("----- End removing data -----");
     }
 
     private void seedDatabase() {

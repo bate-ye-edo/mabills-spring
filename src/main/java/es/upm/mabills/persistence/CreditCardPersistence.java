@@ -1,13 +1,11 @@
 package es.upm.mabills.persistence;
 
 import es.upm.mabills.exceptions.CreditCardAlreadyExistsException;
-import es.upm.mabills.exceptions.MaBillsServiceException;
 import es.upm.mabills.model.CreditCard;
 import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.entities.BankAccountEntity;
 import es.upm.mabills.persistence.entities.CreditCardEntity;
 import es.upm.mabills.persistence.entities.UserEntity;
-import es.upm.mabills.persistence.exception_mappers.CreditCardDataIntegrityExceptionMapper;
 import es.upm.mabills.persistence.repositories.BankAccountRepository;
 import es.upm.mabills.persistence.repositories.CreditCardRepository;
 import es.upm.mabills.persistence.repositories.UserRepository;
@@ -33,8 +31,7 @@ public class CreditCardPersistence {
     }
 
     public List<CreditCardEntity> findCreditCardsForUser(UserPrincipal user) {
-        return Try.of(()->creditCardRepository.findByUserId(user.getId()))
-                .getOrElseThrow(MaBillsServiceException::new);
+        return creditCardRepository.findByUserId(user.getId());
     }
 
     public CreditCardEntity createCreditCard(UserPrincipal user, CreditCard creditCard) {
@@ -42,7 +39,7 @@ public class CreditCardPersistence {
         return Try.of(() -> userRepository.getReferenceById(user.getId()))
                 .map(userEntity -> buildCreditCard(userEntity, creditCard))
                 .map(creditCardRepository::save)
-                .getOrElseThrow(e -> CreditCardDataIntegrityExceptionMapper.map(e, user.getUsername(), creditCard));
+                .get();
     }
 
     private void assertCreditCardNotExistsForUser(UserPrincipal user, CreditCard creditCard) {

@@ -24,7 +24,7 @@ public class BankAccountResource {
 
     @GetMapping
     public List<BankAccount> getUserBankAccounts(@AuthenticationPrincipal UserPrincipal userPrincipal) {
-        return bankAccountService.findBankAccountsByUsername(userPrincipal.getUsername());
+        return bankAccountService.findBankAccountsForUser(userPrincipal);
     }
 
 }

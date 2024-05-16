@@ -14,6 +14,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -23,8 +24,10 @@ class CreditCardResourceIT {
     private static final String PASSWORD = "password";
     private static final String NEW_CREDIT_CARD_NUMBER = "0000000000000000";
     private static final String OTHER_CREDIT_CARD_NUMBER = "0000000000000001";
+    private static final String OTHER_NEW_CREDIT_CARD_NUMBER = "1200000000000001";
     private static final String NOT_FOUND_BANK_ACCOUNT_UUID = "00000-0000-0000-0000-000000000001";
     private static final String NOT_FOUND_BANK_ACCOUNT_IBAN = "ES0000000000000000000000";
+    private static final String ENCODED_PASSWORD_USER = "encodedPasswordUser";
 
     @Autowired
     private RestClientTestService restClientTestService;
@@ -34,7 +37,6 @@ class CreditCardResourceIT {
 
     @MockBean
     private TokenCacheService tokenCacheService;
-
 
     @BeforeEach
     void setUp() {
@@ -81,9 +83,7 @@ class CreditCardResourceIT {
                 .loginDefault(webTestClient)
                 .post()
                 .uri(CreditCardResource.CREDIT_CARDS)
-                .bodyValue(CreditCard.builder()
-                        .creditCardNumber(NEW_CREDIT_CARD_NUMBER)
-                        .build())
+                .bodyValue(buildNewCreditCard())
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(CreditCard.class)
@@ -92,14 +92,18 @@ class CreditCardResourceIT {
                 });
     }
 
+    private CreditCard buildNewCreditCard() {
+        return CreditCard.builder()
+                .creditCardNumber(NEW_CREDIT_CARD_NUMBER)
+                .build();
+    }
+
     @Test
     void testCreateCreditCardUnauthorized() {
         webTestClient
                 .post()
                 .uri(CreditCardResource.CREDIT_CARDS)
-                .bodyValue(CreditCard.builder()
-                        .creditCardNumber(NEW_CREDIT_CARD_NUMBER)
-                        .build())
+                .bodyValue(buildNewCreditCard())
                 .exchange()
                 .expectStatus().isUnauthorized();
     }
@@ -110,15 +114,60 @@ class CreditCardResourceIT {
                 .loginDefault(webTestClient)
                 .post()
                 .uri(CreditCardResource.CREDIT_CARDS)
-                .bodyValue(CreditCard.builder()
-                        .creditCardNumber(OTHER_CREDIT_CARD_NUMBER)
-                        .bankAccount(BankAccount.builder()
-                                .uuid(NOT_FOUND_BANK_ACCOUNT_UUID)
-                                .iban(NOT_FOUND_BANK_ACCOUNT_IBAN)
-                                .build())
-                        .build())
+                .bodyValue(buildBankAccountNotFoundCreditCard())
                 .exchange()
                 .expectStatus().isNotFound();
+    }
+    private CreditCard buildBankAccountNotFoundCreditCard() {
+        return CreditCard.builder()
+                .creditCardNumber(OTHER_CREDIT_CARD_NUMBER)
+                .bankAccount(BankAccount.builder()
+                        .uuid(NOT_FOUND_BANK_ACCOUNT_UUID)
+                        .iban(NOT_FOUND_BANK_ACCOUNT_IBAN)
+                        .build())
+                .build();
+    }
+
+    @Test
+    void testCreateCreditCardWithBankAccountSuccess() {
+        String bankAccountUUID = getBankAccountUuid();
+        restClientTestService
+                .loginDefault(webTestClient)
+                .post()
+                .uri(CreditCardResource.CREDIT_CARDS)
+                .bodyValue(buildCreditCardWithBankAccount(bankAccountUUID))
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(CreditCard.class)
+                .value(creditCard -> {
+                    assertEquals(OTHER_NEW_CREDIT_CARD_NUMBER, creditCard.getCreditCardNumber());
+                    assertNotNull(creditCard.getBankAccount());
+                    assertEquals(bankAccountUUID, creditCard.getBankAccount().getUuid());
+                });
+    }
+
+    private CreditCard buildCreditCardWithBankAccount(String uuid) {
+        return CreditCard.builder()
+                .creditCardNumber(OTHER_NEW_CREDIT_CARD_NUMBER)
+                .bankAccount(BankAccount.builder()
+                        .uuid(uuid)
+                        .iban(NOT_FOUND_BANK_ACCOUNT_IBAN)
+                        .build())
+                .build();
+    }
+
+    private String getBankAccountUuid() {
+        return restClientTestService
+                .loginDefault(webTestClient)
+                .get()
+                .uri(BankAccountResource.BANK_ACCOUNTS)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(BankAccount.class)
+                .returnResult()
+                .getResponseBody()
+                .get(0)
+                .getUuid();
     }
 
     private LoginDto getOnlyUserLoginDto() {

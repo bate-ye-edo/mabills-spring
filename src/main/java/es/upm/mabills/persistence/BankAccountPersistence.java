@@ -1,9 +1,8 @@
 package es.upm.mabills.persistence;
 
-import es.upm.mabills.exceptions.MaBillsServiceException;
+import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.entities.BankAccountEntity;
 import es.upm.mabills.persistence.repositories.BankAccountRepository;
-import io.vavr.control.Try;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -18,8 +17,7 @@ public class BankAccountPersistence {
         this.bankAccountRepository = bankAccountRepository;
     }
 
-    public List<BankAccountEntity> findBankAccountsByUsername(String username) {
-        return Try.of(()->bankAccountRepository.findByUser_Username(username))
-                .getOrElseThrow(MaBillsServiceException::new);
+    public List<BankAccountEntity> findBankAccountsForUser(UserPrincipal userPrincipal) {
+        return bankAccountRepository.findByUserId(userPrincipal.getId());
     }
 }
