@@ -1,5 +1,6 @@
 package es.upm.mabills.services;
 
+import es.upm.mabills.exceptions.MaBillsServiceException;
 import es.upm.mabills.mappers.CreditCardMapper;
 import es.upm.mabills.model.CreditCard;
 import es.upm.mabills.model.UserPrincipal;
@@ -32,6 +33,14 @@ public class CreditCardService {
 
     public CreditCard createCreditCard(UserPrincipal user, CreditCard creditCard) {
         return Try.of(()->creditCardMapper.toCreditCard(creditCardPersistence.createCreditCard(user, creditCard)))
-                .getOrElseThrow(e -> EntityNotFoundExceptionMapper.map(e, user.getUsername(), creditCard));
+                .getOrElseThrow(EntityNotFoundExceptionMapper::map);
+    }
+
+    public void deleteCreditCard(String uuid) {
+        try{
+            creditCardPersistence.deleteCreditCard(uuid);
+        } catch (Exception e) {
+            throw new MaBillsServiceException();
+        }
     }
 }

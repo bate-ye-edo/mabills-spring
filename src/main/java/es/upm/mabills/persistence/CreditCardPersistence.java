@@ -59,4 +59,8 @@ public class CreditCardPersistence {
                 .creditCardNumber(creditCard.getCreditCardNumber())
                 .build();
     }
+
+    public void deleteCreditCard(String uuid) {
+        creditCardRepository.deleteById(UUID.fromString(uuid));
+    }
 }

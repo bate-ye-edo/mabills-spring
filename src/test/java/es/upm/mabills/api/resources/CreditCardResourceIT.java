@@ -12,6 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
+import java.util.Objects;
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -27,7 +30,7 @@ class CreditCardResourceIT {
     private static final String OTHER_NEW_CREDIT_CARD_NUMBER = "1200000000000001";
     private static final String NOT_FOUND_BANK_ACCOUNT_UUID = "00000-0000-0000-0000-000000000001";
     private static final String NOT_FOUND_BANK_ACCOUNT_IBAN = "ES0000000000000000000000";
-    private static final String ENCODED_PASSWORD_USER = "encodedPasswordUser";
+    private static final String TO_DELETE_CREDIT_CARD_NUMBER = "to_delete_credit_card_number";
 
     @Autowired
     private RestClientTestService restClientTestService;
@@ -37,6 +40,7 @@ class CreditCardResourceIT {
 
     @MockBean
     private TokenCacheService tokenCacheService;
+
 
     @BeforeEach
     void setUp() {
@@ -52,9 +56,7 @@ class CreditCardResourceIT {
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(CreditCard.class)
-                .value(creditCards -> {
-                    assertFalse(creditCards.isEmpty());
-                });
+                .value(creditCards -> assertFalse(creditCards.isEmpty()));
     }
 
     @Test
@@ -87,9 +89,7 @@ class CreditCardResourceIT {
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(CreditCard.class)
-                .value(creditCard -> {
-                    assertEquals(NEW_CREDIT_CARD_NUMBER, creditCard.getCreditCardNumber());
-                });
+                .value(creditCard -> assertEquals(NEW_CREDIT_CARD_NUMBER, creditCard.getCreditCardNumber()));
     }
 
     private CreditCard buildNewCreditCard() {
@@ -146,6 +146,26 @@ class CreditCardResourceIT {
                 });
     }
 
+    @Test
+    void testDeleteCreditCardSuccess() {
+        String creditCardUuid = getCreditCardUuid();
+        restClientTestService
+                .loginDefault(webTestClient)
+                .delete()
+                .uri(CreditCardResource.CREDIT_CARDS + CreditCardResource.DELETE_CREDIT_CARD, creditCardUuid)
+                .exchange()
+                .expectStatus().isOk();
+    }
+
+    @Test
+    void testDeleteCreditCardUnauthorized() {
+        webTestClient
+                .delete()
+                .uri(CreditCardResource.CREDIT_CARDS + CreditCardResource.DELETE_CREDIT_CARD, UUID.randomUUID())
+                .exchange()
+                .expectStatus().isUnauthorized();
+    }
+
     private CreditCard buildCreditCardWithBankAccount(String uuid) {
         return CreditCard.builder()
                 .creditCardNumber(OTHER_NEW_CREDIT_CARD_NUMBER)
@@ -157,15 +177,15 @@ class CreditCardResourceIT {
     }
 
     private String getBankAccountUuid() {
-        return restClientTestService
-                .loginDefault(webTestClient)
-                .get()
-                .uri(BankAccountResource.BANK_ACCOUNTS)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBodyList(BankAccount.class)
-                .returnResult()
-                .getResponseBody()
+        return Objects.requireNonNull(restClientTestService
+                        .loginDefault(webTestClient)
+                        .get()
+                        .uri(BankAccountResource.BANK_ACCOUNTS)
+                        .exchange()
+                        .expectStatus().isOk()
+                        .expectBodyList(BankAccount.class)
+                        .returnResult()
+                        .getResponseBody())
                 .get(0)
                 .getUuid();
     }
@@ -175,5 +195,22 @@ class CreditCardResourceIT {
                 .username(ONLY_USER)
                 .password(PASSWORD)
                 .build();
+    }
+
+    private String getCreditCardUuid() {
+        return Objects.requireNonNull(restClientTestService
+                        .loginDefault(webTestClient)
+                        .get()
+                        .uri(CreditCardResource.CREDIT_CARDS)
+                        .exchange()
+                        .expectStatus().isOk()
+                        .expectBodyList(CreditCard.class)
+                        .returnResult()
+                        .getResponseBody())
+                .stream()
+                .filter(creditCard -> TO_DELETE_CREDIT_CARD_NUMBER.equals(creditCard.getCreditCardNumber()))
+                .toList()
+                .get(0)
+                .getUuid();
     }
 }

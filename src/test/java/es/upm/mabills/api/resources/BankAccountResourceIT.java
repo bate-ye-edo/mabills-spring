@@ -12,6 +12,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 class BankAccountResourceIT {
     private static final String ONLY_USER = "onlyUser";
     private static final String PASSWORD = "password";
+    private static final String OTHER_USER = "otherUser";
 
     @Autowired
     private RestClientTestService restClientTestService;
@@ -22,7 +23,7 @@ class BankAccountResourceIT {
     @Test
     void getUserBankAccounts() {
         restClientTestService
-                .loginDefault(webTestClient)
+                .login(webTestClient, buildOtherUserLoginDto())
                 .get()
                 .uri(BankAccountResource.BANK_ACCOUNTS)
                 .exchange()
@@ -43,7 +44,7 @@ class BankAccountResourceIT {
     @Test
     void getUserBankAccountsEmpty() {
         restClientTestService
-                .login(webTestClient, getOnlyUserLoginDto())
+                .login(webTestClient, buildOnlyUserLoginDto())
                 .get().uri(BankAccountResource.BANK_ACCOUNTS)
                 .exchange()
                 .expectStatus().isOk()
@@ -51,9 +52,16 @@ class BankAccountResourceIT {
                 .hasSize(0);
     }
 
-    private LoginDto getOnlyUserLoginDto() {
+    private LoginDto buildOnlyUserLoginDto() {
         return LoginDto.builder()
                 .username(ONLY_USER)
+                .password(PASSWORD)
+                .build();
+    }
+
+    private LoginDto buildOtherUserLoginDto() {
+        return LoginDto.builder()
+                .username(OTHER_USER)
                 .password(PASSWORD)
                 .build();
     }

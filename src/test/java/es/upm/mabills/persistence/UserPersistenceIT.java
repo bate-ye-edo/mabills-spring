@@ -10,11 +10,14 @@ import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestConfig
 class UserPersistenceIT {
     private static final String NEW_REGISTER_ENCODED_PASSWORD = "newRegisterUserEncodedPassword";
+    private static final String NEW_REGISTER_USER = UUID.randomUUID().toString();
     private static final String TO_UPDATE_USER = "toUpdateUser";
     private static final String NOT_FOUND_USER = "notFoundUser";
     @Autowired
@@ -40,7 +43,7 @@ class UserPersistenceIT {
     void testRegisterUserSuccess() {
         UserEntity newUser = userPersistence.registerUser(buildNewRegisterUser(), NEW_REGISTER_ENCODED_PASSWORD);
         assertNotNull(newUser);
-        assertEquals("newRegisterUser", newUser.getUsername());
+        assertEquals(NEW_REGISTER_USER, newUser.getUsername());
         assertEquals("newRegisterUserEncodedPassword", newUser.getPassword());
         assertEquals("newRegisterUserEmail", newUser.getEmail());
         assertEquals("6666666661", newUser.getMobile());
@@ -110,7 +113,7 @@ class UserPersistenceIT {
 
     private User buildNewRegisterUser() {
         return User.builder()
-                .username("newRegisterUser")
+                .username(NEW_REGISTER_USER)
                 .password("newRegisterUserPassWord")
                 .email("newRegisterUserEmail")
                 .mobile("6666666661")

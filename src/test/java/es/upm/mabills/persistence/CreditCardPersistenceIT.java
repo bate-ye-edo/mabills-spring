@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -26,6 +28,8 @@ class CreditCardPersistenceIT {
     private static final String NOT_EXISTS_BANK_ACCOUNT_IBAN = "ES0000000000000000000000";
     private static final String NOT_EXISTS_BANK_ACCOUNT_UUID = "00000000-0000-0000-0000-000000000001";
     private static final String ALREADY_EXISTS_CREDIT_CARD_NUMBER = "004120003120034012";
+    private static final String OTHER_USER = "otherUser";
+    private static final String TO_DELETE_CREDIT_CARD_NUMBER = "005130013120034012";
 
     @Autowired
     private CreditCardPersistence creditCardPersistence;
@@ -56,7 +60,7 @@ class CreditCardPersistenceIT {
     @Test
     @Transactional
     void testCreateCreditCard() {
-        CreditCardEntity creditCardEntity = creditCardPersistence.createCreditCard(encodedUserPrincipal, getNewCreditCard());
+        CreditCardEntity creditCardEntity = creditCardPersistence.createCreditCard(encodedUserPrincipal, buildNewCreditCard());
         assertNotNull(creditCardEntity);
         assertEquals(ENCODED_PASSWORD_USER, creditCardEntity.getUser().getUsername());
         assertEquals(NEW_CREDIT_CARD_NUMBER, creditCardEntity.getCreditCardNumber());
@@ -70,7 +74,7 @@ class CreditCardPersistenceIT {
 
     @Test
     void testCreateCreditCardUserNotFound() {
-        CreditCard creditCard = getNewCreditCard();
+        CreditCard creditCard = buildNewCreditCard();
         UserPrincipal userPrincipal = getNotFoundUserPrincipal();
         assertThrows(DataIntegrityViolationException.class, () -> creditCardPersistence.createCreditCard(userPrincipal, creditCard));
     }
@@ -87,7 +91,36 @@ class CreditCardPersistenceIT {
         assertThrows(DataIntegrityViolationException.class, () -> creditCardPersistence.createCreditCard(encodedUserPrincipal, creditCard));
     }
 
-    private CreditCard getNewCreditCard() {
+    @Test
+    void testDeleteCreditCard() {
+        int userId = getOtherUserId();
+        String creditCardUuid = getToDeleteCreditCardUuid(userId);
+        creditCardPersistence.deleteCreditCard(creditCardUuid);
+        assertTrue(creditCardPersistence.findCreditCardsForUser(buildOtherUserPrincipal(userId)).isEmpty());
+    }
+
+    private int getOtherUserId() {
+        return userPersistence.findUserByUsername(OTHER_USER).getId();
+    }
+
+    private String getToDeleteCreditCardUuid(int userId) {
+        return creditCardPersistence.findCreditCardsForUser(buildOtherUserPrincipal(userId))
+                .stream()
+                .filter(creditCardEntity -> creditCardEntity.getCreditCardNumber().equals(TO_DELETE_CREDIT_CARD_NUMBER))
+                .findFirst()
+                .map(CreditCardEntity::getUuid)
+                .map(UUID::toString)
+                .orElse(null);
+    }
+
+    private UserPrincipal buildOtherUserPrincipal(int userId) {
+        return UserPrincipal.builder()
+                .id(userId)
+                .username(OTHER_USER)
+                .build();
+    }
+
+    private CreditCard buildNewCreditCard() {
         return CreditCard.builder()
                 .creditCardNumber(NEW_CREDIT_CARD_NUMBER)
                 .build();

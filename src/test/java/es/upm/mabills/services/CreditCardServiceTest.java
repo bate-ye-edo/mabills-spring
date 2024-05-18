@@ -3,6 +3,7 @@ package es.upm.mabills.services;
 import es.upm.mabills.UnitTestConfig;
 import es.upm.mabills.exceptions.BankAccountNotFoundException;
 import es.upm.mabills.exceptions.CreditCardAlreadyExistsException;
+import es.upm.mabills.exceptions.MaBillsServiceException;
 import es.upm.mabills.exceptions.UserNotFoundException;
 import es.upm.mabills.model.CreditCard;
 import es.upm.mabills.model.UserPrincipal;
@@ -23,6 +24,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @UnitTestConfig
@@ -143,5 +147,17 @@ class CreditCardServiceTest {
         assertEquals(NEW_CREDIT_CARD_NUMBER, createdCreditCard.getCreditCardNumber());
         assertEquals(NOT_EXISTS_BANK_ACCOUNT_UUID, createdCreditCard.getBankAccount().getUuid());
         assertEquals(NOT_EXISTS_BANK_ACCOUNT_IBAN, createdCreditCard.getBankAccount().getIban());
+    }
+
+    @Test
+    void testDeleteCreditCard() {
+        creditCardService.deleteCreditCard("uuid");
+        verify(creditCardPersistence).deleteCreditCard("uuid");
+    }
+
+    @Test
+    void testDeleteCreditCardDBException() {
+        doThrow(RuntimeException.class).when(creditCardPersistence).deleteCreditCard(anyString());
+        assertThrows(MaBillsServiceException.class, () -> creditCardService.deleteCreditCard("uuid"));
     }
 }

@@ -11,6 +11,8 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
 
+import java.util.Objects;
+
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Service
@@ -77,6 +79,6 @@ public class RestClientTestService {
     }
 
     public String extractTokenFromHeaders() {
-        return headers.get(this.authorizationHeader).get(0);
+        return Objects.requireNonNull(headers.get(this.authorizationHeader)).get(0);
     }
 }
