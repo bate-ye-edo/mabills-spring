@@ -6,6 +6,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,6 +14,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.springframework.beans.BeanUtils;
+
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -35,6 +38,9 @@ public class UserEntity {
     private String email;
 
     private String mobile;
+
+    @OneToMany(mappedBy = "user")
+    private List<BankAccountEntity> bankAccounts;
 
     public UserEntity(User user, @NonNull String encodedPassword) {
         BeanUtils.copyProperties(user, this);

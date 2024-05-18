@@ -11,6 +11,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 
 @Getter
 @Builder
@@ -32,4 +34,6 @@ public class User {
     @NumbersOnly
     @NotBlank
     private String mobile;
+
+    List<BankAccount> bankAccounts;
 }

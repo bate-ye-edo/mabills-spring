@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -39,7 +40,6 @@ public class UserService {
     }
 
     public String login(String username, String password) {
-        LOGGER.info("Logging in user: {}", username);
         return jwtService.createToken(
             findUserAndReturnUsername(username, password)
         );
@@ -79,8 +79,9 @@ public class UserService {
         tokenCacheService.blackListToken(jwtService.extractToken(header));
     }
 
+    @Transactional
     public User getUserByUsername(String username) {
-        return userMapper.toUser(
+        return userMapper.toUserProfile(
                 Optional.ofNullable(userPersistence.findUserByUsername(username))
                     .orElseThrow(() -> new UserNotFoundException(username))
         );

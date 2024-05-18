@@ -1,6 +1,7 @@
 package es.upm.mabills.api.http_errors;
 
 import es.upm.mabills.exceptions.BankAccountNotFoundException;
+import es.upm.mabills.exceptions.CreditCardAlreadyExistsException;
 import es.upm.mabills.exceptions.DuplicatedEmailException;
 import es.upm.mabills.exceptions.ExpenseCategoryAlreadyExistsException;
 import es.upm.mabills.exceptions.ExpenseCategoryNotFoundException;
@@ -73,6 +74,16 @@ public class ApiExceptionHandler {
     @ResponseBody
     public ErrorMessage expenseCategoryAlreadyExists(ExpenseCategoryAlreadyExistsException exception) {
         LOGGER.debug(() -> "Expense category already exists: " + exception.getMessage());
+        return new ErrorMessage(exception, HttpStatus.CONFLICT.value());
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler({
+        CreditCardAlreadyExistsException.class
+    })
+    @ResponseBody
+    public ErrorMessage creditCardAlreadyExists(CreditCardAlreadyExistsException exception) {
+        LOGGER.debug(() -> "Credit card already exists: " + exception.getMessage());
         return new ErrorMessage(exception, HttpStatus.CONFLICT.value());
     }
 

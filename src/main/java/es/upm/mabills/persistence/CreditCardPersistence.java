@@ -8,6 +8,7 @@ import es.upm.mabills.persistence.entities.CreditCardEntity;
 import es.upm.mabills.persistence.entities.UserEntity;
 import es.upm.mabills.persistence.repositories.BankAccountRepository;
 import es.upm.mabills.persistence.repositories.CreditCardRepository;
+import es.upm.mabills.persistence.repositories.RepositorySort;
 import es.upm.mabills.persistence.repositories.UserRepository;
 import io.vavr.control.Try;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,7 @@ public class CreditCardPersistence {
     }
 
     public List<CreditCardEntity> findCreditCardsForUser(UserPrincipal user) {
-        return creditCardRepository.findByUserId(user.getId());
+        return creditCardRepository.findByUserId(user.getId(), RepositorySort.BY_CREATION_DATE.value());
     }
 
     public CreditCardEntity createCreditCard(UserPrincipal user, CreditCard creditCard) {

@@ -71,7 +71,7 @@ public class UserResource {
     }
 
     @GetMapping
-    public User getUser(@AuthenticationPrincipal UserPrincipal userPrincipal) {
+    public User getUserProfile(@AuthenticationPrincipal UserPrincipal userPrincipal) {
         return this.userService.getUserByUsername(userPrincipal.getUsername());
     }
 

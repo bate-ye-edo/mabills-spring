@@ -176,7 +176,7 @@ class UserResourceIT {
     }
 
     @Test
-    void testGetUserSuccess() {
+    void testGetUserProfileSuccess() {
         restClientTestService.loginDefault(this.webTestClient)
             .get().uri(UserResource.USERS)
             .exchange()
@@ -193,7 +193,7 @@ class UserResourceIT {
     }
 
     @Test
-    void testGetUserFailedNotLogged() {
+    void testGetUserProfileFailedNotLogged() {
         this.webTestClient
             .get().uri(UserResource.USERS)
             .exchange()
