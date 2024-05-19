@@ -1,6 +1,7 @@
 package es.upm.mabills.services;
 
 import es.upm.mabills.UnitTestConfig;
+import es.upm.mabills.exceptions.BankAccountAlreadyExistsException;
 import es.upm.mabills.model.BankAccount;
 import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.BankAccountPersistence;
@@ -15,6 +16,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -22,6 +24,7 @@ import static org.mockito.Mockito.when;
 class BankAccountServiceTest {
     private static final String NOT_FOUND_USER = "notFoundUser";
     private static final String ENCODED_PASSWORD_USER = "encodedPasswordUser";
+    private static final String IBAN = "ES7921000813610123456789";
 
     @Autowired
     private BankAccountService bankAccountService;
@@ -62,5 +65,22 @@ class BankAccountServiceTest {
         List<BankAccount> bankAccounts = bankAccountService.findBankAccountsForUser(ENCODED_PASSWORD_USER_PRINCIPAL);
         assertFalse(bankAccountService.findBankAccountsForUser(ENCODED_PASSWORD_USER_PRINCIPAL).isEmpty());
         assertEquals(1, bankAccounts.size());
+    }
+
+    @Test
+    void testCreateBankAccountSuccess() {
+        BankAccount bankAccount = BankAccount.builder().iban(IBAN).build();
+        BankAccountEntity bankAccountEntity = BankAccountEntity.builder()
+                .iban(bankAccount.getIban())
+                .build();
+        when(bankAccountPersistence.createBankAccount(ENCODED_PASSWORD_USER_PRINCIPAL, bankAccount)).thenReturn(bankAccountEntity);
+        assertEquals(bankAccountEntity.getIban(), bankAccountService.createBankAccount(ENCODED_PASSWORD_USER_PRINCIPAL, bankAccount).getIban());
+    }
+
+    @Test
+    void testCreateBankAccountThrowsException() {
+        BankAccount bankAccount = BankAccount.builder().iban(IBAN).build();
+        when(bankAccountPersistence.createBankAccount(ENCODED_PASSWORD_USER_PRINCIPAL, bankAccount)).thenThrow(new RuntimeException());
+        assertThrows(BankAccountAlreadyExistsException.class, () -> bankAccountService.createBankAccount(ENCODED_PASSWORD_USER_PRINCIPAL, bankAccount));
     }
 }

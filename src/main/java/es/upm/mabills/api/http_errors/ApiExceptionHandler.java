@@ -1,5 +1,6 @@
 package es.upm.mabills.api.http_errors;
 
+import es.upm.mabills.exceptions.BankAccountAlreadyExistsException;
 import es.upm.mabills.exceptions.BankAccountNotFoundException;
 import es.upm.mabills.exceptions.CreditCardAlreadyExistsException;
 import es.upm.mabills.exceptions.DuplicatedEmailException;
@@ -84,6 +85,16 @@ public class ApiExceptionHandler {
     @ResponseBody
     public ErrorMessage creditCardAlreadyExists(CreditCardAlreadyExistsException exception) {
         LOGGER.debug(() -> "Credit card already exists: " + exception.getMessage());
+        return new ErrorMessage(exception, HttpStatus.CONFLICT.value());
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler({
+        BankAccountAlreadyExistsException.class
+    })
+    @ResponseBody
+    public ErrorMessage bankAccountAlreadyExists(BankAccountAlreadyExistsException exception) {
+        LOGGER.debug(() -> "Bank account already exists: " + exception.getMessage());
         return new ErrorMessage(exception, HttpStatus.CONFLICT.value());
     }
 

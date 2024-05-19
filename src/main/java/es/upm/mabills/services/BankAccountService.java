@@ -1,9 +1,11 @@
 package es.upm.mabills.services;
 
+import es.upm.mabills.exceptions.BankAccountAlreadyExistsException;
 import es.upm.mabills.mappers.BankAccountMapper;
 import es.upm.mabills.model.BankAccount;
 import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.BankAccountPersistence;
+import io.vavr.control.Try;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,5 +26,10 @@ public class BankAccountService {
                 .stream()
                 .map(bankAccountMapper::toBankAccount)
                 .toList();
+    }
+
+    public BankAccount createBankAccount(UserPrincipal userPrincipal, BankAccount bankAccount) {
+        return Try.of(() -> bankAccountMapper.toBankAccount(bankAccountPersistence.createBankAccount(userPrincipal, bankAccount)))
+                .getOrElseThrow(() -> new BankAccountAlreadyExistsException(userPrincipal.getUsername(), bankAccount.getIban()));
     }
 }

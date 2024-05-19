@@ -8,11 +8,17 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 @ApiTestConfig
 class BankAccountResourceIT {
     private static final String ONLY_USER = "onlyUser";
     private static final String PASSWORD = "password";
     private static final String OTHER_USER = "otherUser";
+
+    private static final String NEW_IBAN = "ES7921000813610123456789";
+
+    private static final String EXIST_IBAN = "ES004120003120034012";
 
     @Autowired
     private RestClientTestService restClientTestService;
@@ -50,6 +56,52 @@ class BankAccountResourceIT {
                 .expectStatus().isOk()
                 .expectBodyList(BankAccount.class)
                 .hasSize(0);
+    }
+
+    @Test
+    void testCreateBankAccountSuccess() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .post()
+                .uri(BankAccountResource.BANK_ACCOUNTS)
+                .bodyValue(BankAccount.builder().iban(NEW_IBAN).build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(BankAccount.class)
+                .value(bankAccount -> assertEquals(NEW_IBAN, bankAccount.getIban()));
+    }
+
+    @Test
+    void testCreateBankAccountUnauthorized() {
+        webTestClient
+                .post()
+                .uri(BankAccountResource.BANK_ACCOUNTS)
+                .bodyValue(BankAccount.builder().iban(NEW_IBAN).build())
+                .exchange()
+                .expectStatus().isUnauthorized();
+    }
+
+    @Test
+    void testCreateBankAccountInvalidIban() {
+        restClientTestService
+                .login(webTestClient, buildOnlyUserLoginDto())
+                .post()
+                .uri(BankAccountResource.BANK_ACCOUNTS)
+                .bodyValue(BankAccount.builder().iban("invalid").build())
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void testCreateBankAccountAlreadyExists() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .post()
+                .uri(BankAccountResource.BANK_ACCOUNTS)
+                .bodyValue(BankAccount.builder().iban(EXIST_IBAN).build())
+                .exchange()
+                .expectStatus()
+                .isEqualTo(409);
     }
 
     private LoginDto buildOnlyUserLoginDto() {
