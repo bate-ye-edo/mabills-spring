@@ -2,6 +2,7 @@ package es.upm.mabills.persistence;
 
 import es.upm.mabills.TestConfig;
 import es.upm.mabills.exceptions.CreditCardAlreadyExistsException;
+import es.upm.mabills.exceptions.CreditCardNotFoundException;
 import es.upm.mabills.model.BankAccount;
 import es.upm.mabills.model.CreditCard;
 import es.upm.mabills.model.UserPrincipal;
@@ -95,8 +96,17 @@ class CreditCardPersistenceIT {
     void testDeleteCreditCard() {
         int userId = getOtherUserId();
         String creditCardUuid = getToDeleteCreditCardUuid(userId);
-        creditCardPersistence.deleteCreditCard(creditCardUuid);
-        assertTrue(creditCardPersistence.findCreditCardsForUser(buildOtherUserPrincipal(userId)).isEmpty());
+        UserPrincipal otherUserPrincipal = buildOtherUserPrincipal(userId);
+        creditCardPersistence.deleteCreditCard(otherUserPrincipal, creditCardUuid);
+        assertTrue(creditCardPersistence.findCreditCardsForUser(otherUserPrincipal).isEmpty());
+    }
+
+    @Test
+    void testDeleteCreditCardForOtherUserFails() {
+        int userId = getOtherUserId();
+        UserPrincipal otherUserPrincipal = buildOtherUserPrincipal(userId);
+        String encodedUserCreditCardUuid = getEncodedUserPrincipalFirstCreditCardUuid();
+        assertThrows(CreditCardNotFoundException.class, () -> creditCardPersistence.deleteCreditCard(otherUserPrincipal, encodedUserCreditCardUuid));
     }
 
     private int getOtherUserId() {
@@ -137,5 +147,12 @@ class CreditCardPersistenceIT {
                 .id(0)
                 .username(NOT_FOUND_USER)
                 .build();
+    }
+
+    private String getEncodedUserPrincipalFirstCreditCardUuid() {
+        return creditCardPersistence.findCreditCardsForUser(encodedUserPrincipal)
+                .get(0)
+                .getUuid()
+                .toString();
     }
 }

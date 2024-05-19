@@ -40,7 +40,7 @@ public class CreditCardResource {
     }
 
     @DeleteMapping(DELETE_CREDIT_CARD)
-    public void deleteCreditCard(@PathVariable("uuid") String uuid) {
-        creditCardService.deleteCreditCard(uuid);
+    public void deleteCreditCard(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("uuid") String uuid) {
+        creditCardService.deleteCreditCard(userPrincipal, uuid);
     }
 }

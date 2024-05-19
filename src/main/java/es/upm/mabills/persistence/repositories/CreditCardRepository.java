@@ -12,4 +12,5 @@ import java.util.UUID;
 public interface CreditCardRepository extends JpaRepository<CreditCardEntity, UUID>{
     List<CreditCardEntity> findByUserId(int userId, Sort sort);
     CreditCardEntity findByUserIdAndCreditCardNumber(int userId, String creditCardNumber);
+    CreditCardEntity findByUserIdAndUuid(int id, UUID uuid);
 }

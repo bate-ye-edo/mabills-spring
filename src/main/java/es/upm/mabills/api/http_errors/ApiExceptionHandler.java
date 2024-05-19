@@ -3,6 +3,7 @@ package es.upm.mabills.api.http_errors;
 import es.upm.mabills.exceptions.BankAccountAlreadyExistsException;
 import es.upm.mabills.exceptions.BankAccountNotFoundException;
 import es.upm.mabills.exceptions.CreditCardAlreadyExistsException;
+import es.upm.mabills.exceptions.CreditCardNotFoundException;
 import es.upm.mabills.exceptions.DuplicatedEmailException;
 import es.upm.mabills.exceptions.ExpenseCategoryAlreadyExistsException;
 import es.upm.mabills.exceptions.ExpenseCategoryNotFoundException;
@@ -122,7 +123,8 @@ public class ApiExceptionHandler {
     @ExceptionHandler({
         UserNotFoundException.class,
         ExpenseCategoryNotFoundException.class,
-        BankAccountNotFoundException.class
+        BankAccountNotFoundException.class,
+        CreditCardNotFoundException.class
     })
     @ResponseBody
     public ErrorMessage notFoundException(RuntimeException exception) {

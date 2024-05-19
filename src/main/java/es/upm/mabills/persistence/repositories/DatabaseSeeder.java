@@ -114,11 +114,15 @@ public class DatabaseSeeder {
                 .iban("ES004120003120034012")
                 .user(encodedPasswordUser)
                 .build();
+        BankAccountEntity toDeleteBankAccountEntity = BankAccountEntity.builder()
+                .iban("to_delete_bank_account")
+                .user(encodedPasswordUser)
+                .build();
         BankAccountEntity otherUserBankAccountEntity = BankAccountEntity.builder()
                 .iban("ES004120003120034013")
                 .user(otherUser)
                 .build();
-        this.bankAccountRepository.saveAll(List.of(bankAccountEntity, otherUserBankAccountEntity));
+        this.bankAccountRepository.saveAll(List.of(bankAccountEntity, otherUserBankAccountEntity, toDeleteBankAccountEntity));
 
         // Credit cards
         CreditCardEntity creditCardEntity = CreditCardEntity.builder()

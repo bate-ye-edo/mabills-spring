@@ -1,6 +1,7 @@
 package es.upm.mabills.persistence;
 
 import es.upm.mabills.exceptions.CreditCardAlreadyExistsException;
+import es.upm.mabills.exceptions.CreditCardNotFoundException;
 import es.upm.mabills.model.CreditCard;
 import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.entities.BankAccountEntity;
@@ -61,7 +62,11 @@ public class CreditCardPersistence {
                 .build();
     }
 
-    public void deleteCreditCard(String uuid) {
-        creditCardRepository.deleteById(UUID.fromString(uuid));
+    public void deleteCreditCard(UserPrincipal userPrincipal, String uuid) {
+        Try.of(() -> creditCardRepository.findByUserIdAndUuid(userPrincipal.getId(), UUID.fromString(uuid)))
+                .andThen(creditCardRepository::delete)
+                .onFailure(ex ->{
+                   throw new CreditCardNotFoundException(uuid);
+                });
     }
 }

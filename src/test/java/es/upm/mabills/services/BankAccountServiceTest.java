@@ -2,6 +2,8 @@ package es.upm.mabills.services;
 
 import es.upm.mabills.UnitTestConfig;
 import es.upm.mabills.exceptions.BankAccountAlreadyExistsException;
+import es.upm.mabills.exceptions.BankAccountNotFoundException;
+import es.upm.mabills.exceptions.MaBillsServiceException;
 import es.upm.mabills.model.BankAccount;
 import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.BankAccountPersistence;
@@ -18,6 +20,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @UnitTestConfig
@@ -82,5 +89,23 @@ class BankAccountServiceTest {
         BankAccount bankAccount = BankAccount.builder().iban(IBAN).build();
         when(bankAccountPersistence.createBankAccount(ENCODED_PASSWORD_USER_PRINCIPAL, bankAccount)).thenThrow(new RuntimeException());
         assertThrows(BankAccountAlreadyExistsException.class, () -> bankAccountService.createBankAccount(ENCODED_PASSWORD_USER_PRINCIPAL, bankAccount));
+    }
+
+    @Test
+    void testDeleteBankAccountSuccess() {
+        bankAccountService.deleteBankAccount(ENCODED_PASSWORD_USER_PRINCIPAL ,"uuid");
+        verify(bankAccountPersistence).deleteBankAccount(ENCODED_PASSWORD_USER_PRINCIPAL, "uuid");
+    }
+
+    @Test
+    void testDeleteBankAccountDBException() {
+        doThrow(RuntimeException.class).when(bankAccountPersistence).deleteBankAccount(any(), anyString());
+        assertThrows(MaBillsServiceException.class, () -> bankAccountService.deleteBankAccount(ENCODED_PASSWORD_USER_PRINCIPAL, "uuid"));
+    }
+
+    @Test
+    void testDeleteBankAccountForAnotherUserThrowsException() {
+        doThrow(BankAccountNotFoundException.class).when(bankAccountPersistence).deleteBankAccount(any(), anyString());
+        assertThrows(BankAccountNotFoundException.class, () -> bankAccountService.deleteBankAccount(ENCODED_PASSWORD_USER_PRINCIPAL, "uuid"));
     }
 }

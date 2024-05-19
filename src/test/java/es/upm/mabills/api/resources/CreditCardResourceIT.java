@@ -14,6 +14,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -40,7 +41,6 @@ class CreditCardResourceIT {
 
     @MockBean
     private TokenCacheService tokenCacheService;
-
 
     @BeforeEach
     void setUp() {
@@ -71,7 +71,7 @@ class CreditCardResourceIT {
     @Test
     void getUserCreditCardsEmpty() {
         restClientTestService
-                .login(webTestClient, getOnlyUserLoginDto())
+                .login(webTestClient, buildOnlyUserLoginDto())
                 .get().uri(CreditCardResource.CREDIT_CARDS)
                 .exchange()
                 .expectStatus().isOk()
@@ -148,7 +148,7 @@ class CreditCardResourceIT {
 
     @Test
     void testDeleteCreditCardSuccess() {
-        String creditCardUuid = getCreditCardUuid();
+        String creditCardUuid = getToDeleteCreditCardUuidCreditCardUuid();
         restClientTestService
                 .loginDefault(webTestClient)
                 .delete()
@@ -165,6 +165,20 @@ class CreditCardResourceIT {
                 .exchange()
                 .expectStatus().isUnauthorized();
     }
+
+    @Test
+    void testDeleteCreditCardForAnotherUser() {
+        String otherCreditCardUuid = getEncodedPasswordUserFirstCreditCardUuid();
+        restClientTestService
+                .login(webTestClient, buildOnlyUserLoginDto())
+                .delete()
+                .uri(CreditCardResource.CREDIT_CARDS+CreditCardResource.DELETE_CREDIT_CARD, otherCreditCardUuid)
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+    }
+
+
 
     private CreditCard buildCreditCardWithBankAccount(String uuid) {
         return CreditCard.builder()
@@ -190,14 +204,29 @@ class CreditCardResourceIT {
                 .getUuid();
     }
 
-    private LoginDto getOnlyUserLoginDto() {
+    private LoginDto buildOnlyUserLoginDto() {
         return LoginDto.builder()
                 .username(ONLY_USER)
                 .password(PASSWORD)
                 .build();
     }
 
-    private String getCreditCardUuid() {
+    private String getToDeleteCreditCardUuidCreditCardUuid() {
+        return getDefaultUserCreditCardStream()
+                .filter(creditCard -> TO_DELETE_CREDIT_CARD_NUMBER.equals(creditCard.getCreditCardNumber()))
+                .toList()
+                .get(0)
+                .getUuid();
+    }
+
+    private String getEncodedPasswordUserFirstCreditCardUuid() {
+        return getDefaultUserCreditCardStream()
+                .toList()
+                .get(0)
+                .getUuid();
+    }
+
+    private Stream<CreditCard> getDefaultUserCreditCardStream() {
         return Objects.requireNonNull(restClientTestService
                         .loginDefault(webTestClient)
                         .get()
@@ -207,10 +236,6 @@ class CreditCardResourceIT {
                         .expectBodyList(CreditCard.class)
                         .returnResult()
                         .getResponseBody())
-                .stream()
-                .filter(creditCard -> TO_DELETE_CREDIT_CARD_NUMBER.equals(creditCard.getCreditCardNumber()))
-                .toList()
-                .get(0)
-                .getUuid();
+                .stream();
     }
 }

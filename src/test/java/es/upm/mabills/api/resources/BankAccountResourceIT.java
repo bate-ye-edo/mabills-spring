@@ -8,6 +8,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
+import java.util.Objects;
+import java.util.stream.Stream;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ApiTestConfig
@@ -15,16 +18,16 @@ class BankAccountResourceIT {
     private static final String ONLY_USER = "onlyUser";
     private static final String PASSWORD = "password";
     private static final String OTHER_USER = "otherUser";
-
     private static final String NEW_IBAN = "ES7921000813610123456789";
-
     private static final String EXIST_IBAN = "ES004120003120034012";
+    private static final String TO_DELETE_BANK_ACCOUNT = "to_delete_bank_account";
 
     @Autowired
     private RestClientTestService restClientTestService;
 
     @Autowired
     private WebTestClient webTestClient;
+
 
     @Test
     void getUserBankAccounts() {
@@ -102,6 +105,57 @@ class BankAccountResourceIT {
                 .exchange()
                 .expectStatus()
                 .isEqualTo(409);
+    }
+
+    @Test
+    void testDeleteBankAccountSuccess() {
+        String toDeleteUuid = getToDeleteBankAccountUuid();
+        restClientTestService
+                .loginDefault(webTestClient)
+                .delete()
+                .uri(BankAccountResource.BANK_ACCOUNTS + BankAccountResource.UUID, toDeleteUuid)
+                .exchange()
+                .expectStatus()
+                .isOk();
+    }
+
+    @Test
+    void testDeleteBankAccountForAnotherUserException() {
+        String otherUuid = getDefaultUserFirstBankAccountUuid();
+        restClientTestService
+                .login(webTestClient, buildOnlyUserLoginDto())
+                .delete()
+                .uri(BankAccountResource.BANK_ACCOUNTS + BankAccountResource.UUID, otherUuid)
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+    }
+
+    private String getToDeleteBankAccountUuid() {
+        return getDefaultUserBankAccountsStream()
+                .filter(ba -> ba.getIban().equals(TO_DELETE_BANK_ACCOUNT))
+                .toList()
+                .get(0)
+                .getUuid();
+    }
+
+    private String getDefaultUserFirstBankAccountUuid() {
+        return getDefaultUserBankAccountsStream()
+                .toList()
+                .get(0)
+                .getUuid();
+    }
+
+    private Stream<BankAccount> getDefaultUserBankAccountsStream() {
+        return Objects.requireNonNull(restClientTestService
+                        .loginDefault(webTestClient)
+                        .get()
+                        .uri(BankAccountResource.BANK_ACCOUNTS)
+                        .exchange()
+                        .expectBodyList(BankAccount.class)
+                        .returnResult()
+                        .getResponseBody())
+                .stream();
     }
 
     private LoginDto buildOnlyUserLoginDto() {

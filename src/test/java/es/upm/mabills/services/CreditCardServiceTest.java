@@ -3,6 +3,7 @@ package es.upm.mabills.services;
 import es.upm.mabills.UnitTestConfig;
 import es.upm.mabills.exceptions.BankAccountNotFoundException;
 import es.upm.mabills.exceptions.CreditCardAlreadyExistsException;
+import es.upm.mabills.exceptions.CreditCardNotFoundException;
 import es.upm.mabills.exceptions.MaBillsServiceException;
 import es.upm.mabills.exceptions.UserNotFoundException;
 import es.upm.mabills.model.CreditCard;
@@ -151,13 +152,19 @@ class CreditCardServiceTest {
 
     @Test
     void testDeleteCreditCard() {
-        creditCardService.deleteCreditCard("uuid");
-        verify(creditCardPersistence).deleteCreditCard("uuid");
+        creditCardService.deleteCreditCard(ENCODED_PASSWORD_USER_PRINCIPAL ,"uuid");
+        verify(creditCardPersistence).deleteCreditCard(ENCODED_PASSWORD_USER_PRINCIPAL, "uuid");
     }
 
     @Test
     void testDeleteCreditCardDBException() {
-        doThrow(RuntimeException.class).when(creditCardPersistence).deleteCreditCard(anyString());
-        assertThrows(MaBillsServiceException.class, () -> creditCardService.deleteCreditCard("uuid"));
+        doThrow(RuntimeException.class).when(creditCardPersistence).deleteCreditCard(any(), anyString());
+        assertThrows(MaBillsServiceException.class, () -> creditCardService.deleteCreditCard(ENCODED_PASSWORD_USER_PRINCIPAL, "uuid"));
+    }
+
+    @Test
+    void testDeleteCreditCardToOtherUser() {
+        doThrow(CreditCardNotFoundException.class).when(creditCardPersistence).deleteCreditCard(any(), anyString());
+        assertThrows(CreditCardNotFoundException.class, () -> creditCardService.deleteCreditCard(ENCODED_PASSWORD_USER_PRINCIPAL, "uuid"));
     }
 }
