@@ -118,11 +118,15 @@ public class DatabaseSeeder {
                 .iban("to_delete_bank_account")
                 .user(encodedPasswordUser)
                 .build();
+        BankAccountEntity toDeleteBankAccountEntityWithCreditCard = BankAccountEntity.builder()
+                .iban("to_delete_bank_account_entity_with_credit_card")
+                .user(encodedPasswordUser)
+                .build();
         BankAccountEntity otherUserBankAccountEntity = BankAccountEntity.builder()
                 .iban("ES004120003120034013")
                 .user(otherUser)
                 .build();
-        this.bankAccountRepository.saveAll(List.of(bankAccountEntity, otherUserBankAccountEntity, toDeleteBankAccountEntity));
+        this.bankAccountRepository.saveAll(List.of(bankAccountEntity, otherUserBankAccountEntity, toDeleteBankAccountEntity, toDeleteBankAccountEntityWithCreditCard));
 
         // Credit cards
         CreditCardEntity creditCardEntity = CreditCardEntity.builder()
@@ -137,7 +141,12 @@ public class DatabaseSeeder {
                 .creditCardNumber("005130013120034012")
                 .user(otherUser)
                 .build();
-        this.creditCardRepository.saveAll(List.of(creditCardEntity, toDeleteCreditCard, creditCardToDelete));
+        CreditCardEntity creditCardWithBankAccountToDelete = CreditCardEntity.builder()
+                .bankAccount(toDeleteBankAccountEntityWithCreditCard)
+                .user(encodedPasswordUser)
+                .creditCardNumber("bank_account_will_be_deleted")
+                .build();
+        this.creditCardRepository.saveAll(List.of(creditCardEntity, toDeleteCreditCard, creditCardToDelete, creditCardWithBankAccountToDelete));
         LOGGER.warn("----- End seeding database -----");
     }
 }

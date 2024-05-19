@@ -4,6 +4,7 @@ import es.upm.mabills.api.ApiTestConfig;
 import es.upm.mabills.api.RestClientTestService;
 import es.upm.mabills.api.dtos.LoginDto;
 import es.upm.mabills.model.BankAccount;
+import es.upm.mabills.model.CreditCard;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -12,6 +13,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @ApiTestConfig
 class BankAccountResourceIT {
@@ -21,6 +23,8 @@ class BankAccountResourceIT {
     private static final String NEW_IBAN = "ES7921000813610123456789";
     private static final String EXIST_IBAN = "ES004120003120034012";
     private static final String TO_DELETE_BANK_ACCOUNT = "to_delete_bank_account";
+    private static final String TO_DELETE_IBAN_WITH_CREDIT_CARD = "to_delete_bank_account_entity_with_credit_card";
+    private static final String CREDIT_CARD_NUMBER_WITH_DELETED_BANK_ACCOUNT = "bank_account_will_be_deleted";
 
     @Autowired
     private RestClientTestService restClientTestService;
@@ -129,6 +133,42 @@ class BankAccountResourceIT {
                 .exchange()
                 .expectStatus()
                 .isNotFound();
+    }
+
+    @Test
+    void testDeleteBankAccountWithCreditCard() {
+        String toDeleteBankAccountUuid = getBankAccountWithCreditCardUuid();
+        restClientTestService
+                .loginDefault(webTestClient)
+                .delete()
+                .uri(BankAccountResource.BANK_ACCOUNTS + BankAccountResource.UUID, toDeleteBankAccountUuid)
+                .exchange()
+                .expectStatus()
+                .isOk();
+        assertCreditCardDoesNotHasBankAccount();
+    }
+
+    private void assertCreditCardDoesNotHasBankAccount() {
+        CreditCard cd = restClientTestService
+                .loginDefault(webTestClient)
+                .get()
+                .uri(CreditCardResource.CREDIT_CARDS)
+                .exchange()
+                .returnResult(CreditCard.class)
+                .getResponseBody()
+                .filter(creditCard -> creditCard.getCreditCardNumber().equals(CREDIT_CARD_NUMBER_WITH_DELETED_BANK_ACCOUNT))
+                .toStream()
+                .toList()
+                .get(0);
+        assertNull(cd.getBankAccount());
+    }
+
+    private String getBankAccountWithCreditCardUuid() {
+        return getDefaultUserBankAccountsStream()
+                .filter(ba -> ba.getIban().equals(TO_DELETE_IBAN_WITH_CREDIT_CARD))
+                .toList()
+                .get(0)
+                .getUuid();
     }
 
     private String getToDeleteBankAccountUuid() {
