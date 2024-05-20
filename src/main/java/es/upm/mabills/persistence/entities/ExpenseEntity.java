@@ -48,4 +48,8 @@ public class ExpenseEntity {
     @ManyToOne
     @JoinColumn(name = "creditCardId", referencedColumnName = "uuid")
     private CreditCardEntity creditCard;
+
+    @ManyToOne
+    @JoinColumn(name = "bankAccountId", referencedColumnName = "uuid")
+    private BankAccountEntity bankAccount;
 }

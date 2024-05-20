@@ -7,12 +7,14 @@ import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.entities.BankAccountEntity;
 import es.upm.mabills.persistence.entities.CreditCardEntity;
 import es.upm.mabills.persistence.entities.UserEntity;
+import es.upm.mabills.persistence.entity_decouplers.EntityDependentManager;
 import es.upm.mabills.persistence.repositories.BankAccountRepository;
 import es.upm.mabills.persistence.repositories.CreditCardRepository;
 import es.upm.mabills.persistence.repositories.RepositorySort;
 import es.upm.mabills.persistence.repositories.UserRepository;
 import io.vavr.control.Try;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -23,13 +25,14 @@ public class CreditCardPersistence {
     private final CreditCardRepository creditCardRepository;
     private final UserRepository userRepository;
     private final BankAccountRepository bankAccountRepository;
-
+    private final EntityDependentManager entityDependentManager;
     @Autowired
     public CreditCardPersistence(CreditCardRepository creditCardRepository, UserRepository userRepository,
-                                 BankAccountRepository bankAccountRepository) {
+                                 BankAccountRepository bankAccountRepository, @Qualifier("creditCardEntityDependentManager") EntityDependentManager entityDependentManager) {
         this.creditCardRepository = creditCardRepository;
         this.userRepository = userRepository;
         this.bankAccountRepository = bankAccountRepository;
+        this.entityDependentManager = entityDependentManager;
     }
 
     public List<CreditCardEntity> findCreditCardsForUser(UserPrincipal user) {
@@ -64,9 +67,14 @@ public class CreditCardPersistence {
 
     public void deleteCreditCard(UserPrincipal userPrincipal, String uuid) {
         Try.of(() -> creditCardRepository.findByUserIdAndUuid(userPrincipal.getId(), UUID.fromString(uuid)))
-                .andThen(creditCardRepository::delete)
+                .andThen(this::deleteCreditCard)
                 .onFailure(ex ->{
                    throw new CreditCardNotFoundException(uuid);
                 });
+    }
+
+    public void deleteCreditCard(CreditCardEntity creditCardEntity) {
+        this.entityDependentManager.decouple(creditCardEntity.getUuid());
+        this.creditCardRepository.delete(creditCardEntity);
     }
 }

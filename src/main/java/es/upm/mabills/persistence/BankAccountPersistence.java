@@ -6,7 +6,7 @@ import es.upm.mabills.model.BankAccount;
 import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.entities.BankAccountEntity;
 import es.upm.mabills.persistence.entities.UserEntity;
-import es.upm.mabills.persistence.entity_decouplers.EntityRelationshipsManager;
+import es.upm.mabills.persistence.entity_decouplers.EntityDependentManager;
 import es.upm.mabills.persistence.repositories.BankAccountRepository;
 import es.upm.mabills.persistence.repositories.UserRepository;
 import io.vavr.control.Try;
@@ -27,14 +27,14 @@ public class BankAccountPersistence {
 
     private final UserRepository userRepository;
 
-    private final EntityRelationshipsManager entityRelationshipsManager;
+    private final EntityDependentManager entityDependentManager;
 
     @Autowired
     public BankAccountPersistence(BankAccountRepository bankAccountRepository, UserRepository userRepository,
-                                  @Qualifier("bankAccountEntityRelationshipsManager") EntityRelationshipsManager entityRelationshipsManager) {
+                                  @Qualifier("bankAccountEntityRelationshipsManager") EntityDependentManager entityDependentManager) {
         this.bankAccountRepository = bankAccountRepository;
         this.userRepository = userRepository;
-        this.entityRelationshipsManager = entityRelationshipsManager;
+        this.entityDependentManager = entityDependentManager;
     }
 
     public List<BankAccountEntity> findBankAccountsForUser(UserPrincipal userPrincipal) {
@@ -60,7 +60,7 @@ public class BankAccountPersistence {
     }
 
     private void deleteBankAccount(BankAccountEntity bankAccountEntity) {
-        entityRelationshipsManager.decouple(bankAccountEntity.getUuid());
+        entityDependentManager.decouple(bankAccountEntity.getUuid());
         bankAccountRepository.deleteById(bankAccountEntity.getUuid());
     }
 

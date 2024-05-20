@@ -2,14 +2,20 @@ package es.upm.mabills.persistence;
 
 import es.upm.mabills.TestConfig;
 import es.upm.mabills.exceptions.BankAccountNotFoundException;
+import es.upm.mabills.exceptions.MaBillsServiceException;
 import es.upm.mabills.model.BankAccount;
 import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.entities.BankAccountEntity;
 import es.upm.mabills.persistence.entities.CreditCardEntity;
+import es.upm.mabills.persistence.entity_decouplers.EntityDependentManager;
+import es.upm.mabills.persistence.repositories.BankAccountRepository;
+import es.upm.mabills.persistence.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -17,6 +23,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @TestConfig
 class BankAccountPersistenceIT {
@@ -28,6 +40,7 @@ class BankAccountPersistenceIT {
     private static final String TO_DELETE_IBAN_WITH_CREDIT_CARD = "to_delete_bank_account_entity_with_credit_card";
     private static final String CREDIT_CARD_NUMBER_WITH_DELETED_BANK_ACCOUNT = "bank_account_will_be_deleted";
     private static final String OTHER_USER = "otherUser";
+    private static final String RANDOM_UUID = UUID.randomUUID().toString();
 
     @Autowired
     private BankAccountPersistence bankAccountPersistence;
@@ -37,6 +50,7 @@ class BankAccountPersistenceIT {
 
     @Autowired
     private CreditCardPersistence creditCardPersistence;
+
 
     private UserPrincipal encodedUserPrincipal;
     private UserPrincipal notFoundUserPrincipal;
@@ -126,4 +140,28 @@ class BankAccountPersistenceIT {
         assertNull(creditCardEntity.getBankAccount());
     }
 
+    @Test
+    void testDeleteBankAccountThrowsDbUnknownException() {
+        BankAccountRepository repository = mock(BankAccountRepository.class);
+        EntityDependentManager entityDependentManager = mock(EntityDependentManager.class);
+        BankAccountPersistence bankAccountPersistence = createBankAccountPersistenceWithMocks(repository, entityDependentManager);
+        doThrow(DataIntegrityViolationException.class).when(repository).deleteById(any());
+        doNothing().when(entityDependentManager).decouple(any());
+        when(repository.findByUserIdAndUuid(anyInt(), any())).thenReturn(BankAccountEntity.builder().uuid(UUID.fromString(RANDOM_UUID)).build());
+        assertThrows(MaBillsServiceException.class, () -> bankAccountPersistence.deleteBankAccount(encodedUserPrincipal, RANDOM_UUID));
+    }
+
+    @Test
+    void testDeleteBankAccountThrowsNullPointerException() {
+        BankAccountRepository repository = mock(BankAccountRepository.class);
+        EntityDependentManager entityDependentManager = mock(EntityDependentManager.class);
+        BankAccountPersistence bankAccountPersistence = createBankAccountPersistenceWithMocks(repository, entityDependentManager);
+        doThrow(NullPointerException.class).when(entityDependentManager).decouple(any());
+        assertThrows(BankAccountNotFoundException.class, () -> bankAccountPersistence.deleteBankAccount(encodedUserPrincipal, RANDOM_UUID));
+    }
+
+    private BankAccountPersistence createBankAccountPersistenceWithMocks(BankAccountRepository mockRepository,
+                                                                         EntityDependentManager mockEntityDependantManager) {
+        return new BankAccountPersistence(mockRepository, mock(UserRepository.class), mockEntityDependantManager);
+    }
 }

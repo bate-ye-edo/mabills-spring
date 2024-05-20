@@ -40,6 +40,7 @@ public class CreditCardService {
                 .getOrElseThrow(EntityNotFoundExceptionMapper::map);
     }
 
+    @Transactional
     public void deleteCreditCard(UserPrincipal userPrincipal, String uuid) {
         try{
             creditCardPersistence.deleteCreditCard(userPrincipal, uuid);

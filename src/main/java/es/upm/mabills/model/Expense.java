@@ -24,4 +24,5 @@ public class Expense {
     private String description;
     private FormOfPayment formOfPayment;
     private CreditCard creditCard;
+    private BankAccount bankAccount;
 }
