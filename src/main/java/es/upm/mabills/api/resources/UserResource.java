@@ -76,7 +76,7 @@ public class UserResource {
     }
 
     @PutMapping
-    public User updateUser(@AuthenticationPrincipal UserPrincipal userPrincipal, @Validated @RequestBody User user) {
+    public User updateUserProfile(@AuthenticationPrincipal UserPrincipal userPrincipal, @Validated @RequestBody User user) {
         return this.userService.updateUser(userPrincipal.getUsername(), user);
     }
 }
