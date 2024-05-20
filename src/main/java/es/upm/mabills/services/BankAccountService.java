@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -39,6 +40,7 @@ public class BankAccountService {
                 .getOrElseThrow(() -> new BankAccountAlreadyExistsException(userPrincipal.getUsername(), bankAccount.getIban()));
     }
 
+    @Transactional
     public void deleteBankAccount(UserPrincipal userPrincipal, String uuid) {
         try {
             bankAccountPersistence.deleteBankAccount(userPrincipal, uuid);

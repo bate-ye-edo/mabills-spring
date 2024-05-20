@@ -23,4 +23,5 @@ public class Expense {
     private Timestamp expenseDate;
     private String description;
     private FormOfPayment formOfPayment;
+    private CreditCard creditCard;
 }

@@ -19,7 +19,7 @@ public class EntityNotFoundExceptionMapper {
     );
 
     public static RuntimeException map(Throwable e) {
-        LOGGER.error("Mapping exception", e);
+        LOGGER.warn("Mapping exception: {}", e.getMessage());
         for(Map.Entry<Predicate<Throwable>, RuntimeException> entry : EXCEPTION_MAPPER.entrySet()) {
             if (entry.getKey().test(e)) {
                 return entry.getValue();
