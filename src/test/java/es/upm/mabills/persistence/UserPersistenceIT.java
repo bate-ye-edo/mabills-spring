@@ -7,7 +7,6 @@ import es.upm.mabills.exceptions.UserAlreadyExistsException;
 import es.upm.mabills.exceptions.UserNotFoundException;
 import es.upm.mabills.model.BankAccount;
 import es.upm.mabills.model.User;
-import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.entities.UserEntity;
 import es.upm.mabills.persistence.repositories.BankAccountRepository;
 import lombok.SneakyThrows;
@@ -98,9 +97,7 @@ class UserPersistenceIT {
     @Transactional
     void testUserHasBankAccount() {
         assertDoesNotThrow(() -> userPersistence.assertUserHasBankAccount(
-                UserPrincipal.builder()
-                    .username(ENCODED_PASSWORD_USER)
-                    .build(),
+                userPersistence.findUserByUsername(ENCODED_PASSWORD_USER),
                 BankAccount.builder()
                     .uuid(userPersistence
                             .findUserByUsername(ENCODED_PASSWORD_USER)
@@ -111,14 +108,13 @@ class UserPersistenceIT {
     @Test
     @Transactional
     void testUserHasBankAccountNotFound() {
-        UserPrincipal userPrincipal = UserPrincipal.builder()
-                .username(ENCODED_PASSWORD_USER)
-                .build();
         BankAccount bankAccount = BankAccount.builder()
                 .uuid(UUID.randomUUID().toString())
                 .iban("iban")
                 .build();
-        assertThrows(BankAccountNotFoundException.class, () -> userPersistence.assertUserHasBankAccount(userPrincipal, bankAccount));
+        UserEntity user = userPersistence.findUserByUsername(ENCODED_PASSWORD_USER);
+        assertThrows(BankAccountNotFoundException.class,
+                () -> userPersistence.assertUserHasBankAccount(user, bankAccount));
     }
 
     private User buildUpdateUserNewUser() {

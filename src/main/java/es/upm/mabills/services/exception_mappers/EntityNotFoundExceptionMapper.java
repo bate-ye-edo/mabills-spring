@@ -1,6 +1,8 @@
 package es.upm.mabills.services.exception_mappers;
 
 import es.upm.mabills.exceptions.BankAccountNotFoundException;
+import es.upm.mabills.exceptions.CreditCardNotFoundException;
+import es.upm.mabills.exceptions.ExpenseCategoryNotFoundException;
 import es.upm.mabills.exceptions.UserNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,10 +14,14 @@ public class EntityNotFoundExceptionMapper {
     private static final Logger LOGGER = LoggerFactory.getLogger(EntityNotFoundExceptionMapper.class);
     private static final Predicate<Throwable> BANK_ACCOUNT_NOT_FOUND = e -> e.getMessage().contains("BankAccountEntity");
     private static final Predicate<Throwable> USER_NOT_FOUND = e -> e.getMessage().contains("UserEntity");
+    private static final Predicate<Throwable> CREDIT_CARD_NOT_FOUND = e -> e.getMessage().contains("CreditCardEntity");
+    private static final Predicate<Throwable> EXPENSE_CATEGORY_NOT_FOUND = e -> e.getMessage().contains("ExpenseCategoryEntity");
 
     private static final Map<Predicate<Throwable>, RuntimeException> EXCEPTION_MAPPER = Map.ofEntries(
             Map.entry(BANK_ACCOUNT_NOT_FOUND, new BankAccountNotFoundException()),
-            Map.entry(USER_NOT_FOUND, new UserNotFoundException())
+            Map.entry(USER_NOT_FOUND, new UserNotFoundException()),
+            Map.entry(CREDIT_CARD_NOT_FOUND, new CreditCardNotFoundException()),
+            Map.entry(EXPENSE_CATEGORY_NOT_FOUND, new ExpenseCategoryNotFoundException())
     );
 
     public static RuntimeException map(Throwable e) {

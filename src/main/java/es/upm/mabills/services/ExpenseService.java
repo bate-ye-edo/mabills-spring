@@ -5,6 +5,7 @@ import es.upm.mabills.mappers.ExpenseMapper;
 import es.upm.mabills.model.Expense;
 import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.ExpensePersistence;
+import es.upm.mabills.services.exception_mappers.EntityNotFoundExceptionMapper;
 import io.vavr.control.Try;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,5 +30,11 @@ public class ExpenseService {
                         .map(expenseMapper::toExpense)
                         .toList())
                 .getOrElseThrow(e -> new MaBillsServiceException());
+    }
+
+    public Expense createExpense(UserPrincipal userPrincipal, Expense expense) {
+        return Try.of(() -> expenseMapper.toExpense(
+                    expensePersistence.createExpense(userPrincipal, expense)))
+                .getOrElseThrow(EntityNotFoundExceptionMapper::map);
     }
 }

@@ -22,7 +22,7 @@ public class Expense {
     private Timestamp expenseDate;
     private String description;
     private FormOfPayment formOfPayment;
-    private ExpenseCategory category;
+    private ExpenseCategory expenseCategory;
     private CreditCard creditCard;
     private BankAccount bankAccount;
 }

@@ -162,7 +162,7 @@ public class DatabaseSeeder {
                 .expenseDate(new Timestamp(System.currentTimeMillis()))
                 .description("description")
                 .formOfPayment(FormOfPayment.BANK_TRANSFER.name())
-                .category(userNameUserExpense)
+                .expenseCategory(userNameUserExpense)
                 .creditCard(creditCardEntity)
                 .bankAccount(bankAccountEntity)
                 .build();

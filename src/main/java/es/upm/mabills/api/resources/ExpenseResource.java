@@ -6,6 +6,7 @@ import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.services.ExpenseService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
@@ -24,5 +25,10 @@ public class ExpenseResource {
     @GetMapping
     public List<Expense> getUserExpenses(@AuthenticationPrincipal UserPrincipal userPrincipal) {
         return expenseService.getUserExpenses(userPrincipal);
+    }
+
+    @PostMapping
+    public Expense createExpense(@AuthenticationPrincipal UserPrincipal userPrincipal, Expense expense) {
+        return expenseService.createExpense(userPrincipal, expense);
     }
 }
