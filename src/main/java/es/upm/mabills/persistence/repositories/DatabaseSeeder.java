@@ -1,8 +1,10 @@
 package es.upm.mabills.persistence.repositories;
 
+import es.upm.mabills.model.FormOfPayment;
 import es.upm.mabills.persistence.entities.BankAccountEntity;
 import es.upm.mabills.persistence.entities.CreditCardEntity;
 import es.upm.mabills.persistence.entities.ExpenseCategoryEntity;
+import es.upm.mabills.persistence.entities.ExpenseEntity;
 import es.upm.mabills.persistence.entities.UserEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -10,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
 
 @Repository
@@ -21,16 +25,18 @@ public class DatabaseSeeder {
     private final ExpenseCategoryRepository expenseCategoryRepository;
     private final CreditCardRepository creditCardRepository;
     private final BankAccountRepository bankAccountRepository;
-
+    private final ExpenseRepository expenseRepository;
     @Autowired
     public DatabaseSeeder(UserRepository userRepository, ExpenseCategoryRepository expenseCategoryRepository,
-                          CreditCardRepository creditCardRepository, BankAccountRepository bankAccountRepository) {
+                          CreditCardRepository creditCardRepository, BankAccountRepository bankAccountRepository,
+                          ExpenseRepository expenseRepository) {
         LOGGER.warn("----- Initialize database seeding -----");
         LogManager.getLogger();
         this.userRepository = userRepository;
         this.expenseCategoryRepository = expenseCategoryRepository;
         this.creditCardRepository = creditCardRepository;
         this.bankAccountRepository = bankAccountRepository;
+        this.expenseRepository = expenseRepository;
         this.deleteAll();
         this.seedDatabase();
         LOGGER.warn("----- End -----");
@@ -38,6 +44,7 @@ public class DatabaseSeeder {
 
     private void deleteAll(){
         LOGGER.warn("----- Remove data from database -----");
+        this.expenseRepository.deleteAll();
         this.creditCardRepository.deleteAll();
         this.bankAccountRepository.deleteAll();
         this.expenseCategoryRepository.deleteAll();
@@ -147,6 +154,20 @@ public class DatabaseSeeder {
                 .creditCardNumber("bank_account_will_be_deleted")
                 .build();
         this.creditCardRepository.saveAll(List.of(creditCardEntity, toDeleteCreditCard, creditCardToDelete, creditCardWithBankAccountToDelete));
+
+        // Expenses
+        ExpenseEntity expenseEntity = ExpenseEntity.builder()
+                .amount(BigDecimal.ONE)
+                .user(encodedPasswordUser)
+                .expenseDate(new Timestamp(System.currentTimeMillis()))
+                .description("description")
+                .formOfPayment(FormOfPayment.BANK_TRANSFER.name())
+                .category(userNameUserExpense)
+                .creditCard(creditCardEntity)
+                .bankAccount(bankAccountEntity)
+                .build();
+
+        this.expenseRepository.saveAll(List.of(expenseEntity));
         LOGGER.warn("----- End seeding database -----");
     }
 }

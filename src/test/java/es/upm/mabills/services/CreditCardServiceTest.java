@@ -9,6 +9,7 @@ import es.upm.mabills.exceptions.UserNotFoundException;
 import es.upm.mabills.model.CreditCard;
 import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.CreditCardPersistence;
+import es.upm.mabills.persistence.UserPersistence;
 import es.upm.mabills.persistence.entities.BankAccountEntity;
 import es.upm.mabills.persistence.entities.CreditCardEntity;
 import es.upm.mabills.persistence.entities.UserEntity;
@@ -54,6 +55,8 @@ class CreditCardServiceTest {
     @MockBean
     private CreditCardPersistence creditCardPersistence;
 
+    @MockBean
+    private UserPersistence userPersistence;
 
     private final UserEntity userEntity = UserEntity.builder()
             .username(ENCODED_PASSWORD_USER)
@@ -149,6 +152,20 @@ class CreditCardServiceTest {
         assertEquals(NOT_EXISTS_BANK_ACCOUNT_UUID, createdCreditCard.getBankAccount().getUuid());
         assertEquals(NOT_EXISTS_BANK_ACCOUNT_IBAN, createdCreditCard.getBankAccount().getIban());
     }
+
+    @Test
+    void testCreateCreditCardBankAccountOfOtherUser() {
+        doThrow(BankAccountNotFoundException.class).when(userPersistence).assertUserHasBankAccount(any(),any());
+        CreditCard creditCard = CreditCard.builder()
+                .creditCardNumber(NEW_CREDIT_CARD_NUMBER)
+                .bankAccount(es.upm.mabills.model.BankAccount.builder()
+                        .uuid(NOT_EXISTS_BANK_ACCOUNT_UUID)
+                        .iban(NOT_EXISTS_BANK_ACCOUNT_IBAN)
+                        .build())
+                .build();
+        assertThrows(BankAccountNotFoundException.class, () -> creditCardService.createCreditCard(ENCODED_PASSWORD_USER_PRINCIPAL, creditCard));
+    }
+
 
     @Test
     void testDeleteCreditCard() {

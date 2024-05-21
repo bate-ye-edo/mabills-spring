@@ -144,20 +144,20 @@ class BankAccountPersistenceIT {
     void testDeleteBankAccountThrowsDbUnknownException() {
         BankAccountRepository repository = mock(BankAccountRepository.class);
         EntityDependentManager entityDependentManager = mock(EntityDependentManager.class);
-        BankAccountPersistence bankAccountPersistence = createBankAccountPersistenceWithMocks(repository, entityDependentManager);
+        BankAccountPersistence bankAccountPersistence1 = createBankAccountPersistenceWithMocks(repository, entityDependentManager);
         doThrow(DataIntegrityViolationException.class).when(repository).deleteById(any());
         doNothing().when(entityDependentManager).decouple(any());
         when(repository.findByUserIdAndUuid(anyInt(), any())).thenReturn(BankAccountEntity.builder().uuid(UUID.fromString(RANDOM_UUID)).build());
-        assertThrows(MaBillsServiceException.class, () -> bankAccountPersistence.deleteBankAccount(encodedUserPrincipal, RANDOM_UUID));
+        assertThrows(MaBillsServiceException.class, () -> bankAccountPersistence1.deleteBankAccount(encodedUserPrincipal, RANDOM_UUID));
     }
 
     @Test
     void testDeleteBankAccountThrowsNullPointerException() {
         BankAccountRepository repository = mock(BankAccountRepository.class);
         EntityDependentManager entityDependentManager = mock(EntityDependentManager.class);
-        BankAccountPersistence bankAccountPersistence = createBankAccountPersistenceWithMocks(repository, entityDependentManager);
+        BankAccountPersistence bankAccountPersistence1 = createBankAccountPersistenceWithMocks(repository, entityDependentManager);
         doThrow(NullPointerException.class).when(entityDependentManager).decouple(any());
-        assertThrows(BankAccountNotFoundException.class, () -> bankAccountPersistence.deleteBankAccount(encodedUserPrincipal, RANDOM_UUID));
+        assertThrows(BankAccountNotFoundException.class, () -> bankAccountPersistence1.deleteBankAccount(encodedUserPrincipal, RANDOM_UUID));
     }
 
     private BankAccountPersistence createBankAccountPersistenceWithMocks(BankAccountRepository mockRepository,

@@ -17,12 +17,12 @@ public class Expense {
     private String uuid;
     @NotNull
     private BigDecimal amount;
-    private ExpenseCategory category;
     private Timestamp creationDate;
     @NotNull
     private Timestamp expenseDate;
     private String description;
     private FormOfPayment formOfPayment;
+    private ExpenseCategory category;
     private CreditCard creditCard;
     private BankAccount bankAccount;
 }

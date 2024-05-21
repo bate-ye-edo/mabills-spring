@@ -42,6 +42,9 @@ public class UserEntity {
     @OneToMany(mappedBy = "user")
     private List<BankAccountEntity> bankAccounts;
 
+    @OneToMany(mappedBy = "user")
+    private List<CreditCardEntity> creditCards;
+
     public UserEntity(User user, @NonNull String encodedPassword) {
         BeanUtils.copyProperties(user, this);
         this.password = encodedPassword;

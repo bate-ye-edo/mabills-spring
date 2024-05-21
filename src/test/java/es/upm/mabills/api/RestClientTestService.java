@@ -5,6 +5,7 @@ import es.upm.mabills.api.dtos.TokenDto;
 import es.upm.mabills.api.resources.UserResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -16,6 +17,7 @@ import java.util.Objects;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Service
+@Profile("test")
 public class RestClientTestService {
     private static final String ENCODED_PASSWORD_USER = "encodedPasswordUser";
     private static final String PASSWORD = "password";

@@ -3,9 +3,11 @@ package es.upm.mabills.services;
 import es.upm.mabills.exceptions.CreditCardNotFoundException;
 import es.upm.mabills.exceptions.MaBillsServiceException;
 import es.upm.mabills.mappers.CreditCardMapper;
+import es.upm.mabills.model.BankAccount;
 import es.upm.mabills.model.CreditCard;
 import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.CreditCardPersistence;
+import es.upm.mabills.persistence.UserPersistence;
 import es.upm.mabills.services.exception_mappers.EntityNotFoundExceptionMapper;
 import io.vavr.control.Try;
 import org.slf4j.Logger;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -22,10 +25,13 @@ public class CreditCardService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CreditCardService.class);
     private final CreditCardPersistence creditCardPersistence;
     private final CreditCardMapper creditCardMapper;
+    private final UserPersistence userPersistence;
     @Autowired
-    public CreditCardService(CreditCardPersistence creditCardPersistence, CreditCardMapper creditCardMapper) {
+    public CreditCardService(CreditCardPersistence creditCardPersistence, CreditCardMapper creditCardMapper,
+                             UserPersistence userPersistence) {
         this.creditCardPersistence = creditCardPersistence;
         this.creditCardMapper = creditCardMapper;
+        this.userPersistence = userPersistence;
     }
 
     public List<CreditCard> findCreditCardsForUser(UserPrincipal user) {
@@ -35,9 +41,17 @@ public class CreditCardService {
                 .toList();
     }
 
+    @Transactional
     public CreditCard createCreditCard(UserPrincipal user, CreditCard creditCard) {
+        assertUserHasBankAccount(user, creditCard.getBankAccount());
         return Try.of(()->creditCardMapper.toCreditCard(creditCardPersistence.createCreditCard(user, creditCard)))
                 .getOrElseThrow(EntityNotFoundExceptionMapper::map);
+    }
+
+    private void assertUserHasBankAccount(UserPrincipal user, BankAccount bankAccount) {
+        if(Objects.nonNull(bankAccount)){
+            userPersistence.assertUserHasBankAccount(user, bankAccount);
+        }
     }
 
     @Transactional

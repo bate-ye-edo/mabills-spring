@@ -1,9 +1,12 @@
 package es.upm.mabills.persistence;
 
+import es.upm.mabills.exceptions.BankAccountNotFoundException;
 import es.upm.mabills.exceptions.DuplicatedEmailException;
 import es.upm.mabills.exceptions.UserAlreadyExistsException;
 import es.upm.mabills.exceptions.UserNotFoundException;
+import es.upm.mabills.model.BankAccount;
 import es.upm.mabills.model.User;
+import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.entities.UserEntity;
 import es.upm.mabills.persistence.repositories.UserRepository;
 import io.vavr.control.Try;
@@ -12,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.UUID;
 
 
 @Repository
@@ -54,5 +58,19 @@ public class UserPersistence {
                 })
                 .andThenTry(userRepository::save)
                 .getOrElseThrow(()->new DuplicatedEmailException(user.getEmail()));
+    }
+
+    public void assertUserHasBankAccount(UserPrincipal user, BankAccount bankAccount) {
+        if(!isCreditCardBankAccountValid(user, bankAccount)) {
+            throw new BankAccountNotFoundException(bankAccount.getIban());
+        }
+    }
+
+    private boolean isCreditCardBankAccountValid(UserPrincipal user, BankAccount bankAccount) {
+        return userRepository.findByUsername(user.getUsername())
+                .getBankAccounts()
+                .stream()
+                .anyMatch(bankAccountEntity -> bankAccountEntity.getUuid()
+                        .compareTo(UUID.fromString(bankAccount.getUuid())) == 0);
     }
 }

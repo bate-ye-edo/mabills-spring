@@ -1,14 +1,19 @@
 package es.upm.mabills.persistence;
 
 import es.upm.mabills.TestConfig;
+import es.upm.mabills.exceptions.BankAccountNotFoundException;
 import es.upm.mabills.exceptions.DuplicatedEmailException;
 import es.upm.mabills.exceptions.UserAlreadyExistsException;
 import es.upm.mabills.exceptions.UserNotFoundException;
+import es.upm.mabills.model.BankAccount;
 import es.upm.mabills.model.User;
+import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.entities.UserEntity;
+import es.upm.mabills.persistence.repositories.BankAccountRepository;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -20,8 +25,13 @@ class UserPersistenceIT {
     private static final String NEW_REGISTER_USER = UUID.randomUUID().toString();
     private static final String TO_UPDATE_USER = "toUpdateUser";
     private static final String NOT_FOUND_USER = "notFoundUser";
+    private static final String ENCODED_PASSWORD_USER = "encodedPasswordUser";
+
     @Autowired
     private UserPersistence userPersistence;
+
+    @Autowired
+    private BankAccountRepository bankAccountRepository;
 
     @Test
     @SneakyThrows
@@ -82,6 +92,33 @@ class UserPersistenceIT {
     void testUpdateUserEmailAlreadyExists() {
         User user = buildUserEmailAlreadyExists();
         assertThrows(DuplicatedEmailException.class, () -> userPersistence.updateUser(TO_UPDATE_USER, user));
+    }
+
+    @Test
+    @Transactional
+    void testUserHasBankAccount() {
+        assertDoesNotThrow(() -> userPersistence.assertUserHasBankAccount(
+                UserPrincipal.builder()
+                    .username(ENCODED_PASSWORD_USER)
+                    .build(),
+                BankAccount.builder()
+                    .uuid(userPersistence
+                            .findUserByUsername(ENCODED_PASSWORD_USER)
+                            .getBankAccounts().get(0).getUuid().toString())
+                    .build()));
+    }
+
+    @Test
+    @Transactional
+    void testUserHasBankAccountNotFound() {
+        UserPrincipal userPrincipal = UserPrincipal.builder()
+                .username(ENCODED_PASSWORD_USER)
+                .build();
+        BankAccount bankAccount = BankAccount.builder()
+                .uuid(UUID.randomUUID().toString())
+                .iban("iban")
+                .build();
+        assertThrows(BankAccountNotFoundException.class, () -> userPersistence.assertUserHasBankAccount(userPrincipal, bankAccount));
     }
 
     private User buildUpdateUserNewUser() {
