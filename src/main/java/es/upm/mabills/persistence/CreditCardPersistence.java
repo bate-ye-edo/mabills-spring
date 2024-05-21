@@ -25,6 +25,7 @@ public class CreditCardPersistence {
     private final CreditCardRepository creditCardRepository;
     private final EntityDependentManager entityDependentManager;
     private final EntityReferenceFactory entityReferenceFactory;
+
     @Autowired
     public CreditCardPersistence(CreditCardRepository creditCardRepository,
                                  @Qualifier("creditCardEntityDependentManager") EntityDependentManager entityDependentManager,
@@ -63,7 +64,8 @@ public class CreditCardPersistence {
     private BankAccountEntity getBankAccountEntity(BankAccount bankAccount) {
         return Optional.ofNullable(bankAccount)
                 .map(BankAccount::getUuid)
-                .map(uuid -> entityReferenceFactory.buildReference(BankAccountEntity.class, UUID.fromString(uuid)))
+                .map(UUID::fromString)
+                .map(uuid -> entityReferenceFactory.buildReference(BankAccountEntity.class, uuid))
                 .orElse(null);
     }
 

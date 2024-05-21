@@ -6,12 +6,13 @@ import es.upm.mabills.mappers.CreditCardMapper;
 import es.upm.mabills.model.CreditCard;
 import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.CreditCardPersistence;
-import es.upm.mabills.persistence.UserPersistence;
+import es.upm.mabills.services.dependency_validators.DependencyValidator;
 import es.upm.mabills.services.exception_mappers.EntityNotFoundExceptionMapper;
 import io.vavr.control.Try;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,14 +24,14 @@ public class CreditCardService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CreditCardService.class);
     private final CreditCardPersistence creditCardPersistence;
     private final CreditCardMapper creditCardMapper;
-    private final UserPersistence userPersistence;
+    private final DependencyValidator dependencyValidator;
 
     @Autowired
     public CreditCardService(CreditCardPersistence creditCardPersistence, CreditCardMapper creditCardMapper,
-                             UserPersistence userPersistence) {
+                             @Qualifier("creditCardDependencyValidator") DependencyValidator dependencyValidator) {
         this.creditCardPersistence = creditCardPersistence;
         this.creditCardMapper = creditCardMapper;
-        this.userPersistence = userPersistence;
+        this.dependencyValidator = dependencyValidator;
     }
 
     public List<CreditCard> findCreditCardsForUser(UserPrincipal user) {
@@ -42,9 +43,7 @@ public class CreditCardService {
 
     @Transactional
     public CreditCard createCreditCard(UserPrincipal user, CreditCard creditCard) {
-        userPersistence.assertUserHasBankAccount(
-                userPersistence.findUserByUsername(user.getUsername()),
-                creditCard.getBankAccount());
+        dependencyValidator.assertDependencies(user, creditCard);
         return Try.of(()->creditCardMapper.toCreditCard(creditCardPersistence.createCreditCard(user, creditCard)))
                 .getOrElseThrow(EntityNotFoundExceptionMapper::map);
     }

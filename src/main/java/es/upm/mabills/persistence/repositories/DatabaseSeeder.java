@@ -113,7 +113,11 @@ public class DatabaseSeeder {
                 .name("expenseCategoryUserExpenseCategory")
                 .user(expenseCategoryUser)
                 .build();
-        this.expenseCategoryRepository.saveAll(List.of(userNameUserExpense, expenseCategoryUserExpense));
+        ExpenseCategoryEntity encodedPasswordUserExpenseCategory = ExpenseCategoryEntity.builder()
+                .name("encodedPasswordUserExpenseCategory")
+                .user(encodedPasswordUser)
+                .build();
+        this.expenseCategoryRepository.saveAll(List.of(userNameUserExpense, expenseCategoryUserExpense, encodedPasswordUserExpenseCategory));
 
 
         // Bank accounts

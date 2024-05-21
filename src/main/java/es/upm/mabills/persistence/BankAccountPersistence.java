@@ -71,4 +71,8 @@ public class BankAccountPersistence {
         LOGGER.error("Unexpected exception: ", ex);
         throw new MaBillsServiceException();
     }
+
+    public BankAccountEntity findBankAccountByUserAndUuid(UserPrincipal userPrincipal, String uuid) {
+        return bankAccountRepository.findByUserIdAndUuid(userPrincipal.getId(), UUID.fromString(uuid));
+    }
 }

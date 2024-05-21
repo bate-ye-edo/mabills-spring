@@ -10,6 +10,7 @@ import es.upm.mabills.persistence.entities.CreditCardEntity;
 import es.upm.mabills.persistence.entities.ExpenseCategoryEntity;
 import es.upm.mabills.persistence.entities.ExpenseEntity;
 import es.upm.mabills.persistence.entities.UserEntity;
+import es.upm.mabills.persistence.repositories.ExpenseCategoryRepository;
 import es.upm.mabills.persistence.repositories.ExpenseRepository;
 import io.vavr.control.Try;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,18 +18,20 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public class ExpensePersistence {
     private final ExpenseRepository expenseRepository;
     private final EntityReferenceFactory entityReferenceFactory;
-    private final UserPersistence userPersistence;
+    private final ExpenseCategoryRepository expenseCategoryRepository;
+
     @Autowired
     public ExpensePersistence(ExpenseRepository expenseRepository, EntityReferenceFactory entityReferenceFactory,
-                              UserPersistence userPersistence) {
+                              ExpenseCategoryRepository expenseCategoryRepository) {
         this.expenseRepository = expenseRepository;
         this.entityReferenceFactory = entityReferenceFactory;
-        this.userPersistence = userPersistence;
+        this.expenseCategoryRepository = expenseCategoryRepository;
     }
 
     public List<ExpenseEntity> findExpenseByUserId(UserPrincipal userPrincipal) {
@@ -36,45 +39,44 @@ public class ExpensePersistence {
     }
 
     public ExpenseEntity createExpense(UserPrincipal userPrincipal, Expense expense) {
-        return Try.of(() -> userPersistence.findUserByUsername(userPrincipal.getUsername()))
-                .map(user -> buildExpense(user, expense))
+        return Try.of(() -> buildExpense(userPrincipal, expense))
                 .map(expenseRepository::save)
                 .get();
     }
 
-    private ExpenseEntity buildExpense(UserEntity user, Expense expense) {
+    private ExpenseEntity buildExpense(UserPrincipal userPrincipal, Expense expense) {
         return ExpenseEntity.builder()
                 .amount(expense.getAmount())
-                .user(entityReferenceFactory.buildReference(UserEntity.class, user.getId()))
+                .user(entityReferenceFactory.buildReference(UserEntity.class, userPrincipal.getId()))
                 .expenseDate(expense.getExpenseDate())
                 .description(expense.getDescription())
                 .formOfPayment(expense.getFormOfPayment().name())
-                .bankAccount(buildBankAccount(user, expense.getBankAccount()))
-                .creditCard(buildCreditCard(user, expense.getCreditCard()))
-                .expenseCategory(buildExpenseCategory(user, expense.getExpenseCategory()))
+                .bankAccount(buildBankAccountEntity(expense.getBankAccount()))
+                .creditCard(buildCreditCardEntity(expense.getCreditCard()))
+                .expenseCategory(buildExpenseCategoryEntity(userPrincipal, expense.getExpenseCategory()))
                 .build();
     }
 
-    private ExpenseCategoryEntity buildExpenseCategory(UserEntity user, ExpenseCategory expenseCategory) {
-        userPersistence.assertUserHasExpenseCategory(user, expenseCategory);
+    private ExpenseCategoryEntity buildExpenseCategoryEntity(UserPrincipal userPrincipal, ExpenseCategory expenseCategory) {
         return Optional.ofNullable(expenseCategory)
                 .map(ExpenseCategory::getUuid)
-                .map(uuid -> entityReferenceFactory.buildReference(ExpenseCategoryEntity.class, uuid))
+                .map(UUID::fromString)
+                .map(uuid -> expenseCategoryRepository.findByUser_UsernameAndUuid(userPrincipal.getUsername(), uuid))
                 .orElse(null);
     }
 
-    private CreditCardEntity buildCreditCard(UserEntity user, CreditCard creditCard) {
-        userPersistence.assertUserHasCreditCard(user, creditCard);
+    private CreditCardEntity buildCreditCardEntity(CreditCard creditCard) {
         return Optional.ofNullable(creditCard)
                 .map(CreditCard::getUuid)
+                .map(UUID::fromString)
                 .map(uuid -> entityReferenceFactory.buildReference(CreditCardEntity.class, uuid))
                 .orElse(null);
     }
 
-    private BankAccountEntity buildBankAccount(UserEntity user, BankAccount bankAccount) {
-        userPersistence.assertUserHasBankAccount(user, bankAccount);
+    private BankAccountEntity buildBankAccountEntity(BankAccount bankAccount) {
         return Optional.ofNullable(bankAccount)
                 .map(BankAccount::getUuid)
+                .map(UUID::fromString)
                 .map(uuid -> entityReferenceFactory.buildReference(BankAccountEntity.class, uuid))
                 .orElse(null);
     }

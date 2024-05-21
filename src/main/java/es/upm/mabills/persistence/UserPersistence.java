@@ -1,12 +1,10 @@
 package es.upm.mabills.persistence;
 
-import es.upm.mabills.exceptions.BankAccountNotFoundException;
 import es.upm.mabills.exceptions.CreditCardNotFoundException;
 import es.upm.mabills.exceptions.DuplicatedEmailException;
 import es.upm.mabills.exceptions.ExpenseCategoryNotFoundException;
 import es.upm.mabills.exceptions.UserAlreadyExistsException;
 import es.upm.mabills.exceptions.UserNotFoundException;
-import es.upm.mabills.model.BankAccount;
 import es.upm.mabills.model.CreditCard;
 import es.upm.mabills.model.ExpenseCategory;
 import es.upm.mabills.model.User;
@@ -62,20 +60,6 @@ public class UserPersistence {
                 })
                 .andThenTry(userRepository::save)
                 .getOrElseThrow(()->new DuplicatedEmailException(user.getEmail()));
-    }
-
-    public void assertUserHasBankAccount(UserEntity user, BankAccount bankAccount) {
-        if(Objects.nonNull(bankAccount) && !isCreditCardBankAccountValid(user, bankAccount)) {
-            throw new BankAccountNotFoundException(bankAccount.getIban());
-        }
-    }
-
-    private boolean isCreditCardBankAccountValid(UserEntity user, BankAccount bankAccount) {
-        return user
-                .getBankAccounts()
-                .stream()
-                .anyMatch(bankAccountEntity -> bankAccountEntity.getUuid()
-                        .compareTo(UUID.fromString(bankAccount.getUuid())) == 0);
     }
 
     public void assertUserHasCreditCard(UserEntity user, CreditCard creditCard) {

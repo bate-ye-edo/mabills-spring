@@ -9,10 +9,10 @@ import es.upm.mabills.exceptions.UserNotFoundException;
 import es.upm.mabills.model.CreditCard;
 import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.CreditCardPersistence;
-import es.upm.mabills.persistence.UserPersistence;
 import es.upm.mabills.persistence.entities.BankAccountEntity;
 import es.upm.mabills.persistence.entities.CreditCardEntity;
 import es.upm.mabills.persistence.entities.UserEntity;
+import es.upm.mabills.services.dependency_validators.DependencyValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,8 +55,8 @@ class CreditCardServiceTest {
     @MockBean
     private CreditCardPersistence creditCardPersistence;
 
-    @MockBean
-    private UserPersistence userPersistence;
+    @MockBean(name = "creditCardDependencyValidator")
+    private DependencyValidator dependencyValidator;
 
     private final UserEntity userEntity = UserEntity.builder()
             .username(ENCODED_PASSWORD_USER)
@@ -155,7 +155,7 @@ class CreditCardServiceTest {
 
     @Test
     void testCreateCreditCardBankAccountOfOtherUser() {
-        doThrow(BankAccountNotFoundException.class).when(userPersistence).assertUserHasBankAccount(any(),any());
+        doThrow(BankAccountNotFoundException.class).when(dependencyValidator).assertDependencies(any(), any());
         CreditCard creditCard = CreditCard.builder()
                 .creditCardNumber(NEW_CREDIT_CARD_NUMBER)
                 .bankAccount(es.upm.mabills.model.BankAccount.builder()

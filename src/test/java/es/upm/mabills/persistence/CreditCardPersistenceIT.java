@@ -60,7 +60,7 @@ class CreditCardPersistenceIT {
 
     @Test
     @Transactional
-    void testCreateCreditCard() {
+    void testCreateCreditCardSuccess() {
         CreditCardEntity creditCardEntity = creditCardPersistence.createCreditCard(encodedUserPrincipal, buildNewCreditCard());
         assertNotNull(creditCardEntity);
         assertEquals(ENCODED_PASSWORD_USER, creditCardEntity.getUser().getUsername());

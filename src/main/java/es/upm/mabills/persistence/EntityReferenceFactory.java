@@ -24,8 +24,11 @@ public class EntityReferenceFactory {
     public EntityReferenceFactory(UserRepository userRepository, BankAccountRepository bankAccountRepository,
                                   CreditCardRepository creditCardRepository, ExpenseRepository expenseRepository,
                                   ExpenseCategoryRepository expenseCategoryRepository) {
-        repositoriesMap = Map.of(UserEntity.class, userRepository, BankAccountEntity.class, bankAccountRepository,
-                CreditCardEntity.class, creditCardRepository, ExpenseEntity.class, expenseRepository,
+        repositoriesMap = Map.of(
+                UserEntity.class, userRepository,
+                BankAccountEntity.class, bankAccountRepository,
+                CreditCardEntity.class, creditCardRepository,
+                ExpenseEntity.class, expenseRepository,
                 ExpenseCategoryEntity.class, expenseCategoryRepository);
     }
 
