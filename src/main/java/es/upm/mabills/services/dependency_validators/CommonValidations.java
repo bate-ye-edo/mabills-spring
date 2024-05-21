@@ -11,9 +11,9 @@ import es.upm.mabills.persistence.entities.UserEntity;
 import java.util.Objects;
 import java.util.UUID;
 
-public class CommonValidations {
+public final class CommonValidations {
     public static void assertUserHasBankAccount(UserEntity user, BankAccount bankAccount) {
-        if(Objects.nonNull(bankAccount) && !isBankAccountValid(user, bankAccount)) {
+        if(Objects.nonNull(bankAccount) && Objects.nonNull(user.getBankAccounts()) && !isBankAccountValid(user, bankAccount)) {
             throw new BankAccountNotFoundException(bankAccount.getIban());
         }
     }
@@ -26,7 +26,7 @@ public class CommonValidations {
     }
 
     public static void assertUserHasCreditCard(UserEntity user, CreditCard creditCard) {
-        if(Objects.nonNull(creditCard) && !isCreditCardValid(user, creditCard)) {
+        if(Objects.nonNull(creditCard) && Objects.nonNull(user.getCreditCards()) && !isCreditCardValid(user, creditCard)) {
             throw new CreditCardNotFoundException(creditCard.getCreditCardNumber());
         }
     }
@@ -39,7 +39,7 @@ public class CommonValidations {
     }
 
     public static void assertUserHasExpenseCategory(UserEntity user, ExpenseCategory expenseCategory) {
-        if(Objects.nonNull(expenseCategory) && !isExpenseCategoryValid(user, expenseCategory)) {
+        if(Objects.nonNull(expenseCategory) && Objects.nonNull(user.getExpenseCategories()) && !isExpenseCategoryValid(user, expenseCategory)) {
             throw new ExpenseCategoryNotFoundException(UUID.fromString(expenseCategory.getUuid()));
         }
     }
@@ -49,9 +49,5 @@ public class CommonValidations {
                 .stream()
                 .anyMatch(expenseCategoryEntity -> expenseCategoryEntity.getUuid()
                         .compareTo(UUID.fromString(expenseCategory.getUuid())) == 0);
-    }
-
-    private CommonValidations() {
-        throw new IllegalStateException("Utility class");
     }
 }

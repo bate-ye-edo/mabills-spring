@@ -1,12 +1,8 @@
 package es.upm.mabills.persistence;
 
-import es.upm.mabills.exceptions.CreditCardNotFoundException;
 import es.upm.mabills.exceptions.DuplicatedEmailException;
-import es.upm.mabills.exceptions.ExpenseCategoryNotFoundException;
 import es.upm.mabills.exceptions.UserAlreadyExistsException;
 import es.upm.mabills.exceptions.UserNotFoundException;
-import es.upm.mabills.model.CreditCard;
-import es.upm.mabills.model.ExpenseCategory;
 import es.upm.mabills.model.User;
 import es.upm.mabills.persistence.entities.UserEntity;
 import es.upm.mabills.persistence.repositories.UserRepository;
@@ -16,8 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.Objects;
-import java.util.UUID;
 
 
 @Repository
@@ -60,31 +54,5 @@ public class UserPersistence {
                 })
                 .andThenTry(userRepository::save)
                 .getOrElseThrow(()->new DuplicatedEmailException(user.getEmail()));
-    }
-
-    public void assertUserHasCreditCard(UserEntity user, CreditCard creditCard) {
-        if(Objects.nonNull(creditCard) && !isCreditCardValid(user, creditCard)) {
-            throw new CreditCardNotFoundException(creditCard.getCreditCardNumber());
-        }
-    }
-
-    private boolean isCreditCardValid(UserEntity user, CreditCard creditCard) {
-        return user.getCreditCards()
-                .stream()
-                .anyMatch(creditCardEntity -> creditCardEntity.getUuid()
-                        .compareTo(UUID.fromString(creditCard.getUuid())) == 0);
-    }
-
-    public void assertUserHasExpenseCategory(UserEntity user, ExpenseCategory expenseCategory) {
-        if(Objects.nonNull(expenseCategory) && !isExpenseCategoryValid(user, expenseCategory)) {
-            throw new ExpenseCategoryNotFoundException(UUID.fromString(expenseCategory.getUuid()));
-        }
-    }
-
-    private boolean isExpenseCategoryValid(UserEntity user, ExpenseCategory expenseCategory) {
-        return user.getExpenseCategories()
-                .stream()
-                .anyMatch(expenseCategoryEntity -> expenseCategoryEntity.getUuid()
-                        .compareTo(UUID.fromString(expenseCategory.getUuid())) == 0);
     }
 }

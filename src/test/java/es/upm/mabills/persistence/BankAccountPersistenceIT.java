@@ -160,6 +160,20 @@ class BankAccountPersistenceIT {
         assertThrows(BankAccountNotFoundException.class, () -> bankAccountPersistence1.deleteBankAccount(encodedUserPrincipal, RANDOM_UUID));
     }
 
+
+    @Test
+    void testFindBankAccountByUserAndUuidNull() {
+        BankAccountEntity bankAccountEntity = bankAccountPersistence.findBankAccountByUserAndUuid(encodedUserPrincipal, RANDOM_UUID);
+        assertNull(bankAccountEntity);
+    }
+
+    @Test
+    void testFindBankAccountByUserAndUuid() {
+        BankAccountEntity bankAccountEntity = bankAccountPersistence.findBankAccountByUserAndUuid(encodedUserPrincipal,
+                bankAccountPersistence.findBankAccountsForUser(encodedUserPrincipal).get(0).getUuid().toString());
+        assertNotNull(bankAccountEntity);
+    }
+
     private BankAccountPersistence createBankAccountPersistenceWithMocks(BankAccountRepository mockRepository,
                                                                          EntityDependentManager mockEntityDependantManager) {
         return new BankAccountPersistence(mockRepository, mock(UserRepository.class), mockEntityDependantManager);
