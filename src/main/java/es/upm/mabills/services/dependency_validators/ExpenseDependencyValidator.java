@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 
+import static es.upm.mabills.services.dependency_validators.CommonValidations.assertCreditCardBankAccountAreRelated;
 import static es.upm.mabills.services.dependency_validators.CommonValidations.assertUserHasBankAccount;
 import static es.upm.mabills.services.dependency_validators.CommonValidations.assertUserHasCreditCard;
 import static es.upm.mabills.services.dependency_validators.CommonValidations.assertUserHasExpenseCategory;
@@ -30,6 +31,7 @@ public class ExpenseDependencyValidator implements DependencyValidator {
         assertUserHasBankAccount(user, expense.getBankAccount());
         assertUserHasCreditCard(user, expense.getCreditCard());
         assertUserHasExpenseCategory(user, expense.getExpenseCategory());
+        assertCreditCardBankAccountAreRelated(user, expense.getCreditCard(), expense.getBankAccount());
     }
 
 }

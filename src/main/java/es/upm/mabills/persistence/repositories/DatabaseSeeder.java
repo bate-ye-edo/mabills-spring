@@ -144,6 +144,11 @@ public class DatabaseSeeder {
                 .creditCardNumber("004120003120034012")
                 .user(encodedPasswordUser)
                 .build();
+        CreditCardEntity creditCardWithBankAccountEntity = CreditCardEntity.builder()
+                .creditCardNumber("004120012352345632")
+                .user(encodedPasswordUser)
+                .bankAccount(bankAccountEntity)
+                .build();
         CreditCardEntity toDeleteCreditCard = CreditCardEntity.builder()
             .creditCardNumber("to_delete_credit_card_number")
             .user(encodedPasswordUser)
@@ -157,7 +162,7 @@ public class DatabaseSeeder {
                 .user(encodedPasswordUser)
                 .creditCardNumber("bank_account_will_be_deleted")
                 .build();
-        this.creditCardRepository.saveAll(List.of(creditCardEntity, toDeleteCreditCard, creditCardToDelete, creditCardWithBankAccountToDelete));
+        this.creditCardRepository.saveAll(List.of(creditCardEntity, toDeleteCreditCard, creditCardToDelete, creditCardWithBankAccountToDelete, creditCardWithBankAccountEntity));
 
         // Expenses
         ExpenseEntity expenseEntity = ExpenseEntity.builder()

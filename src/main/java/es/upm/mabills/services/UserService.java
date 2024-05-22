@@ -5,8 +5,6 @@ import es.upm.mabills.mappers.UserMapper;
 import es.upm.mabills.model.User;
 import es.upm.mabills.persistence.UserPersistence;
 import io.vavr.control.Try;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,7 +17,6 @@ import static io.micrometer.common.util.StringUtils.isBlank;
 
 @Service
 public class UserService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
     private static final String INVALID_CREDENTIALS = "Invalid credentials";
 
     private final UserPersistence userPersistence;
@@ -55,7 +52,6 @@ public class UserService {
         return Try.of(() -> userPersistence.findUserByUsername(username))
             .filter(user -> passwordEncoder.matches(password, user.getPassword()))
             .map(userMapper::toUser)
-            .peek(user -> LOGGER.info("User {} logged in", user.getUsername()))
             .getOrElseThrow(() -> new BadCredentialsException(INVALID_CREDENTIALS));
     }
 

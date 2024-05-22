@@ -7,6 +7,7 @@ import es.upm.mabills.exceptions.CreditCardNotFoundException;
 import es.upm.mabills.exceptions.DuplicatedEmailException;
 import es.upm.mabills.exceptions.ExpenseCategoryAlreadyExistsException;
 import es.upm.mabills.exceptions.ExpenseCategoryNotFoundException;
+import es.upm.mabills.exceptions.InvalidRequestException;
 import es.upm.mabills.exceptions.MaBillsServiceException;
 import es.upm.mabills.exceptions.UserAlreadyExistsException;
 import es.upm.mabills.exceptions.UserNotFoundException;
@@ -116,6 +117,16 @@ public class ApiExceptionHandler {
     @ResponseBody
     public ErrorMessage invalidArguments(HandlerMethodValidationException exception) {
         LOGGER.debug(() -> "Invalid arguments: " + exception.getMessage());
+        return new ErrorMessage(exception, HttpStatus.BAD_REQUEST.value());
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler({
+        InvalidRequestException.class
+    })
+    @ResponseBody
+    public ErrorMessage invalidRequestException(InvalidRequestException exception){
+        LOGGER.debug(() -> "Invalid request: "+exception.getMessage());
         return new ErrorMessage(exception, HttpStatus.BAD_REQUEST.value());
     }
 

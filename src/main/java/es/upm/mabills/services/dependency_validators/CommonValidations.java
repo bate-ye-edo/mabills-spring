@@ -3,12 +3,16 @@ package es.upm.mabills.services.dependency_validators;
 import es.upm.mabills.exceptions.BankAccountNotFoundException;
 import es.upm.mabills.exceptions.CreditCardNotFoundException;
 import es.upm.mabills.exceptions.ExpenseCategoryNotFoundException;
+import es.upm.mabills.exceptions.InvalidRequestException;
 import es.upm.mabills.model.BankAccount;
 import es.upm.mabills.model.CreditCard;
 import es.upm.mabills.model.ExpenseCategory;
+import es.upm.mabills.persistence.entities.BankAccountEntity;
+import es.upm.mabills.persistence.entities.CreditCardEntity;
 import es.upm.mabills.persistence.entities.UserEntity;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 public final class CommonValidations {
@@ -50,4 +54,26 @@ public final class CommonValidations {
                 .anyMatch(expenseCategoryEntity -> expenseCategoryEntity.getUuid()
                         .compareTo(UUID.fromString(expenseCategory.getUuid())) == 0);
     }
+
+    public static void assertCreditCardBankAccountAreRelated(UserEntity user, CreditCard creditCard, BankAccount bankAccount) {
+        if(Objects.nonNull(user) && Objects.nonNull(creditCard) && Objects.nonNull(bankAccount) && !isCreditCardRelatedToBankAccount(user, creditCard, bankAccount)){
+            throw new InvalidRequestException("Credit card is not related to the bank account");
+        }
+    }
+
+    private static boolean isCreditCardRelatedToBankAccount(UserEntity user, CreditCard creditCard, BankAccount bankAccount) {
+        return Optional.of(user.getCreditCards()
+                        .stream()
+                        .filter(creditCardEntity -> creditCardEntity.getUuid().compareTo(UUID.fromString(creditCard.getUuid())) == 0)
+                        .map(CreditCardEntity::getBankAccount)
+                        .anyMatch(bankAccountEntity -> Optional.ofNullable(bankAccountEntity)
+                                .map(BankAccountEntity::getUuid)
+                                .map(uuid -> uuid.compareTo(UUID.fromString(bankAccount.getUuid())) == 0)
+                                .orElse(false)
+                        )
+                )
+                .orElse(false);
+    }
+
+    private CommonValidations() {}
 }

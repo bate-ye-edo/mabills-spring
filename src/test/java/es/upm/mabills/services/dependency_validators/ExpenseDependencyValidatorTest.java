@@ -4,6 +4,7 @@ import es.upm.mabills.UnitTestConfig;
 import es.upm.mabills.exceptions.BankAccountNotFoundException;
 import es.upm.mabills.exceptions.CreditCardNotFoundException;
 import es.upm.mabills.exceptions.ExpenseCategoryNotFoundException;
+import es.upm.mabills.exceptions.InvalidRequestException;
 import es.upm.mabills.model.BankAccount;
 import es.upm.mabills.model.CreditCard;
 import es.upm.mabills.model.Expense;
@@ -14,6 +15,7 @@ import es.upm.mabills.persistence.entities.BankAccountEntity;
 import es.upm.mabills.persistence.entities.CreditCardEntity;
 import es.upm.mabills.persistence.entities.ExpenseCategoryEntity;
 import es.upm.mabills.persistence.entities.UserEntity;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -40,6 +42,10 @@ class ExpenseDependencyValidatorTest {
 
     private static final UserPrincipal USER_PRINCIPAL = UserPrincipal.builder().username("").build();
 
+    @BeforeEach
+    void setUp() {
+        when(userPersistence.findUserByUsername(anyString())).thenReturn(buildUserEntityWithDependencies());
+    }
 
     @Test
     void testAssertDependenciesUserWithoutDependenciesSuccess() {
@@ -50,41 +56,67 @@ class ExpenseDependencyValidatorTest {
 
     @Test
     void testAssertDependenciesUserWithDependenciesSuccess() {
-        UserEntity user = buildUserEntityWithDependencies();
         Expense expense = buildExpenseWithDependencies();
-        when(userPersistence.findUserByUsername(anyString())).thenReturn(user);
         assertDoesNotThrow(() -> expenseDependencyValidator.assertDependencies(USER_PRINCIPAL, expense));
     }
 
     @Test
     void testAssertDependenciesBankAccountNotFoundException() {
-        UserEntity user = buildUserEntityWithDependencies();
         Expense expense = Expense.builder().bankAccount(BankAccount.builder().uuid(OTHER_RANDOM_UUID_STRING).build()).build();
-        when(userPersistence.findUserByUsername(anyString())).thenReturn(user);
         assertThrows(BankAccountNotFoundException.class, () -> expenseDependencyValidator.assertDependencies(USER_PRINCIPAL, expense));
     }
 
     @Test
     void testAssertDependenciesCreditCardNotFoundException() {
-        UserEntity user = buildUserEntityWithDependencies();
         Expense expense = Expense.builder().creditCard(CreditCard.builder().uuid(OTHER_RANDOM_UUID_STRING).build()).build();
-        when(userPersistence.findUserByUsername(anyString())).thenReturn(user);
         assertThrows(CreditCardNotFoundException.class, () -> expenseDependencyValidator.assertDependencies(USER_PRINCIPAL, expense));
     }
 
     @Test
     void testAssertDependenciesExpenseCategoryNotFoundException() {
-        UserEntity user = buildUserEntityWithDependencies();
         Expense expense = Expense.builder().expenseCategory(ExpenseCategory.builder().uuid(OTHER_RANDOM_UUID_STRING).build()).build();
-        when(userPersistence.findUserByUsername(anyString())).thenReturn(user);
         assertThrows(ExpenseCategoryNotFoundException.class, () -> expenseDependencyValidator.assertDependencies(USER_PRINCIPAL, expense));
     }
 
+    @Test
+    void testAssertDependenciesBankAccountNotRelatedToCreditCard() {
+        Expense expense = buildExpenseWithCreditCardNotRelatedToBankAccount();
+        when(userPersistence.findUserByUsername(anyString())).thenReturn(buildUserEntityWithTwoBankAccountsAndOneCreditCardRelated());
+        assertThrows(InvalidRequestException.class, () -> expenseDependencyValidator.assertDependencies(USER_PRINCIPAL, expense));
+    }
+
+    private Expense buildExpenseWithCreditCardNotRelatedToBankAccount() {
+        return Expense.builder()
+                .creditCard(
+                        CreditCard.builder()
+                                .uuid(RANDOM_UUID_STRING)
+                                .build())
+                .bankAccount(
+                        BankAccount.builder()
+                                .uuid(OTHER_RANDOM_UUID_STRING)
+                                .build()
+                )
+                .build();
+    }
+
     private UserEntity buildUserEntityWithDependencies() {
+        BankAccountEntity bankAccountEntity = BankAccountEntity.builder().uuid(RANDOM_UUID).build();
+        CreditCardEntity creditCardEntity = CreditCardEntity.builder().uuid(RANDOM_UUID).bankAccount(bankAccountEntity).build();
+        ExpenseCategoryEntity expenseCategoryEntity =ExpenseCategoryEntity.builder().uuid(RANDOM_UUID).build();
         return UserEntity.builder()
-                .bankAccounts(List.of(BankAccountEntity.builder().uuid(RANDOM_UUID).build()))
-                .creditCards(List.of(CreditCardEntity.builder().uuid(RANDOM_UUID).build()))
-                .expenseCategories(List.of(ExpenseCategoryEntity.builder().uuid(RANDOM_UUID).build()))
+                .bankAccounts(List.of(bankAccountEntity))
+                .creditCards(List.of(creditCardEntity))
+                .expenseCategories(List.of(expenseCategoryEntity))
+                .build();
+    }
+
+    private UserEntity buildUserEntityWithTwoBankAccountsAndOneCreditCardRelated() {
+        BankAccountEntity bankAccountEntity = BankAccountEntity.builder().uuid(RANDOM_UUID).build();
+        CreditCardEntity creditCardEntity = CreditCardEntity.builder().uuid(RANDOM_UUID).bankAccount(bankAccountEntity).build();
+        BankAccountEntity anotherBankAccount = BankAccountEntity.builder().uuid(UUID.fromString(OTHER_RANDOM_UUID_STRING)).build();
+        return UserEntity.builder()
+                .bankAccounts(List.of(bankAccountEntity, anotherBankAccount))
+                .creditCards(List.of(creditCardEntity))
                 .build();
     }
 
