@@ -16,7 +16,6 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 @ApiTestConfig
 class ExpenseCategoryResourceIT {
@@ -46,8 +45,6 @@ class ExpenseCategoryResourceIT {
                 .value(v -> {
                     ExpenseCategory expenseCategory = v.get(0);
                     assertEquals(EXPENSE_CATEGORY_USER_EXPENSE_CATEGORY, expenseCategory.getName());
-                    assertEquals(EXPENSE_CATEGORY_USER, expenseCategory.getUser().getUsername());
-                    assertNull(expenseCategory.getUser().getPassword());
                     assertNotNull(expenseCategory.getUuid());
                 });
     }

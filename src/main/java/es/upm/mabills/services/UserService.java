@@ -5,6 +5,8 @@ import es.upm.mabills.mappers.UserMapper;
 import es.upm.mabills.model.User;
 import es.upm.mabills.persistence.UserPersistence;
 import io.vavr.control.Try;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,6 +19,7 @@ import static io.micrometer.common.util.StringUtils.isBlank;
 
 @Service
 public class UserService {
+    private static final Logger LOGGER = LogManager.getLogger(UserService.class);
     private static final String INVALID_CREDENTIALS = "Invalid credentials";
 
     private final UserPersistence userPersistence;
@@ -52,6 +55,7 @@ public class UserService {
         return Try.of(() -> userPersistence.findUserByUsername(username))
             .filter(user -> passwordEncoder.matches(password, user.getPassword()))
             .map(userMapper::toUser)
+            .onFailure(e -> LOGGER.error("Exception on login: ",e))
             .getOrElseThrow(() -> new BadCredentialsException(INVALID_CREDENTIALS));
     }
 
@@ -77,6 +81,7 @@ public class UserService {
 
     @Transactional
     public User getUserByUsername(String username) {
+        LOGGER.info("Getting user by username: {}", userPersistence.findUserByUsername(username));
         return userMapper.toUserProfile(
                 Optional.ofNullable(userPersistence.findUserByUsername(username))
                     .orElseThrow(() -> new UserNotFoundException(username))

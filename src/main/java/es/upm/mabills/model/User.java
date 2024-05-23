@@ -36,4 +36,6 @@ public class User {
     private String mobile;
 
     List<BankAccount> bankAccounts;
+    List<CreditCard> creditCards;
+    List<ExpenseCategory> expenseCategories;
 }

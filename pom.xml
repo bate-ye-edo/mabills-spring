@@ -17,7 +17,7 @@
 		<java.version>17</java.version>
 		<mapstruct.extensions.spring.version>1.1.1</mapstruct.extensions.spring.version>
 		<mapstruct.version>1.5.5.Final</mapstruct.version>
-		<log4j.version>1.2.12</log4j.version>
+		<log4j.version>2.23.1</log4j.version>
 		<vavr.version>0.10.4</vavr.version>
 		<jwt.version>4.4.0</jwt.version>
 		<jjwt.version>0.9.1</jjwt.version>
@@ -101,8 +101,18 @@
 			<version>${vavr.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+			<version>${log4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>${log4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j-impl</artifactId>
 			<version>${log4j.version}</version>
 		</dependency>
 		<dependency>

@@ -21,5 +21,4 @@ public class ExpenseCategory {
     private String name;
     private Timestamp creationDate;
     private String uuid;
-    private User user;
 }

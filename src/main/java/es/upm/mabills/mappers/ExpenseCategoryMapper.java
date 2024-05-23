@@ -5,10 +5,9 @@ import es.upm.mabills.persistence.entities.ExpenseCategoryEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(uses = {UserMapper.class})
+@Mapper
 public interface ExpenseCategoryMapper {
     @Mapping(target = "creationDate", source = "creationDate")
     @Mapping(target = "uuid", source = "uuid")
-    @Mapping(target = "user", source = "user", qualifiedByName = "toUser")
     ExpenseCategory toExpenseCategory(ExpenseCategoryEntity expenseCategoryEntity);
 }

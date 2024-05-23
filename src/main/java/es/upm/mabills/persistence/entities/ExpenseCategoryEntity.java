@@ -28,7 +28,7 @@ import java.util.UUID;
 @Builder
 @Entity
 @Table(name="ExpenseCategory", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"name", "username"})
+    @UniqueConstraint(columnNames = {"name", "userId"})
 })
 public class ExpenseCategoryEntity {
     @Id
@@ -45,7 +45,7 @@ public class ExpenseCategoryEntity {
     private UUID uuid;
 
     @ManyToOne
-    @JoinColumn(name = "username", nullable = false)
+    @JoinColumn(name = "userId", nullable = false)
     private UserEntity user;
 
     @PrePersist

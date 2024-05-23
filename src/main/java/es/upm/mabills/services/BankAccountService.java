@@ -8,8 +8,8 @@ import es.upm.mabills.model.BankAccount;
 import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.BankAccountPersistence;
 import io.vavr.control.Try;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +18,7 @@ import java.util.List;
 
 @Service
 public class BankAccountService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BankAccountService.class);
+    private static final Logger LOGGER = LogManager.getLogger(BankAccountService.class);
     private final BankAccountPersistence bankAccountPersistence;
     private final BankAccountMapper bankAccountMapper;
 

@@ -4,14 +4,15 @@ import es.upm.mabills.exceptions.BankAccountNotFoundException;
 import es.upm.mabills.exceptions.CreditCardNotFoundException;
 import es.upm.mabills.exceptions.ExpenseCategoryNotFoundException;
 import es.upm.mabills.exceptions.UserNotFoundException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 
 import java.util.Map;
 import java.util.function.Predicate;
 
 public class EntityNotFoundExceptionMapper {
-    private static final Logger LOGGER = LoggerFactory.getLogger(EntityNotFoundExceptionMapper.class);
+    private static final Logger LOGGER = LogManager.getLogger(EntityNotFoundExceptionMapper.class);
     private static final Predicate<Throwable> BANK_ACCOUNT_NOT_FOUND = e -> e.getMessage().contains("BankAccountEntity");
     private static final Predicate<Throwable> USER_NOT_FOUND = e -> e.getMessage().contains("UserEntity");
     private static final Predicate<Throwable> CREDIT_CARD_NOT_FOUND = e -> e.getMessage().contains("CreditCardEntity");

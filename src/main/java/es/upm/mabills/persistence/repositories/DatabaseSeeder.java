@@ -31,7 +31,6 @@ public class DatabaseSeeder {
                           CreditCardRepository creditCardRepository, BankAccountRepository bankAccountRepository,
                           ExpenseRepository expenseRepository) {
         LOGGER.warn("----- Initialize database seeding -----");
-        LogManager.getLogger();
         this.userRepository = userRepository;
         this.expenseCategoryRepository = expenseCategoryRepository;
         this.creditCardRepository = creditCardRepository;
