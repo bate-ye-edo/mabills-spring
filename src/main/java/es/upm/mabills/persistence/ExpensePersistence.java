@@ -14,6 +14,7 @@ import es.upm.mabills.persistence.entities.UserEntity;
 import es.upm.mabills.persistence.repositories.CreditCardRepository;
 import es.upm.mabills.persistence.repositories.ExpenseCategoryRepository;
 import es.upm.mabills.persistence.repositories.ExpenseRepository;
+import es.upm.mabills.persistence.repositories.RepositorySort;
 import io.vavr.control.Try;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -40,7 +41,7 @@ public class ExpensePersistence {
     }
 
     public List<ExpenseEntity> findExpenseByUserId(UserPrincipal userPrincipal) {
-        return expenseRepository.findByUserId(userPrincipal.getId());
+        return expenseRepository.findByUserId(userPrincipal.getId(), RepositorySort.BY_CREATION_DATE.value());
     }
 
     @Transactional

@@ -8,7 +8,7 @@ import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.entities.BankAccountEntity;
 import es.upm.mabills.persistence.entities.CreditCardEntity;
 import es.upm.mabills.persistence.entities.UserEntity;
-import es.upm.mabills.persistence.entity_decouplers.EntityDependentManager;
+import es.upm.mabills.persistence.entity_dependent_managers.EntityDependentManager;
 import es.upm.mabills.persistence.repositories.CreditCardRepository;
 import es.upm.mabills.persistence.repositories.RepositorySort;
 import io.vavr.control.Try;

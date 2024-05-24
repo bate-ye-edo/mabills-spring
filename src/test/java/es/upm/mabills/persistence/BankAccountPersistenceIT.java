@@ -7,7 +7,7 @@ import es.upm.mabills.model.BankAccount;
 import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.entities.BankAccountEntity;
 import es.upm.mabills.persistence.entities.CreditCardEntity;
-import es.upm.mabills.persistence.entity_decouplers.EntityDependentManager;
+import es.upm.mabills.persistence.entity_dependent_managers.EntityDependentManager;
 import es.upm.mabills.persistence.repositories.BankAccountRepository;
 import es.upm.mabills.persistence.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,7 +38,9 @@ class BankAccountPersistenceIT {
     private static final String EXIST_IBAN = "ES004120003120034012";
     private static final String TO_DELETE_IBAN = "to_delete_bank_account";
     private static final String TO_DELETE_IBAN_WITH_CREDIT_CARD = "to_delete_bank_account_entity_with_credit_card";
+    private static final String TO_DELETE_IBAN_WITH_CREDIT_CARD_AND_EXPENSE = "to_delete_bank_account_entity_with_credit_card_and_expense";
     private static final String CREDIT_CARD_NUMBER_WITH_DELETED_BANK_ACCOUNT = "bank_account_will_be_deleted";
+    private static final String CREDIT_CARD_NUMBER_WITH_DELETED_BANK_ACCOUNT_AND_EXPENSE = "bank_account_will_be_deleted_and_expense";
     private static final String OTHER_USER = "otherUser";
     private static final String RANDOM_UUID = UUID.randomUUID().toString();
 
@@ -134,6 +136,25 @@ class BankAccountPersistenceIT {
         CreditCardEntity creditCardEntity = creditCardPersistence.findCreditCardsForUser(encodedUserPrincipal)
                 .stream()
                 .filter(cd -> cd.getCreditCardNumber().equals(CREDIT_CARD_NUMBER_WITH_DELETED_BANK_ACCOUNT))
+                .toList()
+                .get(0);
+        assertNotNull(creditCardEntity);
+        assertNull(creditCardEntity.getBankAccount());
+    }
+
+    @Test
+    void testDeleteBankAccountWithCreditCardAndExpenseSuccess() {
+        String uuid = bankAccountPersistence.findBankAccountsForUser(encodedUserPrincipal)
+                .stream()
+                .filter(ba -> ba.getIban().equals(TO_DELETE_IBAN_WITH_CREDIT_CARD_AND_EXPENSE))
+                .toList()
+                .get(0)
+                .getUuid()
+                .toString();
+        bankAccountPersistence.deleteBankAccount(encodedUserPrincipal, uuid);
+        CreditCardEntity creditCardEntity = creditCardPersistence.findCreditCardsForUser(encodedUserPrincipal)
+                .stream()
+                .filter(cd -> cd.getCreditCardNumber().equals(CREDIT_CARD_NUMBER_WITH_DELETED_BANK_ACCOUNT_AND_EXPENSE))
                 .toList()
                 .get(0);
         assertNotNull(creditCardEntity);

@@ -6,7 +6,7 @@ import es.upm.mabills.model.BankAccount;
 import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.entities.BankAccountEntity;
 import es.upm.mabills.persistence.entities.UserEntity;
-import es.upm.mabills.persistence.entity_decouplers.EntityDependentManager;
+import es.upm.mabills.persistence.entity_dependent_managers.EntityDependentManager;
 import es.upm.mabills.persistence.repositories.BankAccountRepository;
 import es.upm.mabills.persistence.repositories.UserRepository;
 import io.vavr.control.Try;

@@ -81,7 +81,6 @@ public class UserService {
 
     @Transactional
     public User getUserByUsername(String username) {
-        LOGGER.info("Getting user by username: {}", userPersistence.findUserByUsername(username));
         return userMapper.toUserProfile(
                 Optional.ofNullable(userPersistence.findUserByUsername(username))
                     .orElseThrow(() -> new UserNotFoundException(username))

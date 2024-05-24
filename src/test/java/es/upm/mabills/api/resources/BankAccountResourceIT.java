@@ -24,7 +24,9 @@ class BankAccountResourceIT {
     private static final String EXIST_IBAN = "ES004120003120034012";
     private static final String TO_DELETE_BANK_ACCOUNT = "to_delete_bank_account";
     private static final String TO_DELETE_IBAN_WITH_CREDIT_CARD = "to_delete_bank_account_entity_with_credit_card";
+    private static final String TO_DELETE_IBAN_WITH_CREDIT_CARD_AND_EXPENSE = "to_delete_bank_account_entity_with_credit_card_and_expense";
     private static final String CREDIT_CARD_NUMBER_WITH_DELETED_BANK_ACCOUNT = "bank_account_will_be_deleted";
+    private static final String CREDIT_CARD_NUMBER_WITH_DELETED_BANK_ACCOUNT_AND_EXPENSE = "bank_account_will_be_deleted_and_expense";
 
     @Autowired
     private RestClientTestService restClientTestService;
@@ -145,10 +147,24 @@ class BankAccountResourceIT {
                 .exchange()
                 .expectStatus()
                 .isOk();
-        assertCreditCardDoesNotHasBankAccount();
+        assertCreditCardDoesNotHasBankAccount(CREDIT_CARD_NUMBER_WITH_DELETED_BANK_ACCOUNT);
     }
 
-    private void assertCreditCardDoesNotHasBankAccount() {
+    @Test
+    void testDeleteBankAccountWithCreditCardAndExpense() {
+        String toDeleteBankAccountUuid = getBankAccountWithCreditCardAndExpenseUuid();
+        restClientTestService
+                .loginDefault(webTestClient)
+                .delete()
+                .uri(BankAccountResource.BANK_ACCOUNTS + BankAccountResource.UUID, toDeleteBankAccountUuid)
+                .exchange()
+                .expectStatus()
+                .isOk();
+        assertCreditCardDoesNotHasBankAccount(CREDIT_CARD_NUMBER_WITH_DELETED_BANK_ACCOUNT_AND_EXPENSE);
+    }
+
+
+    private void assertCreditCardDoesNotHasBankAccount(String creditCardNumber) {
         CreditCard cd = restClientTestService
                 .loginDefault(webTestClient)
                 .get()
@@ -156,7 +172,7 @@ class BankAccountResourceIT {
                 .exchange()
                 .returnResult(CreditCard.class)
                 .getResponseBody()
-                .filter(creditCard -> creditCard.getCreditCardNumber().equals(CREDIT_CARD_NUMBER_WITH_DELETED_BANK_ACCOUNT))
+                .filter(creditCard -> creditCard.getCreditCardNumber().equals(creditCardNumber))
                 .toStream()
                 .toList()
                 .get(0);
@@ -166,6 +182,14 @@ class BankAccountResourceIT {
     private String getBankAccountWithCreditCardUuid() {
         return getDefaultUserBankAccountsStream()
                 .filter(ba -> ba.getIban().equals(TO_DELETE_IBAN_WITH_CREDIT_CARD))
+                .toList()
+                .get(0)
+                .getUuid();
+    }
+
+    private String getBankAccountWithCreditCardAndExpenseUuid() {
+        return getDefaultUserBankAccountsStream()
+                .filter(ba -> ba.getIban().equals(TO_DELETE_IBAN_WITH_CREDIT_CARD_AND_EXPENSE))
                 .toList()
                 .get(0)
                 .getUuid();

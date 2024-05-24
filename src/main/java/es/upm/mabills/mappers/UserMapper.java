@@ -7,7 +7,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
-@Mapper(uses = {BankAccountMapper.class, CreditCardMapper.class})
+@Mapper(uses = {BankAccountMapper.class, CreditCardMapper.class, ExpenseCategoryMapper.class})
 public interface UserMapper {
     @Mapping(target = "password", ignore = true)
     @Mapping(target = "bankAccounts", ignore = true)
