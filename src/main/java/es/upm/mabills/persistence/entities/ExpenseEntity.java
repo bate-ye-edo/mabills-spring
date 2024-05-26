@@ -43,7 +43,7 @@ public class ExpenseEntity {
     private UserEntity user;
 
     @ManyToOne
-    @JoinColumn(name = "expenseCategoryId")
+    @JoinColumn(name = "expenseCategoryId", referencedColumnName = "id")
     private ExpenseCategoryEntity expenseCategory;
 
     @ManyToOne

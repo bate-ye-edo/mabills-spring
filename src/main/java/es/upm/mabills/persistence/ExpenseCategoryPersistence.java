@@ -6,10 +6,12 @@ import es.upm.mabills.exceptions.MaBillsServiceException;
 import es.upm.mabills.exceptions.UserNotFoundException;
 import es.upm.mabills.model.ExpenseCategory;
 import es.upm.mabills.persistence.entities.ExpenseCategoryEntity;
+import es.upm.mabills.persistence.entity_dependent_managers.EntityDependentManager;
 import es.upm.mabills.persistence.repositories.ExpenseCategoryRepository;
 import es.upm.mabills.persistence.repositories.UserRepository;
 import io.vavr.control.Try;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -19,11 +21,14 @@ import java.util.UUID;
 public class ExpenseCategoryPersistence {
     private final ExpenseCategoryRepository expenseCategoryRepository;
     private final UserRepository userRepository;
+    private final EntityDependentManager entityDependentManager;
 
     @Autowired
-    public ExpenseCategoryPersistence(ExpenseCategoryRepository expenseCategoryRepository, UserRepository userRepository) {
+    public ExpenseCategoryPersistence(ExpenseCategoryRepository expenseCategoryRepository, UserRepository userRepository,
+                                      @Qualifier("expenseCategoryEntityDependentManager") EntityDependentManager entityDependentManager) {
         this.expenseCategoryRepository = expenseCategoryRepository;
         this.userRepository = userRepository;
+        this.entityDependentManager = entityDependentManager;
     }
 
     public List<ExpenseCategoryEntity> findExpenseCategoryByUserName(String username) {
@@ -56,9 +61,14 @@ public class ExpenseCategoryPersistence {
 
     public void deleteExpenseCategory(String username, UUID uuid) {
         Try.of(()->expenseCategoryRepository.findByUser_UsernameAndUuid(username, uuid))
-                .andThen(expenseCategoryRepository::delete)
+                .andThen(this::deleteExpenseCategory)
                 .onFailure(ex -> {
                     throw new ExpenseCategoryNotFoundException(uuid);
                 });
+    }
+
+    private void deleteExpenseCategory(ExpenseCategoryEntity expenseCategoryEntity) {
+        entityDependentManager.decouple(expenseCategoryEntity.getId());
+        expenseCategoryRepository.delete(expenseCategoryEntity);
     }
 }
