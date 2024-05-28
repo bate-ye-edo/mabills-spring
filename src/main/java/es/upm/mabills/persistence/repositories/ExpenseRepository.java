@@ -28,6 +28,6 @@ public interface ExpenseRepository extends JpaRepository<ExpenseEntity, UUID> {
     @Modifying
     @Transactional
     @Query(value = "update expense set expense_category_id = null where expense_category_id = ?1", nativeQuery = true)
-    void decoupleExpenseCategory(UUID creditCardId);
+    void decoupleExpenseCategory(Integer expenseCategoryId);
 
 }

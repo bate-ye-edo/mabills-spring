@@ -12,6 +12,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
 
+import java.util.Objects;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,6 +23,7 @@ class ExpenseCategoryResourceIT {
     private static final String EXPENSE_CATEGORY_USER_EXPENSE_CATEGORY = "expenseCategoryUserExpenseCategory";
     private static final String TO_UPDATE_EXPENSE_CATEGORY = "toUpdateExpenseCategory";
     private static final String TO_DELETE_EXPENSE_CATEGORY = "toDeleteExpenseCategory";
+    private static final String TO_DELETE_EXPENSE_CATEGORY_WITH_EXPENSE = "toDeleteExpenseCategoryWithExpense";
     private static final String UPDATED_EXPENSE_CATEGORY = "updatedExpenseCategory";
     private static final String ONLY_USER = "onlyUser";
     private static final String EXPENSE_CATEGORY_USER = "expenseCategoryUser";
@@ -197,10 +199,29 @@ class ExpenseCategoryResourceIT {
                 .expectStatus().isOk();
     }
 
-    private ExpenseCategory getToDeleteExpenseCategory() {
-        return ExpenseCategory.builder()
-                .name(TO_DELETE_EXPENSE_CATEGORY)
-                .build();
+    @Test
+    void deleteExpenseCategoryWithExpense() {
+        ExpenseCategory expenseCategory = getToDeleteExpenseCategoryWithExpense();
+        restClientTestService
+                .loginDefault(webTestClient)
+                .delete()
+                .uri(ExpenseCategoryResource.EXPENSE_CATEGORIES + ExpenseCategoryResource.UUID, expenseCategory.getUuid())
+                .exchange()
+                .expectStatus().isOk();
+    }
+
+    private ExpenseCategory getToDeleteExpenseCategoryWithExpense() {
+        return Objects.requireNonNull(restClientTestService.loginDefault(webTestClient)
+                        .get()
+                        .uri(ExpenseCategoryResource.EXPENSE_CATEGORIES)
+                        .exchange()
+                        .expectBodyList(ExpenseCategory.class)
+                        .returnResult()
+                        .getResponseBody())
+                .stream()
+                .filter(e -> e.getName().equals(TO_DELETE_EXPENSE_CATEGORY_WITH_EXPENSE))
+                .findFirst()
+                .orElse(null);
     }
 
     @Test
@@ -219,4 +240,9 @@ class ExpenseCategoryResourceIT {
                 .expectStatus().isNotFound();
     }
 
+    private ExpenseCategory getToDeleteExpenseCategory() {
+        return ExpenseCategory.builder()
+                .name(TO_DELETE_EXPENSE_CATEGORY)
+                .build();
+    }
 }

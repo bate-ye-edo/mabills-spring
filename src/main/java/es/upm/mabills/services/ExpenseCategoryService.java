@@ -1,10 +1,13 @@
 package es.upm.mabills.services;
 
+import es.upm.mabills.exceptions.ExpenseCategoryNotFoundException;
+import es.upm.mabills.exceptions.MaBillsServiceException;
 import es.upm.mabills.mappers.ExpenseCategoryMapper;
 import es.upm.mabills.model.ExpenseCategory;
 import es.upm.mabills.persistence.ExpenseCategoryPersistence;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -35,7 +38,14 @@ public class ExpenseCategoryService {
         return expenseCategoryMapper.toExpenseCategory(expenseCategoryPersistence.updateExpenseCategoryName(userName, uuid, name));
     }
 
+    @Transactional
     public void deleteExpenseCategory(String userName, UUID uuid) {
-        expenseCategoryPersistence.deleteExpenseCategory(userName, uuid);
+        try {
+            expenseCategoryPersistence.deleteExpenseCategory(userName, uuid);
+        } catch (ExpenseCategoryNotFoundException ex){
+            throw ex;
+        } catch (Exception e) {
+            throw new MaBillsServiceException();
+        }
     }
 }
