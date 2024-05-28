@@ -23,7 +23,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "BankAccount", uniqueConstraints = {
+@Table(name = "bankAccount", uniqueConstraints = {
     @UniqueConstraint(columnNames = {"iban", "userId"})
 })
 public class BankAccountEntity {

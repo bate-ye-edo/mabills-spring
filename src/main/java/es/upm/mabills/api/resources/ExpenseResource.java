@@ -8,6 +8,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -32,5 +33,10 @@ public class ExpenseResource {
     @PostMapping
     public Expense createExpense(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestBody @Validated Expense expense) {
         return expenseService.createExpense(userPrincipal, expense);
+    }
+
+    @PutMapping
+    public Expense updateExpense(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestBody @Validated Expense expense) {
+        return expenseService.updateExpense(userPrincipal, expense);
     }
 }

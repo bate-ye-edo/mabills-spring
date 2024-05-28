@@ -212,7 +212,25 @@ public class DatabaseSeeder {
                 .creditCard(creditCardWithBankAccountToDeleteAndExpense)
                 .bankAccount(toDeleteBankAccountEntityWithCreditCardAndExpense)
                 .build();
-        this.expenseRepository.saveAll(List.of(expenseEntity, expenseEntityWithCreditCardAndBankAccountToDelete, expenseEntityWithExpenseCategoryToDelete));
+        ExpenseEntity toUpdateExpense = ExpenseEntity.builder()
+                .amount(BigDecimal.ONE)
+                .user(encodedPasswordUser)
+                .expenseDate(new Timestamp(System.currentTimeMillis()))
+                .description(DESCRIPTION)
+                .formOfPayment(FormOfPayment.BANK_TRANSFER.name())
+                .expenseCategory(encodedPasswordUserExpenseCategory)
+                .creditCard(creditCardEntity)
+                .build();
+        ExpenseEntity toUpdateExpenseWithDependencies = ExpenseEntity.builder()
+                .amount(BigDecimal.TEN)
+                .user(encodedPasswordUser)
+                .expenseDate(new Timestamp(System.currentTimeMillis()))
+                .description(DESCRIPTION)
+                .formOfPayment(FormOfPayment.BANK_TRANSFER.name())
+                .expenseCategory(encodedPasswordUserExpenseCategory)
+                .creditCard(creditCardEntity)
+                .build();
+        this.expenseRepository.saveAll(List.of(expenseEntity, expenseEntityWithCreditCardAndBankAccountToDelete, expenseEntityWithExpenseCategoryToDelete, toUpdateExpense, toUpdateExpenseWithDependencies));
         LOGGER.warn("----- End seeding database -----");
     }
 }

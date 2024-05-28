@@ -87,6 +87,43 @@ class ExpenseServiceTest {
         assertThrows(ExpenseCategoryNotFoundException.class, () -> expenseService.createExpense(userPrincipal, expense));
     }
 
+    @Test
+    void testUpdateExpenseSuccess() {
+        ExpenseEntity expenseEntity = buildExpenseEntity();
+        when(expensePersistence.updateExpense(any(), any())).thenReturn(expenseEntity);
+        Expense updatedExpense = expenseService.updateExpense(UserPrincipal.builder().build(), Expense.builder().build());
+        assertNotNull(updatedExpense);
+        assertEquals(expenseEntity.getAmount(), updatedExpense.getAmount());
+        assertEquals(expenseEntity.getDescription(), updatedExpense.getDescription());
+        assertEquals(expenseEntity.getFormOfPayment(), updatedExpense.getFormOfPayment().name());
+        assertEquals(expenseEntity.getExpenseDate(), updatedExpense.getExpenseDate());
+    }
+
+    @Test
+    void testUpdateExpenseFailureByBankAccountNotFoundByDependencyValidator() {
+        doThrow(BankAccountNotFoundException.class).when(dependencyValidator).assertDependencies(any(), any());
+        Expense expense = Expense.builder().build();
+        UserPrincipal userPrincipal = UserPrincipal.builder().build();
+        assertThrows(BankAccountNotFoundException.class, () -> expenseService.updateExpense(userPrincipal, expense));
+    }
+
+    @Test
+    void testUpdateExpenseFailureByCreditCardNotFoundByDependencyValidator() {
+        doThrow(CreditCardNotFoundException.class).when(dependencyValidator).assertDependencies(any(), any());
+        Expense expense = Expense.builder().build();
+        UserPrincipal userPrincipal = UserPrincipal.builder().build();
+        assertThrows(CreditCardNotFoundException.class, () -> expenseService.updateExpense(userPrincipal, expense));
+    }
+
+    @Test
+    void testUpdateExpenseFailureByExpenseCategoryNotFoundByDependencyValidator() {
+        doThrow(ExpenseCategoryNotFoundException.class).when(dependencyValidator).assertDependencies(any(), any());
+        Expense expense = Expense.builder().build();
+        UserPrincipal userPrincipal = UserPrincipal.builder().build();
+        assertThrows(ExpenseCategoryNotFoundException.class, () -> expenseService.updateExpense(userPrincipal, expense));
+    }
+
+
     private ExpenseEntity buildExpenseEntity() {
         return ExpenseEntity.builder()
                 .expenseDate(Timestamp.valueOf(LocalDateTime.now().minusDays(5)))

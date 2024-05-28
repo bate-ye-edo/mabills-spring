@@ -42,4 +42,11 @@ public class ExpenseService {
         return Try.of(() -> expenseMapper.toExpense(expensePersistence.createExpense(userPrincipal, expense)))
                 .getOrElseThrow(EntityNotFoundExceptionMapper::map);
     }
+
+    @Transactional
+    public Expense updateExpense(UserPrincipal userPrincipal, Expense expense) {
+        dependencyValidator.assertDependencies(userPrincipal, expense);
+        return Try.of(() -> expenseMapper.toExpense(expensePersistence.updateExpense(userPrincipal, expense)))
+                .getOrElseThrow(EntityNotFoundExceptionMapper::map);
+    }
 }

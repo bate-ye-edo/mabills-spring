@@ -22,13 +22,13 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name="Expense")
+@Table(name="expense")
 public class ExpenseEntity {
     @Id
     @UuidGenerator
     private UUID uuid;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 38, scale = 3)
     private BigDecimal amount;
     private Timestamp creationDate;
 

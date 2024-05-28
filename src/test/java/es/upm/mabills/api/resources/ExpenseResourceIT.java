@@ -7,21 +7,26 @@ import es.upm.mabills.model.BankAccount;
 import es.upm.mabills.model.CreditCard;
 import es.upm.mabills.model.Expense;
 import es.upm.mabills.model.ExpenseCategory;
+import es.upm.mabills.model.FormOfPayment;
 import es.upm.mabills.persistence.entities.BankAccountEntity;
 import es.upm.mabills.persistence.entities.CreditCardEntity;
+import es.upm.mabills.persistence.entities.ExpenseEntity;
 import es.upm.mabills.persistence.entities.UserEntity;
 import es.upm.mabills.persistence.repositories.BankAccountRepository;
 import es.upm.mabills.persistence.repositories.CreditCardRepository;
 import es.upm.mabills.persistence.repositories.ExpenseCategoryRepository;
+import es.upm.mabills.persistence.repositories.ExpenseRepository;
 import es.upm.mabills.persistence.repositories.RepositorySort;
 import es.upm.mabills.persistence.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -38,7 +43,8 @@ class ExpenseResourceIT {
     private static final String CREDIT_CARD_NUMBER_RELATED_TO_BANK_ACCOUNT = "004120012352345632";
     private static final Timestamp TODAY = new Timestamp(System.currentTimeMillis());
     private static final UUID RANDOM_UUID = UUID.randomUUID();
-
+    private static final String TO_UPDATE_EXPENSE_CREDIT_CARD_NUMBER = "004120003120034012";
+    private static final String ANOTHER_DESCRIPTION = "anotherDescription";
 
     @Autowired
     private WebTestClient webTestClient;
@@ -57,6 +63,9 @@ class ExpenseResourceIT {
 
     @Autowired
     private ExpenseCategoryRepository expenseCategoryRepository;
+
+    @Autowired
+    private ExpenseRepository expenseRepository;
 
     private UserEntity encodedUserEntity;
 
@@ -209,6 +218,203 @@ class ExpenseResourceIT {
                 .exchange()
                 .expectStatus()
                 .isNotFound();
+    }
+
+    @Test
+    void testUpdateExpenseSuccess() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .put()
+                .uri(ExpenseResource.EXPENSES)
+                .bodyValue(buildExpenseToUpdate())
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody(Expense.class)
+                .value(expense -> {
+                    assertNotNull(expense);
+                    assertNotNull(expense.getUuid());
+                    assertNotNull(expense.getCreationDate());
+                    assertNotNull(expense.getExpenseDate());
+                    assertNotNull(expense.getAmount());
+                    assertNotNull(expense.getDescription());
+                    assertNotNull(expense.getFormOfPayment());
+                });
+    }
+
+    @Test
+    void testUpdateExpenseNotFoundBankAccount() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .put()
+                .uri(ExpenseResource.EXPENSES)
+                .bodyValue(buildExpenseToUpdateNotFoundBankAccount())
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+    }
+
+    @Test
+    void testUpdateExpenseNotFoundCreditCard() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .put()
+                .uri(ExpenseResource.EXPENSES)
+                .bodyValue(buildExpenseToUpdateNotFoundCreditCard())
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+    }
+
+    @Test
+    void testUpdateExpenseNotFoundExpenseCategory() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .put()
+                .uri(ExpenseResource.EXPENSES)
+                .bodyValue(buildExpenseToUpdateNotFoundExpenseCategory())
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+    }
+
+    @Test
+    void testUpdateExpenseUnauthorized() {
+        webTestClient
+                .put()
+                .uri(ExpenseResource.EXPENSES)
+                .bodyValue(buildExpense())
+                .exchange()
+                .expectStatus()
+                .isUnauthorized();
+    }
+
+    @Test
+    @Transactional
+    void testUpdateExpenseWithAllDependenciesSuccess() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .put()
+                .uri(ExpenseResource.EXPENSES)
+                .bodyValue(buildExpenseToUpdateWithAllDependencies())
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody(Expense.class)
+                .value(expense -> {
+                    assertNotNull(expense);
+                    assertNotNull(expense.getExpenseCategory());
+                    assertNotNull(expense.getAmount());
+                    assertNotNull(expense.getCreditCard());
+                });
+    }
+
+    @Test
+    void testUpdateExpenseExpenseNotFound() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .put()
+                .uri(ExpenseResource.EXPENSES)
+                .bodyValue(buildExpenseToUpdateNotFound())
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+    }
+
+    private Expense buildExpenseToUpdateNotFound() {
+        return Expense.builder()
+                .uuid(UUID.randomUUID().toString())
+                .amount(BigDecimal.TEN)
+                .expenseDate(Timestamp.valueOf(LocalDateTime.now()))
+                .description(ANOTHER_DESCRIPTION)
+                .formOfPayment(FormOfPayment.CASH)
+                .build();
+    }
+
+    private Expense buildExpenseToUpdate() {
+        return Expense.builder()
+                .uuid(findExpenseToUpdate().getUuid().toString())
+                .amount(BigDecimal.TEN)
+                .expenseDate(Timestamp.valueOf(LocalDateTime.now()))
+                .description(ANOTHER_DESCRIPTION)
+                .formOfPayment(FormOfPayment.CASH)
+                .build();
+    }
+
+    private Expense buildExpenseToUpdateWithAllDependencies() {
+        return Expense.builder()
+                .uuid(findExpenseWithDependenciesToUpdate().getUuid().toString())
+                .amount(BigDecimal.TEN)
+                .expenseDate(Timestamp.valueOf(LocalDateTime.now()))
+                .description(ANOTHER_DESCRIPTION)
+                .formOfPayment(FormOfPayment.CASH)
+                .creditCard(buildCreditCardEntityReference())
+                .expenseCategory(buildExpenseCategoryEntity())
+                .build();
+    }
+
+    private ExpenseEntity findExpenseWithDependenciesToUpdate() {
+        return expenseRepository.findByUserId(encodedUserEntity.getId(), RepositorySort.BY_CREATION_DATE.value())
+                .stream()
+                .filter(expenseEntity -> expenseEntity.getAmount().compareTo(BigDecimal.TEN) == 0
+                        && expenseEntity.getCreditCard() != null && expenseEntity.getCreditCard().getCreditCardNumber().equals(TO_UPDATE_EXPENSE_CREDIT_CARD_NUMBER))
+                .findFirst()
+                .orElseThrow();
+    }
+
+    private CreditCard buildCreditCardEntityReference() {
+        return CreditCard.builder()
+                .uuid(encodedUserEntity.getCreditCards().get(0).getUuid().toString())
+                .creditCardNumber(encodedUserEntity.getCreditCards().get(0).getCreditCardNumber())
+                .build();
+    }
+
+    private ExpenseCategory buildExpenseCategoryEntity() {
+        return ExpenseCategory.builder()
+                .uuid(encodedUserEntity.getExpenseCategories().get(0).getUuid().toString())
+                .name(encodedUserEntity.getExpenseCategories().get(0).getName())
+                .build();
+    }
+
+    private Expense buildExpenseToUpdateNotFoundBankAccount() {
+        return Expense.builder()
+                .uuid(findExpenseToUpdate().getUuid().toString())
+                .amount(BigDecimal.TEN)
+                .expenseDate(Timestamp.valueOf(LocalDateTime.now()))
+                .description(ANOTHER_DESCRIPTION)
+                .formOfPayment(FormOfPayment.CASH)
+                .bankAccount(BankAccount.builder().uuid(UUID.randomUUID().toString()).build())
+                .build();
+    }
+
+    private Expense buildExpenseToUpdateNotFoundCreditCard() {
+        return Expense.builder()
+                .uuid(findExpenseToUpdate().getUuid().toString())
+                .amount(BigDecimal.TEN)
+                .expenseDate(Timestamp.valueOf(LocalDateTime.now()))
+                .description(ANOTHER_DESCRIPTION)
+                .formOfPayment(FormOfPayment.CASH)
+                .creditCard(CreditCard.builder().uuid(UUID.randomUUID().toString()).build())
+                .build();
+    }
+
+    private Expense buildExpenseToUpdateNotFoundExpenseCategory() {
+        return Expense.builder()
+                .uuid(findExpenseToUpdate().getUuid().toString())
+                .amount(BigDecimal.TEN)
+                .expenseDate(Timestamp.valueOf(LocalDateTime.now()))
+                .description(ANOTHER_DESCRIPTION)
+                .formOfPayment(FormOfPayment.CASH)
+                .expenseCategory(ExpenseCategory.builder().uuid(UUID.randomUUID().toString()).build())
+                .build();
+    }
+
+    private ExpenseEntity findExpenseToUpdate() {
+        return expenseRepository.findByUserId(encodedUserEntity.getId(), RepositorySort.BY_CREATION_DATE.value())
+                .stream()
+                .filter(expenseEntity -> expenseEntity.getCreditCard() != null && expenseEntity.getCreditCard().getCreditCardNumber().equals(TO_UPDATE_EXPENSE_CREDIT_CARD_NUMBER))
+                .findFirst()
+                .orElseThrow();
     }
 
     private Expense buildExpenseExpenseCategoryRandom() {

@@ -118,6 +118,7 @@ class CreditCardResourceIT {
                 .exchange()
                 .expectStatus().isNotFound();
     }
+
     private CreditCard buildBankAccountNotFoundCreditCard() {
         return CreditCard.builder()
                 .creditCardNumber(OTHER_CREDIT_CARD_NUMBER)

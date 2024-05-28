@@ -15,6 +15,8 @@ import java.util.UUID;
 public interface ExpenseRepository extends JpaRepository<ExpenseEntity, UUID> {
     List<ExpenseEntity> findByUserId(int userId, Sort sort);
 
+    ExpenseEntity findByUserIdAndUuid(int userId, UUID uuid);
+
     @Modifying
     @Transactional
     @Query(value = "update expense set bank_account_id = null where bank_account_id = ?1", nativeQuery = true)

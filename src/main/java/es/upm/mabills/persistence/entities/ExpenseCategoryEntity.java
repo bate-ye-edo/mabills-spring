@@ -27,7 +27,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name="ExpenseCategory", uniqueConstraints = {
+@Table(name="expenseCategory", uniqueConstraints = {
     @UniqueConstraint(columnNames = {"name", "userId"})
 })
 public class ExpenseCategoryEntity {

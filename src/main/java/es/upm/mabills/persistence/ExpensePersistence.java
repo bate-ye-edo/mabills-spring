@@ -1,5 +1,6 @@
 package es.upm.mabills.persistence;
 
+import es.upm.mabills.exceptions.ExpenseCategoryNotFoundException;
 import es.upm.mabills.model.BankAccount;
 import es.upm.mabills.model.CreditCard;
 import es.upm.mabills.model.Expense;
@@ -31,6 +32,7 @@ public class ExpensePersistence {
     private final EntityReferenceFactory entityReferenceFactory;
     private final ExpenseCategoryRepository expenseCategoryRepository;
     private final CreditCardRepository creditCardRepository;
+
     @Autowired
     public ExpensePersistence(ExpenseRepository expenseRepository, EntityReferenceFactory entityReferenceFactory,
                               ExpenseCategoryRepository expenseCategoryRepository, CreditCardRepository creditCardRepository) {
@@ -51,6 +53,22 @@ public class ExpensePersistence {
                 .get();
     }
 
+    @Transactional
+    public ExpenseEntity updateExpense(UserPrincipal userPrincipal, Expense expense) {
+        return Try.of(() -> expenseRepository.findByUserIdAndUuid(userPrincipal.getId(), UUID.fromString(expense.getUuid())))
+                .map(expenseEntity -> {
+                    expenseEntity.setAmount(expense.getAmount());
+                    expenseEntity.setExpenseDate(expense.getExpenseDate());
+                    expenseEntity.setDescription(expense.getDescription());
+                    expenseEntity.setFormOfPayment(buildFormOfPaymentName(expense.getFormOfPayment()));
+                    expenseEntity.setBankAccount(buildBankAccountEntityReference(expense.getBankAccount(), expense.getCreditCard(), userPrincipal));
+                    expenseEntity.setCreditCard(buildCreditCardEntityReference(expense.getCreditCard()));
+                    expenseEntity.setExpenseCategory(buildToUpdateExpenseCategoryEntity(userPrincipal, expense.getExpenseCategory()));
+                    return expenseRepository.save(expenseEntity);
+                })
+                .get();
+    }
+
     private ExpenseEntity buildExpense(UserPrincipal userPrincipal, Expense expense) {
         return ExpenseEntity.builder()
                 .amount(expense.getAmount())
@@ -58,8 +76,8 @@ public class ExpensePersistence {
                 .expenseDate(expense.getExpenseDate())
                 .description(expense.getDescription())
                 .formOfPayment(buildFormOfPaymentName(expense.getFormOfPayment()))
-                .bankAccount(buildBankAccountEntity(expense.getBankAccount(), expense.getCreditCard(), userPrincipal))
-                .creditCard(buildCreditCardEntity(expense.getCreditCard()))
+                .bankAccount(buildBankAccountEntityReference(expense.getBankAccount(), expense.getCreditCard(), userPrincipal))
+                .creditCard(buildCreditCardEntityReference(expense.getCreditCard()))
                 .expenseCategory(buildExpenseCategoryEntity(userPrincipal, expense.getExpenseCategory()))
                 .build();
     }
@@ -76,7 +94,7 @@ public class ExpensePersistence {
                 .orElse(null);
     }
 
-    private CreditCardEntity buildCreditCardEntity(CreditCard creditCard) {
+    private CreditCardEntity buildCreditCardEntityReference(CreditCard creditCard) {
         return Optional.ofNullable(creditCard)
                 .map(CreditCard::getUuid)
                 .map(UUID::fromString)
@@ -84,20 +102,28 @@ public class ExpensePersistence {
                 .orElse(null);
     }
 
-    private BankAccountEntity buildBankAccountEntity(BankAccount bankAccount, CreditCard creditCard, UserPrincipal userPrincipal) {
+    private BankAccountEntity buildBankAccountEntityReference(BankAccount bankAccount, CreditCard creditCard, UserPrincipal userPrincipal) {
         return Optional.ofNullable(bankAccount)
                 .map(BankAccount::getUuid)
                 .map(UUID::fromString)
                 .map(uuid -> entityReferenceFactory.buildReference(BankAccountEntity.class, uuid))
-                .orElse(buildBankAccountFromCreditCard(creditCard, userPrincipal));
+                .orElse(buildBankAccountEntityReferenceFromCreditCard(userPrincipal, creditCard));
     }
 
-    private BankAccountEntity buildBankAccountFromCreditCard(CreditCard creditCard, UserPrincipal userPrincipal) {
+    private BankAccountEntity buildBankAccountEntityReferenceFromCreditCard(UserPrincipal userPrincipal, CreditCard creditCard) {
         return Optional.ofNullable(creditCard)
-                .map(CreditCard::getUuid)
-                .map(UUID::fromString)
-                .map(uuid -> creditCardRepository.findByUserIdAndUuid(userPrincipal.getId(), uuid))
+                .map(creditcard -> creditCardRepository.findByUserIdAndUuid(userPrincipal.getId(), UUID.fromString(creditCard.getUuid())))
                 .map(CreditCardEntity::getBankAccount)
+                .map(BankAccountEntity::getUuid)
+                .map(uuid -> entityReferenceFactory.buildReference(BankAccountEntity.class, uuid))
                 .orElse(null);
+    }
+
+    private ExpenseCategoryEntity buildToUpdateExpenseCategoryEntity(UserPrincipal userPrincipal, ExpenseCategory expenseCategory) {
+        ExpenseCategoryEntity expenseCategoryEntity = buildExpenseCategoryEntity(userPrincipal, expenseCategory);
+        if (Objects.nonNull(expenseCategory) && Objects.isNull(expenseCategoryEntity)) {
+            throw new ExpenseCategoryNotFoundException();
+        }
+        return expenseCategoryEntity;
     }
 }

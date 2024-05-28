@@ -23,7 +23,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name="CreditCard", uniqueConstraints = {
+@Table(name="creditCard", uniqueConstraints = {
     @UniqueConstraint(columnNames = {"creditCardNumber", "userId"})
 })
 public class CreditCardEntity {

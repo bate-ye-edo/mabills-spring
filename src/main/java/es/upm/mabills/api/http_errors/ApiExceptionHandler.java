@@ -7,6 +7,7 @@ import es.upm.mabills.exceptions.CreditCardNotFoundException;
 import es.upm.mabills.exceptions.DuplicatedEmailException;
 import es.upm.mabills.exceptions.ExpenseCategoryAlreadyExistsException;
 import es.upm.mabills.exceptions.ExpenseCategoryNotFoundException;
+import es.upm.mabills.exceptions.ExpenseNotFoundException;
 import es.upm.mabills.exceptions.InvalidRequestException;
 import es.upm.mabills.exceptions.MaBillsServiceException;
 import es.upm.mabills.exceptions.UserAlreadyExistsException;
@@ -49,6 +50,39 @@ public class ApiExceptionHandler {
         LOGGER.debug(() -> "Bad credentials: " + exception.getMessage());
         return new ErrorMessage(exception, HttpStatus.BAD_REQUEST.value());
     }
+
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler({
+            MethodArgumentNotValidException.class,
+    })
+    @ResponseBody
+    public ErrorMessage invalidArguments(MethodArgumentNotValidException exception) {
+        LOGGER.debug(() -> "Invalid arguments: " + exception.getMessage());
+        return new ErrorMessage(exception, HttpStatus.BAD_REQUEST.value(), getErrorFieldNames(exception.getBindingResult()));
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler({
+            HandlerMethodValidationException.class
+    })
+    @ResponseBody
+    public ErrorMessage invalidArguments(HandlerMethodValidationException exception) {
+        LOGGER.debug(() -> "Invalid arguments: " + exception.getMessage());
+        return new ErrorMessage(exception, HttpStatus.BAD_REQUEST.value());
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler({
+            InvalidRequestException.class
+    })
+    @ResponseBody
+    public ErrorMessage invalidRequestException(InvalidRequestException exception){
+        LOGGER.debug(() -> "Invalid request: "+exception.getMessage());
+        return new ErrorMessage(exception, HttpStatus.BAD_REQUEST.value());
+    }
+
+
 
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler({
@@ -100,46 +134,17 @@ public class ApiExceptionHandler {
         return new ErrorMessage(exception, HttpStatus.CONFLICT.value());
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler({
-        MethodArgumentNotValidException.class,
-    })
-    @ResponseBody
-    public ErrorMessage invalidArguments(MethodArgumentNotValidException exception) {
-        LOGGER.debug(() -> "Invalid arguments: " + exception.getMessage());
-        return new ErrorMessage(exception, HttpStatus.BAD_REQUEST.value(), getErrorFieldNames(exception.getBindingResult()));
-    }
-
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler({
-        HandlerMethodValidationException.class
-    })
-    @ResponseBody
-    public ErrorMessage invalidArguments(HandlerMethodValidationException exception) {
-        LOGGER.debug(() -> "Invalid arguments: " + exception.getMessage());
-        return new ErrorMessage(exception, HttpStatus.BAD_REQUEST.value());
-    }
-
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler({
-        InvalidRequestException.class
-    })
-    @ResponseBody
-    public ErrorMessage invalidRequestException(InvalidRequestException exception){
-        LOGGER.debug(() -> "Invalid request: "+exception.getMessage());
-        return new ErrorMessage(exception, HttpStatus.BAD_REQUEST.value());
-    }
-
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler({
         UserNotFoundException.class,
         ExpenseCategoryNotFoundException.class,
         BankAccountNotFoundException.class,
-        CreditCardNotFoundException.class
+        CreditCardNotFoundException.class,
+        ExpenseNotFoundException.class
     })
     @ResponseBody
     public ErrorMessage notFoundException(RuntimeException exception) {
-        LOGGER.debug(exception::getMessage);
+        LOGGER.debug(() -> "Not found:" + exception.getMessage());
         return new ErrorMessage(exception, HttpStatus.NOT_FOUND.value());
     }
 
