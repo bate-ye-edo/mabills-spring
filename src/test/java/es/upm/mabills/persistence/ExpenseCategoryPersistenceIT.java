@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -22,10 +23,12 @@ class ExpenseCategoryPersistenceIT {
     private static final String OTHER_USER = "otherUser";
     private static final String TO_UPDATE_EXPENSE_CATEGORY_USER = "toUpdateExpenseCategoryUser";
     private static final String TO_DELETE_EXPENSE_CATEGORY = "toDeleteExpenseCategory";
+    private static final String TO_DELETE_EXPENSE_CATEGORY_WITH_EXPENSE_RESOURCE = "toDeleteExpenseCategoryWithExpenseResource";
 
     private static final String USERNAME_USER_EXPENSE_CATEGORY = "userNameUserExpenseCategory";
     private static final String NEW_EXPENSE_CATEGORY = "newExpenseCategory";
     private static final String NOT_FOUND_USER = "notFoundUser";
+    private static final String ENCODED_PASSWORD_USER = "encodedPasswordUser";
     private static final UUID RANDOM_UUID = UUID.randomUUID();
 
     @Autowired
@@ -93,7 +96,7 @@ class ExpenseCategoryPersistenceIT {
     void testDeleteExpenseCategory() {
         ExpenseCategoryEntity newExpenseCategory = expenseCategoryPersistence.createExpenseCategory(TO_UPDATE_EXPENSE_CATEGORY_USER,
                 ExpenseCategory.builder().name(TO_DELETE_EXPENSE_CATEGORY).build());
-        expenseCategoryPersistence.deleteExpenseCategory(TO_UPDATE_EXPENSE_CATEGORY_USER, newExpenseCategory.getUuid());
+        assertDoesNotThrow(() -> expenseCategoryPersistence.deleteExpenseCategory(TO_UPDATE_EXPENSE_CATEGORY_USER, newExpenseCategory.getUuid()));
         UUID newExpenseCategoryUuid = newExpenseCategory.getUuid();
         assertThrows(ExpenseCategoryNotFoundException.class, () -> expenseCategoryPersistence.deleteExpenseCategory(TO_UPDATE_EXPENSE_CATEGORY_USER, newExpenseCategoryUuid));
     }
@@ -106,5 +109,19 @@ class ExpenseCategoryPersistenceIT {
     @Test
     void testDeleteExpenseCategoryNotFound() {
         assertThrows(ExpenseCategoryNotFoundException.class, () -> expenseCategoryPersistence.deleteExpenseCategory(TO_UPDATE_EXPENSE_CATEGORY_USER, RANDOM_UUID));
+    }
+
+    @Test
+    void testDeleteExpenseCategoryWithDependentEntities() {
+        assertDoesNotThrow(() -> expenseCategoryPersistence.deleteExpenseCategory(ENCODED_PASSWORD_USER, findExpenseCategoryUuid(TO_DELETE_EXPENSE_CATEGORY_WITH_EXPENSE_RESOURCE)));
+    }
+
+    private UUID findExpenseCategoryUuid(String name) {
+        return expenseCategoryPersistence.findExpenseCategoryByUserName(ENCODED_PASSWORD_USER)
+                .stream()
+                .filter(expenseCategoryEntity -> expenseCategoryEntity.getName().equals(name))
+                .findFirst()
+                .map(ExpenseCategoryEntity::getUuid)
+                .orElse(null);
     }
 }

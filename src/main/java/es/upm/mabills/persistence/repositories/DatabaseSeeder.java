@@ -21,6 +21,7 @@ import java.util.List;
 public class DatabaseSeeder {
     private static final Logger LOGGER = LogManager.getLogger(DatabaseSeeder.class);
     private static final String ENCODED_PASSWORD = "$2a$10$KyShpWQl4pS7KybIIZLkZ.6Mo2YBkPFuXT82cEOguWW3lpSMHgSEe";
+    private static final String DESCRIPTION = "description";
     private final UserRepository userRepository;
     private final ExpenseCategoryRepository expenseCategoryRepository;
     private final CreditCardRepository creditCardRepository;
@@ -116,7 +117,15 @@ public class DatabaseSeeder {
                 .name("encodedPasswordUserExpenseCategory")
                 .user(encodedPasswordUser)
                 .build();
-        this.expenseCategoryRepository.saveAll(List.of(userNameUserExpense, expenseCategoryUserExpense, encodedPasswordUserExpenseCategory));
+        ExpenseCategoryEntity toDeleteExpenseCategoryWithExpense = ExpenseCategoryEntity.builder()
+                .name("toDeleteExpenseCategoryWithExpense")
+                .user(encodedPasswordUser)
+                .build();
+        ExpenseCategoryEntity toDeleteExpenseCategoryWithExpenseResource = ExpenseCategoryEntity.builder()
+                .name("toDeleteExpenseCategoryWithExpenseResource")
+                .user(encodedPasswordUser)
+                .build();
+        this.expenseCategoryRepository.saveAll(List.of(userNameUserExpense, expenseCategoryUserExpense, encodedPasswordUserExpenseCategory, toDeleteExpenseCategoryWithExpense, toDeleteExpenseCategoryWithExpenseResource));
 
 
         // Bank accounts
@@ -177,7 +186,7 @@ public class DatabaseSeeder {
                 .amount(BigDecimal.ONE)
                 .user(encodedPasswordUser)
                 .expenseDate(new Timestamp(System.currentTimeMillis()))
-                .description("description")
+                .description(DESCRIPTION)
                 .formOfPayment(FormOfPayment.BANK_TRANSFER.name())
                 .expenseCategory(userNameUserExpense)
                 .creditCard(creditCardEntity)
@@ -187,13 +196,23 @@ public class DatabaseSeeder {
                 .amount(BigDecimal.ONE)
                 .user(encodedPasswordUser)
                 .expenseDate(new Timestamp(System.currentTimeMillis()))
-                .description("description")
+                .description(DESCRIPTION)
                 .formOfPayment(FormOfPayment.BANK_TRANSFER.name())
-                .expenseCategory(userNameUserExpense)
+                .expenseCategory(toDeleteExpenseCategoryWithExpenseResource)
                 .creditCard(creditCardWithBankAccountToDeleteAndExpense)
                 .bankAccount(toDeleteBankAccountEntityWithCreditCardAndExpense)
                 .build();
-        this.expenseRepository.saveAll(List.of(expenseEntity, expenseEntityWithCreditCardAndBankAccountToDelete));
+        ExpenseEntity expenseEntityWithExpenseCategoryToDelete = ExpenseEntity.builder()
+                .amount(BigDecimal.ONE)
+                .user(encodedPasswordUser)
+                .expenseDate(new Timestamp(System.currentTimeMillis()))
+                .description(DESCRIPTION)
+                .formOfPayment(FormOfPayment.BANK_TRANSFER.name())
+                .expenseCategory(toDeleteExpenseCategoryWithExpense)
+                .creditCard(creditCardWithBankAccountToDeleteAndExpense)
+                .bankAccount(toDeleteBankAccountEntityWithCreditCardAndExpense)
+                .build();
+        this.expenseRepository.saveAll(List.of(expenseEntity, expenseEntityWithCreditCardAndBankAccountToDelete, expenseEntityWithExpenseCategoryToDelete));
         LOGGER.warn("----- End seeding database -----");
     }
 }
