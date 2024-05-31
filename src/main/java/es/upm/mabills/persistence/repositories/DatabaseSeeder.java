@@ -22,11 +22,13 @@ public class DatabaseSeeder {
     private static final Logger LOGGER = LogManager.getLogger(DatabaseSeeder.class);
     private static final String ENCODED_PASSWORD = "$2a$10$KyShpWQl4pS7KybIIZLkZ.6Mo2YBkPFuXT82cEOguWW3lpSMHgSEe";
     private static final String DESCRIPTION = "description";
+    private static final Timestamp TODAY = new Timestamp(System.currentTimeMillis());
     private final UserRepository userRepository;
     private final ExpenseCategoryRepository expenseCategoryRepository;
     private final CreditCardRepository creditCardRepository;
     private final BankAccountRepository bankAccountRepository;
     private final ExpenseRepository expenseRepository;
+
     @Autowired
     public DatabaseSeeder(UserRepository userRepository, ExpenseCategoryRepository expenseCategoryRepository,
                           CreditCardRepository creditCardRepository, BankAccountRepository bankAccountRepository,
@@ -185,7 +187,7 @@ public class DatabaseSeeder {
         ExpenseEntity expenseEntity = ExpenseEntity.builder()
                 .amount(BigDecimal.ONE)
                 .user(encodedPasswordUser)
-                .expenseDate(new Timestamp(System.currentTimeMillis()))
+                .expenseDate(TODAY)
                 .description(DESCRIPTION)
                 .formOfPayment(FormOfPayment.BANK_TRANSFER.name())
                 .expenseCategory(userNameUserExpense)
@@ -195,7 +197,7 @@ public class DatabaseSeeder {
         ExpenseEntity expenseEntityWithCreditCardAndBankAccountToDelete = ExpenseEntity.builder()
                 .amount(BigDecimal.ONE)
                 .user(encodedPasswordUser)
-                .expenseDate(new Timestamp(System.currentTimeMillis()))
+                .expenseDate(TODAY)
                 .description(DESCRIPTION)
                 .formOfPayment(FormOfPayment.BANK_TRANSFER.name())
                 .expenseCategory(toDeleteExpenseCategoryWithExpenseResource)
@@ -205,7 +207,7 @@ public class DatabaseSeeder {
         ExpenseEntity expenseEntityWithExpenseCategoryToDelete = ExpenseEntity.builder()
                 .amount(BigDecimal.ONE)
                 .user(encodedPasswordUser)
-                .expenseDate(new Timestamp(System.currentTimeMillis()))
+                .expenseDate(TODAY)
                 .description(DESCRIPTION)
                 .formOfPayment(FormOfPayment.BANK_TRANSFER.name())
                 .expenseCategory(toDeleteExpenseCategoryWithExpense)
@@ -215,7 +217,7 @@ public class DatabaseSeeder {
         ExpenseEntity toUpdateExpense = ExpenseEntity.builder()
                 .amount(BigDecimal.ONE)
                 .user(encodedPasswordUser)
-                .expenseDate(new Timestamp(System.currentTimeMillis()))
+                .expenseDate(TODAY)
                 .description(DESCRIPTION)
                 .formOfPayment(FormOfPayment.BANK_TRANSFER.name())
                 .expenseCategory(encodedPasswordUserExpenseCategory)
@@ -224,13 +226,25 @@ public class DatabaseSeeder {
         ExpenseEntity toUpdateExpenseWithDependencies = ExpenseEntity.builder()
                 .amount(BigDecimal.TEN)
                 .user(encodedPasswordUser)
-                .expenseDate(new Timestamp(System.currentTimeMillis()))
+                .expenseDate(TODAY)
                 .description(DESCRIPTION)
                 .formOfPayment(FormOfPayment.BANK_TRANSFER.name())
                 .expenseCategory(encodedPasswordUserExpenseCategory)
                 .creditCard(creditCardEntity)
                 .build();
-        this.expenseRepository.saveAll(List.of(expenseEntity, expenseEntityWithCreditCardAndBankAccountToDelete, expenseEntityWithExpenseCategoryToDelete, toUpdateExpense, toUpdateExpenseWithDependencies));
+        ExpenseEntity toDeleteExpense = ExpenseEntity.builder()
+                .amount(BigDecimal.ONE)
+                .user(encodedPasswordUser)
+                .expenseDate(TODAY)
+                .description("to_delete_expense")
+                .build();
+        ExpenseEntity toDeleteExpenseResource = ExpenseEntity.builder()
+                .amount(BigDecimal.ONE)
+                .user(encodedPasswordUser)
+                .expenseDate(TODAY)
+                .description("to_delete_expense_resource")
+                .build();
+        this.expenseRepository.saveAll(List.of(expenseEntity, expenseEntityWithCreditCardAndBankAccountToDelete, expenseEntityWithExpenseCategoryToDelete, toUpdateExpense, toUpdateExpenseWithDependencies, toDeleteExpense, toDeleteExpenseResource));
         LOGGER.warn("----- End seeding database -----");
     }
 }

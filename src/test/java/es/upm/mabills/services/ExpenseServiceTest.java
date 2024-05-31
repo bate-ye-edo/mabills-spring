@@ -4,6 +4,7 @@ import es.upm.mabills.UnitTestConfig;
 import es.upm.mabills.exceptions.BankAccountNotFoundException;
 import es.upm.mabills.exceptions.CreditCardNotFoundException;
 import es.upm.mabills.exceptions.ExpenseCategoryNotFoundException;
+import es.upm.mabills.exceptions.ExpenseNotFoundException;
 import es.upm.mabills.model.Expense;
 import es.upm.mabills.model.FormOfPayment;
 import es.upm.mabills.model.UserPrincipal;
@@ -25,7 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @UnitTestConfig
@@ -123,6 +126,19 @@ class ExpenseServiceTest {
         assertThrows(ExpenseCategoryNotFoundException.class, () -> expenseService.updateExpense(userPrincipal, expense));
     }
 
+    @Test
+    void testDeleteExpenseSuccess() {
+        doNothing().when(expensePersistence).deleteExpense(any(), any());
+        expenseService.deleteExpense(UserPrincipal.builder().build(), "uuid");
+        verify(expensePersistence).deleteExpense(any(), any());
+    }
+
+    @Test
+    void testDeleteExpenseFailure() {
+        doThrow(ExpenseNotFoundException.class).when(expensePersistence).deleteExpense(any(), any());
+        UserPrincipal userPrincipal = UserPrincipal.builder().build();
+        assertThrows(ExpenseNotFoundException.class, () -> expenseService.deleteExpense(userPrincipal, "uuid"));
+    }
 
     private ExpenseEntity buildExpenseEntity() {
         return ExpenseEntity.builder()

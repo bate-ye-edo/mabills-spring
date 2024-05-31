@@ -1,6 +1,7 @@
 package es.upm.mabills.persistence;
 
 import es.upm.mabills.exceptions.ExpenseCategoryNotFoundException;
+import es.upm.mabills.exceptions.ExpenseNotFoundException;
 import es.upm.mabills.model.BankAccount;
 import es.upm.mabills.model.CreditCard;
 import es.upm.mabills.model.Expense;
@@ -125,5 +126,13 @@ public class ExpensePersistence {
             throw new ExpenseCategoryNotFoundException();
         }
         return expenseCategoryEntity;
+    }
+
+    public void deleteExpense(UserPrincipal userPrincipal, String uuid) {
+        Try.of(() -> expenseRepository.findByUserIdAndUuid(userPrincipal.getId(), UUID.fromString(uuid)))
+                .andThen(expenseRepository::delete)
+                .onFailure(ex -> {
+                    throw new ExpenseNotFoundException(uuid);
+                });
     }
 }

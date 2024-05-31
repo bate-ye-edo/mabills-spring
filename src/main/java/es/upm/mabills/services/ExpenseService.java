@@ -49,4 +49,8 @@ public class ExpenseService {
         return Try.of(() -> expenseMapper.toExpense(expensePersistence.updateExpense(userPrincipal, expense)))
                 .getOrElseThrow(EntityNotFoundExceptionMapper::map);
     }
+
+    public void deleteExpense(UserPrincipal userPrincipal, String uuid) {
+        expensePersistence.deleteExpense(userPrincipal, uuid);
+    }
 }

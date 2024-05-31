@@ -44,6 +44,7 @@ class ExpenseResourceIT {
     private static final Timestamp TODAY = new Timestamp(System.currentTimeMillis());
     private static final UUID RANDOM_UUID = UUID.randomUUID();
     private static final String TO_UPDATE_EXPENSE_CREDIT_CARD_NUMBER = "004120003120034012";
+    private static final String TO_DELETE_EXPENSE_RESOURCE = "to_delete_expense_resource";
     private static final String ANOTHER_DESCRIPTION = "anotherDescription";
 
     @Autowired
@@ -319,6 +320,46 @@ class ExpenseResourceIT {
                 .exchange()
                 .expectStatus()
                 .isNotFound();
+    }
+
+    @Test
+    void testDeleteExpenseSuccess() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .delete()
+                .uri(ExpenseResource.EXPENSES + ExpenseResource.UUID, findExpenseToDelete().getUuid())
+                .exchange()
+                .expectStatus()
+                .isOk();
+    }
+
+    @Test
+    void testDeleteExpenseUnauthorized() {
+        webTestClient
+                .delete()
+                .uri(ExpenseResource.EXPENSES + ExpenseResource.UUID, findExpenseToDelete().getUuid())
+                .exchange()
+                .expectStatus()
+                .isUnauthorized();
+    }
+
+    @Test
+    void testDeleteExpenseNotFound() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .delete()
+                .uri(ExpenseResource.EXPENSES + ExpenseResource.UUID, UUID.randomUUID())
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+    }
+
+    private ExpenseEntity findExpenseToDelete() {
+        return expenseRepository.findByUserId(encodedUserEntity.getId(), RepositorySort.BY_CREATION_DATE.value())
+                .stream()
+                .filter(expenseEntity -> expenseEntity.getDescription().equals(TO_DELETE_EXPENSE_RESOURCE))
+                .findFirst()
+                .orElseThrow();
     }
 
     private Expense buildExpenseToUpdateNotFound() {

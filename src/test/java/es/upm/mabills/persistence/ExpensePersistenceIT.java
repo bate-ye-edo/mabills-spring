@@ -3,6 +3,7 @@ package es.upm.mabills.persistence;
 
 import es.upm.mabills.TestConfig;
 import es.upm.mabills.exceptions.ExpenseCategoryNotFoundException;
+import es.upm.mabills.exceptions.ExpenseNotFoundException;
 import es.upm.mabills.model.BankAccount;
 import es.upm.mabills.model.CreditCard;
 import es.upm.mabills.model.Expense;
@@ -38,6 +39,8 @@ class ExpensePersistenceIT {
             .id(0)
             .username("notFoundUser")
             .build();
+    private static final String RANDOM_UUID = UUID.randomUUID().toString();
+    private static final String TO_DELETE_EXPENSE_DESCRIPTION = "to_delete_expense";
 
     @Autowired
     private ExpensePersistence expensePersistence;
@@ -148,6 +151,24 @@ class ExpensePersistenceIT {
         assertEquals(expense.getCreditCard().getUuid(), updatedExpenseEntity.getCreditCard().getUuid().toString());
         assertNotNull(updatedExpenseEntity.getExpenseCategory());
         assertEquals(expense.getExpenseCategory().getUuid(), updatedExpenseEntity.getExpenseCategory().getUuid().toString());
+    }
+
+    @Test
+    void testDeleteExpenseSuccess() {
+        ExpenseEntity expenseEntity = expensePersistence.findExpenseByUserId(encodedUserPrincipal)
+                .stream()
+                .filter(expenseEntity1 -> expenseEntity1.getDescription().equals(TO_DELETE_EXPENSE_DESCRIPTION))
+                .findFirst()
+                .orElseThrow();
+        expensePersistence.deleteExpense(encodedUserPrincipal, expenseEntity.getUuid().toString());
+        assertTrue(expensePersistence.findExpenseByUserId(encodedUserPrincipal)
+                .stream()
+                .noneMatch(expenseEntity1 -> expenseEntity1.getDescription().equals(TO_DELETE_EXPENSE_DESCRIPTION)));
+    }
+
+    @Test
+    void testDeleteExpenseExpenseNotFound() {
+        assertThrows(ExpenseNotFoundException.class, () -> expensePersistence.deleteExpense(encodedUserPrincipal, RANDOM_UUID));
     }
 
     private Expense buildExpenseToUpdateWithAllDependencies() {
