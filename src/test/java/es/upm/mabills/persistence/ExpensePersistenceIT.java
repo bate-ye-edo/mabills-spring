@@ -72,7 +72,6 @@ class ExpensePersistenceIT {
     }
 
     @Test
-    @Transactional
     void testCreateExpenseWithoutDependenciesSuccess() {
         Expense expense = buildExpenseWithoutDependencies();
         ExpenseEntity expenseEntity = expensePersistence.createExpense(encodedUserPrincipal, expense);

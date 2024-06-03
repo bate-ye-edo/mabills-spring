@@ -2,18 +2,13 @@ package es.upm.mabills.persistence;
 
 import es.upm.mabills.exceptions.ExpenseCategoryNotFoundException;
 import es.upm.mabills.exceptions.ExpenseNotFoundException;
-import es.upm.mabills.model.BankAccount;
-import es.upm.mabills.model.CreditCard;
 import es.upm.mabills.model.Expense;
 import es.upm.mabills.model.ExpenseCategory;
 import es.upm.mabills.model.FormOfPayment;
 import es.upm.mabills.model.UserPrincipal;
-import es.upm.mabills.persistence.entities.BankAccountEntity;
-import es.upm.mabills.persistence.entities.CreditCardEntity;
 import es.upm.mabills.persistence.entities.ExpenseCategoryEntity;
 import es.upm.mabills.persistence.entities.ExpenseEntity;
 import es.upm.mabills.persistence.entities.UserEntity;
-import es.upm.mabills.persistence.repositories.CreditCardRepository;
 import es.upm.mabills.persistence.repositories.ExpenseCategoryRepository;
 import es.upm.mabills.persistence.repositories.ExpenseRepository;
 import es.upm.mabills.persistence.repositories.RepositorySort;
@@ -32,15 +27,18 @@ public class ExpensePersistence {
     private final ExpenseRepository expenseRepository;
     private final EntityReferenceFactory entityReferenceFactory;
     private final ExpenseCategoryRepository expenseCategoryRepository;
-    private final CreditCardRepository creditCardRepository;
+    private final CreditCardReferenceBuilder creditCardReferenceBuilder;
+    private final BankAccountReferenceBuilder bankAccountReferenceBuilder;
 
     @Autowired
     public ExpensePersistence(ExpenseRepository expenseRepository, EntityReferenceFactory entityReferenceFactory,
-                              ExpenseCategoryRepository expenseCategoryRepository, CreditCardRepository creditCardRepository) {
+                              ExpenseCategoryRepository expenseCategoryRepository,
+                              CreditCardReferenceBuilder creditCardReferenceBuilder, BankAccountReferenceBuilder bankAccountReferenceBuilder) {
         this.expenseRepository = expenseRepository;
         this.entityReferenceFactory = entityReferenceFactory;
         this.expenseCategoryRepository = expenseCategoryRepository;
-        this.creditCardRepository = creditCardRepository;
+        this.creditCardReferenceBuilder = creditCardReferenceBuilder;
+        this.bankAccountReferenceBuilder = bankAccountReferenceBuilder;
     }
 
     public List<ExpenseEntity> findExpenseByUserId(UserPrincipal userPrincipal) {
@@ -62,8 +60,8 @@ public class ExpensePersistence {
                     expenseEntity.setExpenseDate(expense.getExpenseDate());
                     expenseEntity.setDescription(expense.getDescription());
                     expenseEntity.setFormOfPayment(buildFormOfPaymentName(expense.getFormOfPayment()));
-                    expenseEntity.setBankAccount(buildBankAccountEntityReference(expense.getBankAccount(), expense.getCreditCard(), userPrincipal));
-                    expenseEntity.setCreditCard(buildCreditCardEntityReference(expense.getCreditCard()));
+                    expenseEntity.setBankAccount(bankAccountReferenceBuilder.buildBankAccountEntityReference(expense.getBankAccount(), expense.getCreditCard(), userPrincipal));
+                    expenseEntity.setCreditCard(creditCardReferenceBuilder.buildCreditCardEntityReference(expense.getCreditCard()));
                     expenseEntity.setExpenseCategory(buildToUpdateExpenseCategoryEntity(userPrincipal, expense.getExpenseCategory()));
                     return expenseRepository.save(expenseEntity);
                 })
@@ -77,8 +75,8 @@ public class ExpensePersistence {
                 .expenseDate(expense.getExpenseDate())
                 .description(expense.getDescription())
                 .formOfPayment(buildFormOfPaymentName(expense.getFormOfPayment()))
-                .bankAccount(buildBankAccountEntityReference(expense.getBankAccount(), expense.getCreditCard(), userPrincipal))
-                .creditCard(buildCreditCardEntityReference(expense.getCreditCard()))
+                .bankAccount(bankAccountReferenceBuilder.buildBankAccountEntityReference(expense.getBankAccount(), expense.getCreditCard(), userPrincipal))
+                .creditCard(creditCardReferenceBuilder.buildCreditCardEntityReference(expense.getCreditCard()))
                 .expenseCategory(buildExpenseCategoryEntity(userPrincipal, expense.getExpenseCategory()))
                 .build();
     }
@@ -95,30 +93,6 @@ public class ExpensePersistence {
                 .orElse(null);
     }
 
-    private CreditCardEntity buildCreditCardEntityReference(CreditCard creditCard) {
-        return Optional.ofNullable(creditCard)
-                .map(CreditCard::getUuid)
-                .map(UUID::fromString)
-                .map(uuid -> entityReferenceFactory.buildReference(CreditCardEntity.class, uuid))
-                .orElse(null);
-    }
-
-    private BankAccountEntity buildBankAccountEntityReference(BankAccount bankAccount, CreditCard creditCard, UserPrincipal userPrincipal) {
-        return Optional.ofNullable(bankAccount)
-                .map(BankAccount::getUuid)
-                .map(UUID::fromString)
-                .map(uuid -> entityReferenceFactory.buildReference(BankAccountEntity.class, uuid))
-                .orElse(buildBankAccountEntityReferenceFromCreditCard(userPrincipal, creditCard));
-    }
-
-    private BankAccountEntity buildBankAccountEntityReferenceFromCreditCard(UserPrincipal userPrincipal, CreditCard creditCard) {
-        return Optional.ofNullable(creditCard)
-                .map(creditcard -> creditCardRepository.findByUserIdAndUuid(userPrincipal.getId(), UUID.fromString(creditCard.getUuid())))
-                .map(CreditCardEntity::getBankAccount)
-                .map(BankAccountEntity::getUuid)
-                .map(uuid -> entityReferenceFactory.buildReference(BankAccountEntity.class, uuid))
-                .orElse(null);
-    }
 
     private ExpenseCategoryEntity buildToUpdateExpenseCategoryEntity(UserPrincipal userPrincipal, ExpenseCategory expenseCategory) {
         ExpenseCategoryEntity expenseCategoryEntity = buildExpenseCategoryEntity(userPrincipal, expenseCategory);

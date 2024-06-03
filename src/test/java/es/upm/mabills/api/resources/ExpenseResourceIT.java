@@ -528,9 +528,10 @@ class ExpenseResourceIT {
     }
 
     private Expense buildExpenseWithDependenciesCreditCardNotRelatedToBankAccount() {
+        BankAccount bankAccount = buildBankAccount();
         return getDefaultExpenseBuilder()
-                .bankAccount(buildBankAccount())
-                .creditCard(buildCreditCard())
+                .bankAccount(bankAccount)
+                .creditCard(buildCreditCard(bankAccount))
                 .expenseCategory(buildExpenseCategory())
                 .build();
     }
@@ -544,11 +545,12 @@ class ExpenseResourceIT {
                 .build();
     }
 
-    private CreditCard buildCreditCard() {
+    private CreditCard buildCreditCard(BankAccount bankAccount) {
         return CreditCard.builder()
                 .uuid(creditCardRepository.findByUserId(encodedUserEntity.getId(), RepositorySort.BY_CREATION_DATE.value())
                         .stream()
-                        .filter(creditCardEntity -> Objects.nonNull(creditCardEntity.getBankAccount()))
+                        .filter(creditCardEntity -> Objects.nonNull(creditCardEntity.getBankAccount())
+                                && !creditCardEntity.getBankAccount().getIban().equals(bankAccount.getIban()))
                         .toList()
                         .get(0)
                         .getUuid().toString()

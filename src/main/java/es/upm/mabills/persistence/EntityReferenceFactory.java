@@ -4,11 +4,13 @@ import es.upm.mabills.persistence.entities.BankAccountEntity;
 import es.upm.mabills.persistence.entities.CreditCardEntity;
 import es.upm.mabills.persistence.entities.ExpenseCategoryEntity;
 import es.upm.mabills.persistence.entities.ExpenseEntity;
+import es.upm.mabills.persistence.entities.IncomeEntity;
 import es.upm.mabills.persistence.entities.UserEntity;
 import es.upm.mabills.persistence.repositories.BankAccountRepository;
 import es.upm.mabills.persistence.repositories.CreditCardRepository;
 import es.upm.mabills.persistence.repositories.ExpenseCategoryRepository;
 import es.upm.mabills.persistence.repositories.ExpenseRepository;
+import es.upm.mabills.persistence.repositories.IncomeRepository;
 import es.upm.mabills.persistence.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,13 +25,14 @@ public class EntityReferenceFactory {
     @Autowired
     public EntityReferenceFactory(UserRepository userRepository, BankAccountRepository bankAccountRepository,
                                   CreditCardRepository creditCardRepository, ExpenseRepository expenseRepository,
-                                  ExpenseCategoryRepository expenseCategoryRepository) {
+                                  ExpenseCategoryRepository expenseCategoryRepository, IncomeRepository incomeRepository) {
         repositoriesMap = Map.of(
                 UserEntity.class, userRepository,
                 BankAccountEntity.class, bankAccountRepository,
                 CreditCardEntity.class, creditCardRepository,
                 ExpenseEntity.class, expenseRepository,
-                ExpenseCategoryEntity.class, expenseCategoryRepository);
+                ExpenseCategoryEntity.class, expenseCategoryRepository,
+                IncomeEntity.class, incomeRepository);
     }
 
     public <T, I> T buildReference(Class<T> clazz, I id) {

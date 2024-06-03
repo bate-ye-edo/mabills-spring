@@ -21,6 +21,7 @@ public class ExpenseService {
     private final ExpenseMapper expenseMapper;
     private final ExpensePersistence expensePersistence;
     private final DependencyValidator dependencyValidator;
+
     @Autowired
     public ExpenseService(ExpenseMapper expenseMapper, ExpensePersistence expensePersistence,
                           @Qualifier("expenseDependencyValidator") DependencyValidator dependencyValidator) {

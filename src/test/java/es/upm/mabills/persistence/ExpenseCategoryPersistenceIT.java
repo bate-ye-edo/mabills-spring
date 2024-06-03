@@ -113,13 +113,13 @@ class ExpenseCategoryPersistenceIT {
 
     @Test
     void testDeleteExpenseCategoryWithDependentEntities() {
-        assertDoesNotThrow(() -> expenseCategoryPersistence.deleteExpenseCategory(ENCODED_PASSWORD_USER, findExpenseCategoryUuid(TO_DELETE_EXPENSE_CATEGORY_WITH_EXPENSE_RESOURCE)));
+        assertDoesNotThrow(() -> expenseCategoryPersistence.deleteExpenseCategory(ENCODED_PASSWORD_USER, findExpenseCategoryUuid()));
     }
 
-    private UUID findExpenseCategoryUuid(String name) {
+    private UUID findExpenseCategoryUuid() {
         return expenseCategoryPersistence.findExpenseCategoryByUserName(ENCODED_PASSWORD_USER)
                 .stream()
-                .filter(expenseCategoryEntity -> expenseCategoryEntity.getName().equals(name))
+                .filter(expenseCategoryEntity -> expenseCategoryEntity.getName().equals(ExpenseCategoryPersistenceIT.TO_DELETE_EXPENSE_CATEGORY_WITH_EXPENSE_RESOURCE))
                 .findFirst()
                 .map(ExpenseCategoryEntity::getUuid)
                 .orElse(null);

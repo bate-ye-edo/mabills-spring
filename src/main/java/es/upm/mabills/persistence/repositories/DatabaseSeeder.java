@@ -5,6 +5,7 @@ import es.upm.mabills.persistence.entities.BankAccountEntity;
 import es.upm.mabills.persistence.entities.CreditCardEntity;
 import es.upm.mabills.persistence.entities.ExpenseCategoryEntity;
 import es.upm.mabills.persistence.entities.ExpenseEntity;
+import es.upm.mabills.persistence.entities.IncomeEntity;
 import es.upm.mabills.persistence.entities.UserEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,17 +29,19 @@ public class DatabaseSeeder {
     private final CreditCardRepository creditCardRepository;
     private final BankAccountRepository bankAccountRepository;
     private final ExpenseRepository expenseRepository;
+    private final IncomeRepository incomeRepository;
 
     @Autowired
     public DatabaseSeeder(UserRepository userRepository, ExpenseCategoryRepository expenseCategoryRepository,
                           CreditCardRepository creditCardRepository, BankAccountRepository bankAccountRepository,
-                          ExpenseRepository expenseRepository) {
+                          ExpenseRepository expenseRepository, IncomeRepository incomeRepository) {
         LOGGER.warn("----- Initialize database seeding -----");
         this.userRepository = userRepository;
         this.expenseCategoryRepository = expenseCategoryRepository;
         this.creditCardRepository = creditCardRepository;
         this.bankAccountRepository = bankAccountRepository;
         this.expenseRepository = expenseRepository;
+        this.incomeRepository = incomeRepository;
         this.deleteAll();
         this.seedDatabase();
         LOGGER.warn("----- End -----");
@@ -46,6 +49,7 @@ public class DatabaseSeeder {
 
     private void deleteAll(){
         LOGGER.warn("----- Remove data from database -----");
+        this.incomeRepository.deleteAll();
         this.expenseRepository.deleteAll();
         this.creditCardRepository.deleteAll();
         this.bankAccountRepository.deleteAll();
@@ -245,6 +249,16 @@ public class DatabaseSeeder {
                 .description("to_delete_expense_resource")
                 .build();
         this.expenseRepository.saveAll(List.of(expenseEntity, expenseEntityWithCreditCardAndBankAccountToDelete, expenseEntityWithExpenseCategoryToDelete, toUpdateExpense, toUpdateExpenseWithDependencies, toDeleteExpense, toDeleteExpenseResource));
+
+        // Incomes
+        IncomeEntity incomeEntity = IncomeEntity.builder()
+                .amount(BigDecimal.ONE)
+                .user(encodedPasswordUser)
+                .incomeDate(TODAY)
+                .description(DESCRIPTION)
+                .build();
+        this.incomeRepository.saveAll(List.of(incomeEntity));
+
         LOGGER.warn("----- End seeding database -----");
     }
 }
