@@ -44,4 +44,15 @@ public class IncomeService {
                 .map(incomeMapper::toIncome)
                 .getOrElseThrow(EntityNotFoundExceptionMapper::map);
     }
+
+    public Income updateIncome(UserPrincipal userPrincipal, Income income) {
+        dependencyValidator.assertDependencies(userPrincipal, income);
+        return Try.of(() -> incomePersistence.updateIncome(userPrincipal, income))
+                .map(incomeMapper::toIncome)
+                .getOrElseThrow(EntityNotFoundExceptionMapper::map);
+    }
+
+    public void deleteIncome(UserPrincipal userPrincipal, String incomeUuid) {
+        incomePersistence.deleteIncome(userPrincipal, incomeUuid);
+    }
 }

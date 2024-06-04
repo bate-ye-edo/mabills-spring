@@ -8,18 +8,22 @@ import es.upm.mabills.model.CreditCard;
 import es.upm.mabills.model.Income;
 import es.upm.mabills.persistence.entities.BankAccountEntity;
 import es.upm.mabills.persistence.entities.CreditCardEntity;
+import es.upm.mabills.persistence.entities.IncomeEntity;
 import es.upm.mabills.persistence.entities.UserEntity;
 import es.upm.mabills.persistence.repositories.BankAccountRepository;
 import es.upm.mabills.persistence.repositories.CreditCardRepository;
+import es.upm.mabills.persistence.repositories.IncomeRepository;
 import es.upm.mabills.persistence.repositories.RepositorySort;
 import es.upm.mabills.persistence.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -38,6 +42,10 @@ class IncomeResourceIT {
     private static final String BANK_ACCOUNT_IBAN_WITH_CREDIT_CARD = "ES004120003120034012";
     private static final String CREDIT_CARD_NUMBER_RELATED_TO_BANK_ACCOUNT = "004120012352345632";
     private static final UUID RANDOM_UUID = UUID.randomUUID();
+    private static final String TO_UPDATE_INCOME_CREDIT_CARD_NUMBER = "004120003120034012";
+    private static final String TO_UPDATE_INCOME_RESOURCE_CREDIT_CARD_NUMBER = "004120003120034000";
+    private static final String TO_DELETE_INCOME_RESOURCE = "to_delete_income_resource";
+    private static final String ANOTHER_DESCRIPTION = "anotherDescription";
 
     @Autowired
     private RestClientTestService restClientTestService;
@@ -53,6 +61,9 @@ class IncomeResourceIT {
 
     @Autowired
     private CreditCardRepository creditCardRepository;
+
+    @Autowired
+    private IncomeRepository incomeRepository;
 
     private UserEntity encodedUserEntity;
 
@@ -151,11 +162,11 @@ class IncomeResourceIT {
                 .expectStatus()
                 .isOk()
                 .expectBody(Income.class)
-                .value(expense -> {
-                    assertNotNull(expense);
-                    assertNotNull(expense.getAmount());
-                    assertNotNull(expense.getCreditCard());
-                    assertNotNull(expense.getBankAccount());
+                .value(income -> {
+                    assertNotNull(income);
+                    assertNotNull(income.getAmount());
+                    assertNotNull(income.getCreditCard());
+                    assertNotNull(income.getBankAccount());
                 });
     }
 
@@ -183,6 +194,210 @@ class IncomeResourceIT {
                 .isNotFound();
     }
 
+    @Test
+    void testUpdateIncomeSuccess() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .put()
+                .uri(IncomeResource.INCOMES)
+                .bodyValue(buildIncomeToUpdate())
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody(Income.class)
+                .value(income -> {
+                    assertNotNull(income);
+                    assertNotNull(income.getUuid());
+                    assertNotNull(income.getIncomeDate());
+                    assertNotNull(income.getAmount());
+                    assertNotNull(income.getDescription());
+                });
+    }
+
+    @Test
+    void testUpdateIncomeNotFoundBankAccount() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .put()
+                .uri(IncomeResource.INCOMES)
+                .bodyValue(buildIncomeToUpdateNotFoundBankAccount())
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+    }
+
+    @Test
+    void testUpdateIncomeNotFoundCreditCard() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .put()
+                .uri(IncomeResource.INCOMES)
+                .bodyValue(buildIncomeToUpdateNotFoundCreditCard())
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+    }
+
+    @Test
+    void testUpdateIncomeUnauthorized() {
+        webTestClient
+                .put()
+                .uri(IncomeResource.INCOMES)
+                .bodyValue(buildIncome())
+                .exchange()
+                .expectStatus()
+                .isUnauthorized();
+    }
+
+    @Test
+    @Transactional
+    void testUpdateIncomeWithAllDependenciesSuccess() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .put()
+                .uri(IncomeResource.INCOMES)
+                .bodyValue(buildIncomeToUpdateWithAllDependencies())
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody(Income.class)
+                .value(income -> {
+                    assertNotNull(income);
+                    assertNotNull(income.getAmount());
+                    assertNotNull(income.getCreditCard());
+                });
+    }
+
+    @Test
+    void testUpdateIncomeIncomeNotFound() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .put()
+                .uri(IncomeResource.INCOMES)
+                .bodyValue(buildIncomeToUpdateNotFound())
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+    }
+
+    @Test
+    void testDeleteIncomeSuccess() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .delete()
+                .uri(IncomeResource.INCOMES + IncomeResource.UUID, findIncomeToDelete().getUuid())
+                .exchange()
+                .expectStatus()
+                .isOk();
+    }
+
+    @Test
+    void testDeleteIncomeUnauthorized() {
+        webTestClient
+                .delete()
+                .uri(IncomeResource.INCOMES + IncomeResource.UUID, findIncomeToDelete().getUuid())
+                .exchange()
+                .expectStatus()
+                .isUnauthorized();
+    }
+
+    @Test
+    void testDeleteIncomeNotFound() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .delete()
+                .uri(IncomeResource.INCOMES + IncomeResource.UUID, UUID.randomUUID())
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+    }
+
+    private Income buildIncome() {
+        return getDefaultIncomeBuilder()
+                .build();
+    }
+    
+    private IncomeEntity findIncomeToDelete() {
+        return incomeRepository.findByUserId(encodedUserEntity.getId(), RepositorySort.BY_CREATION_DATE.value())
+                .stream()
+                .filter(incomeEntity -> incomeEntity.getDescription().equals(TO_DELETE_INCOME_RESOURCE))
+                .findFirst()
+                .orElseThrow();
+    }
+
+    private Income buildIncomeToUpdateNotFound() {
+        return Income.builder()
+                .uuid(UUID.randomUUID().toString())
+                .amount(BigDecimal.TEN)
+                .incomeDate(Timestamp.valueOf(LocalDateTime.now()))
+                .description(ANOTHER_DESCRIPTION)
+                .build();
+    }
+
+    private Income buildIncomeToUpdate() {
+        return Income.builder()
+                .uuid(findIncomeToUpdate(TO_UPDATE_INCOME_CREDIT_CARD_NUMBER).getUuid().toString())
+                .amount(BigDecimal.TEN)
+                .incomeDate(Timestamp.valueOf(LocalDateTime.now()))
+                .description(ANOTHER_DESCRIPTION)
+                .build();
+    }
+
+    private Income buildIncomeToUpdateWithAllDependencies() {
+        return Income.builder()
+                .uuid(findIncomeWithDependenciesToUpdate().getUuid().toString())
+                .amount(BigDecimal.TEN)
+                .incomeDate(Timestamp.valueOf(LocalDateTime.now()))
+                .description(ANOTHER_DESCRIPTION)
+                .creditCard(buildCreditCardEntityReference())
+                .build();
+    }
+
+    private CreditCard buildCreditCardEntityReference() {
+        return CreditCard.builder()
+                .uuid(encodedUserEntity.getCreditCards().get(0).getUuid().toString())
+                .creditCardNumber(encodedUserEntity.getCreditCards().get(0).getCreditCardNumber())
+                .build();
+    }
+
+    private IncomeEntity findIncomeWithDependenciesToUpdate() {
+        return incomeRepository.findByUserId(encodedUserEntity.getId(), RepositorySort.BY_CREATION_DATE.value())
+                .stream()
+                .filter(incomeEntity -> incomeEntity.getAmount().compareTo(BigDecimal.TEN) == 0
+                        && incomeEntity.getCreditCard() != null && incomeEntity.getCreditCard().getCreditCardNumber().equals(TO_UPDATE_INCOME_CREDIT_CARD_NUMBER))
+                .findFirst()
+                .orElseThrow();
+    }
+
+    private Income buildIncomeToUpdateNotFoundBankAccount() {
+        return Income.builder()
+                .uuid(findIncomeToUpdate(TO_UPDATE_INCOME_CREDIT_CARD_NUMBER).getUuid().toString())
+                .amount(BigDecimal.TEN)
+                .incomeDate(Timestamp.valueOf(LocalDateTime.now()))
+                .description(ANOTHER_DESCRIPTION)
+                .bankAccount(BankAccount.builder().uuid(UUID.randomUUID().toString()).build())
+                .build();
+    }
+
+    private Income buildIncomeToUpdateNotFoundCreditCard() {
+        return Income.builder()
+                .uuid(findIncomeToUpdate(TO_UPDATE_INCOME_RESOURCE_CREDIT_CARD_NUMBER).getUuid().toString())
+                .amount(BigDecimal.TEN)
+                .incomeDate(Timestamp.valueOf(LocalDateTime.now()))
+                .description(ANOTHER_DESCRIPTION)
+                .creditCard(CreditCard.builder().uuid(UUID.randomUUID().toString()).build())
+                .build();
+    }
+
+    private IncomeEntity findIncomeToUpdate(String creditCardNumber) {
+        return incomeRepository.findByUserId(encodedUserEntity.getId(), RepositorySort.BY_CREATION_DATE.value())
+                .stream()
+                .filter(incomeEntity -> incomeEntity.getCreditCard() != null && incomeEntity.getCreditCard().getCreditCardNumber().equals(creditCardNumber))
+                .findFirst()
+                .orElseThrow();
+    }
+    
+    
     private Income buildIncomeWithoutDependencies() {
         return Income.builder()
                 .amount(BigDecimal.TEN)

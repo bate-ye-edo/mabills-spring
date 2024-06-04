@@ -1,6 +1,7 @@
 package es.upm.mabills.persistence.repositories;
 
 import es.upm.mabills.persistence.entities.IncomeEntity;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -12,7 +13,9 @@ import java.util.UUID;
 
 @Repository
 public interface IncomeRepository extends JpaRepository<IncomeEntity, UUID> {
-    List<IncomeEntity> findByUserId(int userId);
+    List<IncomeEntity> findByUserId(int userId, Sort sort);
+
+    IncomeEntity findByUserIdAndUuid(int userId, UUID uuid);
 
     @Modifying
     @Transactional

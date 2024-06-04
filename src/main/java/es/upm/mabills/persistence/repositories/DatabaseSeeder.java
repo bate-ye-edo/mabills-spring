@@ -162,6 +162,10 @@ public class DatabaseSeeder {
                 .creditCardNumber("004120003120034012")
                 .user(encodedPasswordUser)
                 .build();
+        CreditCardEntity creditCardEntityWithIncomeResource = CreditCardEntity.builder()
+                .creditCardNumber("004120003120034000")
+                .user(encodedPasswordUser)
+                .build();
         CreditCardEntity creditCardWithBankAccountEntity = CreditCardEntity.builder()
                 .creditCardNumber("004120012352345632")
                 .user(encodedPasswordUser)
@@ -185,7 +189,7 @@ public class DatabaseSeeder {
                 .user(encodedPasswordUser)
                 .creditCardNumber("bank_account_will_be_deleted_and_expense")
                 .build();
-        this.creditCardRepository.saveAll(List.of(creditCardEntity, toDeleteCreditCard, creditCardToDelete, creditCardWithBankAccountToDelete, creditCardWithBankAccountEntity, creditCardWithBankAccountToDeleteAndExpense));
+        this.creditCardRepository.saveAll(List.of(creditCardEntity, toDeleteCreditCard, creditCardToDelete, creditCardWithBankAccountToDelete, creditCardWithBankAccountEntity, creditCardWithBankAccountToDeleteAndExpense, creditCardEntityWithIncomeResource));
 
         // Expenses
         ExpenseEntity expenseEntity = ExpenseEntity.builder()
@@ -257,7 +261,40 @@ public class DatabaseSeeder {
                 .incomeDate(TODAY)
                 .description(DESCRIPTION)
                 .build();
-        this.incomeRepository.saveAll(List.of(incomeEntity));
+        IncomeEntity toUpdateIncome = IncomeEntity.builder()
+                .amount(BigDecimal.ONE)
+                .user(encodedPasswordUser)
+                .incomeDate(TODAY)
+                .description(DESCRIPTION)
+                .creditCard(creditCardEntity)
+                .build();
+        IncomeEntity toUpdateIncomeResource = IncomeEntity.builder()
+                .amount(BigDecimal.ONE)
+                .user(encodedPasswordUser)
+                .incomeDate(TODAY)
+                .description(DESCRIPTION)
+                .creditCard(creditCardEntityWithIncomeResource)
+                .build();
+        IncomeEntity toUpdateIncomeWithDependencies = IncomeEntity.builder()
+                .amount(BigDecimal.TEN)
+                .user(encodedPasswordUser)
+                .incomeDate(TODAY)
+                .description(DESCRIPTION)
+                .creditCard(creditCardEntity)
+                .build();
+        IncomeEntity toDeleteIncome = IncomeEntity.builder()
+                .amount(BigDecimal.ONE)
+                .user(encodedPasswordUser)
+                .incomeDate(TODAY)
+                .description("to_delete_income")
+                .build();
+        IncomeEntity toDeleteIncomeResource = IncomeEntity.builder()
+                .amount(BigDecimal.ONE)
+                .user(encodedPasswordUser)
+                .incomeDate(TODAY)
+                .description("to_delete_income_resource")
+                .build();
+        this.incomeRepository.saveAll(List.of(incomeEntity, toUpdateIncomeResource, toUpdateIncome, toUpdateIncome, toUpdateIncomeWithDependencies, toDeleteIncome, toDeleteIncomeResource));
 
         LOGGER.warn("----- End seeding database -----");
     }
