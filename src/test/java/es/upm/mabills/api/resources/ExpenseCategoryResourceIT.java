@@ -4,19 +4,28 @@ import es.upm.mabills.api.ApiTestConfig;
 import es.upm.mabills.api.RestClientTestService;
 import es.upm.mabills.api.dtos.LoginDto;
 import es.upm.mabills.api.dtos.UpdateExpenseCategoryDto;
+import es.upm.mabills.mappers.ExpenseCategoryMapper;
 import es.upm.mabills.model.ExpenseCategory;
+import es.upm.mabills.persistence.entities.UserEntity;
+import es.upm.mabills.persistence.repositories.ExpenseCategoryRepository;
+import es.upm.mabills.persistence.repositories.UserRepository;
+import es.upm.mabills.services.TokenCacheService;
+import org.apache.logging.log4j.LogManager;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
 
-import java.util.Objects;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @ApiTestConfig
 class ExpenseCategoryResourceIT {
@@ -27,6 +36,7 @@ class ExpenseCategoryResourceIT {
     private static final String UPDATED_EXPENSE_CATEGORY = "updatedExpenseCategory";
     private static final String ONLY_USER = "onlyUser";
     private static final String EXPENSE_CATEGORY_USER = "expenseCategoryUser";
+    private static final String ENCODED_PASSWORD_USER = "encodedPasswordUser";
     private static final String PASSWORD = "password";
     private static final String NEW_EXPENSE_CATEGORY_NAME = "newExpenseCategory";
     private static final String TEST_UUID = UUID.randomUUID().toString();
@@ -35,6 +45,26 @@ class ExpenseCategoryResourceIT {
 
     @Autowired
     private WebTestClient webTestClient;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private ExpenseCategoryRepository expenseCategoryRepository;
+
+    @Autowired
+    private ExpenseCategoryMapper expenseCategoryMapper;
+
+    private UserEntity encodedPasswordUser;
+
+    @MockBean
+    private TokenCacheService tokenCacheService;
+
+    @BeforeEach
+    void setUp() {
+        encodedPasswordUser = userRepository.findByUsername(ENCODED_PASSWORD_USER);
+        when(tokenCacheService.isTokenBlackListed(any())).thenReturn(false);
+    }
 
     @Test
     void getExpenseCategories() {
@@ -202,6 +232,7 @@ class ExpenseCategoryResourceIT {
     @Test
     void deleteExpenseCategoryWithExpense() {
         ExpenseCategory expenseCategory = getToDeleteExpenseCategoryWithExpense();
+        LogManager.getLogger(ExpenseCategoryResourceIT.class).info(expenseCategory);
         restClientTestService
                 .loginDefault(webTestClient)
                 .delete()
@@ -211,16 +242,11 @@ class ExpenseCategoryResourceIT {
     }
 
     private ExpenseCategory getToDeleteExpenseCategoryWithExpense() {
-        return Objects.requireNonNull(restClientTestService.loginDefault(webTestClient)
-                        .get()
-                        .uri(ExpenseCategoryResource.EXPENSE_CATEGORIES)
-                        .exchange()
-                        .expectBodyList(ExpenseCategory.class)
-                        .returnResult()
-                        .getResponseBody())
+        return expenseCategoryRepository.findByUser_Username(encodedPasswordUser.getUsername())
                 .stream()
                 .filter(e -> e.getName().equals(TO_DELETE_EXPENSE_CATEGORY_WITH_EXPENSE))
                 .findFirst()
+                .map(expenseCategoryMapper::toExpenseCategory)
                 .orElse(null);
     }
 

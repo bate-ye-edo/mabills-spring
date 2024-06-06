@@ -6,6 +6,7 @@ import es.upm.mabills.model.BankAccount;
 import es.upm.mabills.model.CreditCard;
 import es.upm.mabills.model.Income;
 import es.upm.mabills.model.UserPrincipal;
+import es.upm.mabills.persistence.chart_data_dtos.DateChartData;
 import es.upm.mabills.persistence.entities.IncomeEntity;
 import es.upm.mabills.persistence.entities.UserEntity;
 import es.upm.mabills.persistence.repositories.UserRepository;
@@ -145,6 +146,18 @@ class IncomePersistenceIT {
     @Test
     void testDeleteIncomeIncomeNotFound() {
         assertThrows(IncomeNotFoundException.class, () -> incomePersistence.deleteIncome(encodedUserPrincipal, RANDOM_UUID));
+    }
+
+    @Test
+    void testGetExpensesGroupByDateChartDataSuccess() {
+        List<DateChartData> dateChartDataList = incomePersistence.getIncomesGroupByDateChartData(encodedUserPrincipal);
+        assertNotNull(dateChartDataList);
+        assertFalse(dateChartDataList.isEmpty());
+    }
+
+    @Test
+    void testGetExpensesGroupByDateChartDataUserNotFound() {
+        assertTrue(incomePersistence.getIncomesGroupByDateChartData(onlyUserPrincipal).isEmpty());
     }
 
     private Income buildIncomeWithDependencies() {

@@ -16,5 +16,6 @@ import java.lang.annotation.Target;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @TestPropertySource(locations = "classpath:test.properties")
+@SuppressWarnings({"unused", "squid:S1068"})
 public @interface UnitTestConfig {
 }

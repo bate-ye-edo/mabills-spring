@@ -3,6 +3,7 @@ package es.upm.mabills.persistence;
 import es.upm.mabills.exceptions.IncomeNotFoundException;
 import es.upm.mabills.model.Income;
 import es.upm.mabills.model.UserPrincipal;
+import es.upm.mabills.persistence.chart_data_dtos.DateChartData;
 import es.upm.mabills.persistence.entities.IncomeEntity;
 import es.upm.mabills.persistence.entities.UserEntity;
 import es.upm.mabills.persistence.repositories.IncomeRepository;
@@ -74,5 +75,9 @@ public class IncomePersistence {
                 .onFailure(ex -> {
                     throw new IncomeNotFoundException(incomeUuid);
                 });
+    }
+
+    public List<DateChartData> getIncomesGroupByDateChartData(UserPrincipal userPrincipal) {
+        return incomeRepository.findIncomesGroupByDate(userPrincipal.getId());
     }
 }

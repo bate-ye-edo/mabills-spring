@@ -354,6 +354,17 @@ class ExpenseResourceIT {
                 .isNotFound();
     }
 
+    @Test
+    void testChartResource() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .get()
+                .uri(ChartResource.CHARTS + ChartResource.DATA_TYPE, "EXPENSES")
+                .exchange()
+                .expectStatus()
+                .isOk();
+    }
+
     private ExpenseEntity findExpenseToDelete() {
         return expenseRepository.findByUserId(encodedUserEntity.getId(), RepositorySort.BY_CREATION_DATE.value())
                 .stream()

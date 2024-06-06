@@ -1,5 +1,6 @@
 package es.upm.mabills.persistence.repositories;
 
+import es.upm.mabills.persistence.chart_data_dtos.DateChartData;
 import es.upm.mabills.persistence.entities.IncomeEntity;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -26,4 +27,8 @@ public interface IncomeRepository extends JpaRepository<IncomeEntity, UUID> {
     @Transactional
     @Query(value="update income set credit_card_id = null where credit_card_id = ?1", nativeQuery = true)
     void decoupleCreditCard(UUID creditCardId);
+
+    @Query("select new es.upm.mabills.persistence.chart_data_dtos.DateChartData(i.incomeDate, sum(i.amount)) from IncomeEntity i where i.user.id = ?1 " +
+            "group by i.incomeDate order by i.incomeDate asc")
+    List<DateChartData> findIncomesGroupByDate(int id);
 }

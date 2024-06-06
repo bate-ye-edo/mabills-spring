@@ -6,6 +6,7 @@ import es.upm.mabills.model.Expense;
 import es.upm.mabills.model.ExpenseCategory;
 import es.upm.mabills.model.FormOfPayment;
 import es.upm.mabills.model.UserPrincipal;
+import es.upm.mabills.persistence.chart_data_dtos.DateChartData;
 import es.upm.mabills.persistence.entities.ExpenseCategoryEntity;
 import es.upm.mabills.persistence.entities.ExpenseEntity;
 import es.upm.mabills.persistence.entities.UserEntity;
@@ -108,5 +109,9 @@ public class ExpensePersistence {
                 .onFailure(ex -> {
                     throw new ExpenseNotFoundException(uuid);
                 });
+    }
+
+    public List<DateChartData> getExpensesGroupByDateChartData(UserPrincipal userPrincipal) {
+        return expenseRepository.findExpensesGroupByDate(userPrincipal.getId());
     }
 }

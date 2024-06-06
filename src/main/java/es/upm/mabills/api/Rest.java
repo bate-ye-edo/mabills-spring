@@ -12,5 +12,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @RestController
 @PreAuthorize("hasRole('USER')")
+@SuppressWarnings({"unused", "squid:S1068"})
 public @interface Rest {
 }

@@ -15,6 +15,7 @@ import es.upm.mabills.persistence.repositories.CreditCardRepository;
 import es.upm.mabills.persistence.repositories.IncomeRepository;
 import es.upm.mabills.persistence.repositories.RepositorySort;
 import es.upm.mabills.persistence.repositories.UserRepository;
+import org.apache.logging.log4j.LogManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -141,11 +142,13 @@ class IncomeResourceIT {
 
     @Test
     void testCreateIncomeWithDependenciesThrowsCreditCardNotRelatedToBankAccount() {
+        Income income = buildIncomeWithDependenciesCreditCardNotRelatedToBankAccount();
+        LogManager.getLogger(IncomeResourceIT.class).info(income);
         restClientTestService
                 .loginDefault(webTestClient)
                 .post()
                 .uri(IncomeResource.INCOMES)
-                .bodyValue(buildIncomeWithDependenciesCreditCardNotRelatedToBankAccount())
+                .bodyValue(income)
                 .exchange()
                 .expectStatus()
                 .isBadRequest();
@@ -427,7 +430,7 @@ class IncomeResourceIT {
                 .uuid(creditCardRepository.findByUserId(encodedUserEntity.getId(), RepositorySort.BY_CREATION_DATE.value())
                         .stream()
                         .filter(creditCardEntity -> Objects.nonNull(creditCardEntity.getBankAccount())
-                                && !creditCardEntity.getBankAccount().getIban().equals(bankAccount.getIban()))
+                                && creditCardEntity.getBankAccount().getUuid().compareTo(UUID.fromString(bankAccount.getUuid())) != 0)
                         .toList()
                         .get(0)
                         .getUuid().toString()

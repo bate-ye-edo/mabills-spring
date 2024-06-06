@@ -18,5 +18,6 @@ import java.lang.annotation.Target;
 @SpringBootTest
 @TestPropertySource(locations = "classpath:test.properties")
 @ActiveProfiles("test")
+@SuppressWarnings({"unused", "squid:S1068"})
 public @interface TestConfig {
 }

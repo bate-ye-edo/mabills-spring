@@ -19,5 +19,6 @@ import java.lang.annotation.Target;
 @AutoConfigureWebTestClient
 @TestPropertySource(locations = "classpath:test.properties")
 @ActiveProfiles("test")
+@SuppressWarnings({"unused", "squid:S1068"})
 public @interface ApiTestConfig {
 }

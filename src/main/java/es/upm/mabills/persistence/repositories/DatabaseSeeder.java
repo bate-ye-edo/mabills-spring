@@ -11,17 +11,20 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.env.Environment;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.List;
 
 @Repository
 @Profile("test")
+@SuppressWarnings({"unused", "squid:S6437"})
 public class DatabaseSeeder {
     private static final Logger LOGGER = LogManager.getLogger(DatabaseSeeder.class);
-    private static final String ENCODED_PASSWORD = "$2a$10$KyShpWQl4pS7KybIIZLkZ.6Mo2YBkPFuXT82cEOguWW3lpSMHgSEe";
     private static final String DESCRIPTION = "description";
     private static final Timestamp TODAY = new Timestamp(System.currentTimeMillis());
     private final UserRepository userRepository;
@@ -30,11 +33,20 @@ public class DatabaseSeeder {
     private final BankAccountRepository bankAccountRepository;
     private final ExpenseRepository expenseRepository;
     private final IncomeRepository incomeRepository;
+    private String encodedPassword = "$2a$10$KyShpWQl4pS7KybIIZLkZ.6Mo2YBkPFuXT82cEOguWW3lpSMHgSEe";
+    private String encodedPasswordUserName = "encodedPasswordUser";
 
     @Autowired
     public DatabaseSeeder(UserRepository userRepository, ExpenseCategoryRepository expenseCategoryRepository,
                           CreditCardRepository creditCardRepository, BankAccountRepository bankAccountRepository,
-                          ExpenseRepository expenseRepository, IncomeRepository incomeRepository) {
+                          ExpenseRepository expenseRepository, IncomeRepository incomeRepository, PasswordEncoder passwordEncoder,
+                          Environment environment) {
+
+        if(Arrays.asList(environment.getActiveProfiles()).contains("dev")){
+            encodedPassword = passwordEncoder.encode("1");
+            encodedPasswordUserName = "1";
+        }
+
         LOGGER.warn("----- Initialize database seeding -----");
         this.userRepository = userRepository;
         this.expenseCategoryRepository = expenseCategoryRepository;
@@ -67,45 +79,45 @@ public class DatabaseSeeder {
                 .email("email")
                 .build();
         UserEntity encodedPasswordUser = UserEntity.builder()
-                .username("encodedPasswordUser")
+                .username(this.encodedPasswordUserName)
                 .mobile("666666666")
-                .password(ENCODED_PASSWORD)
+                .password(encodedPassword)
                 .email("newEmail")
                 .build();
         UserEntity otherUser = UserEntity.builder()
                 .username("otherUser")
                 .mobile("6666666616")
-                .password(ENCODED_PASSWORD)
+                .password(encodedPassword)
                 .email("otherEmail")
                 .build();
         UserEntity logOutUser = UserEntity.builder()
                 .username("logOutUser")
                 .mobile("6666666616")
-                .password(ENCODED_PASSWORD)
+                .password(encodedPassword)
                 .email("logoutEmail")
                 .build();
         UserEntity expenseCategoryUser = UserEntity.builder()
                 .username("expenseCategoryUser")
                 .mobile("123123453412")
-                .password(ENCODED_PASSWORD)
+                .password(encodedPassword)
                 .email("expenseCategoryEmail")
                 .build();
         UserEntity toUpdateExpenseCategoryUserEntity = UserEntity.builder()
                 .username("toUpdateExpenseCategoryUser")
                 .mobile("1231233412")
-                .password(ENCODED_PASSWORD)
+                .password(encodedPassword)
                 .email("toUpdateExpenseCategoryEmail")
                 .build();
         UserEntity onlyUser = UserEntity.builder()
                 .username("onlyUser")
                 .mobile("123123341276788")
-                .password(ENCODED_PASSWORD)
+                .password(encodedPassword)
                 .email("onlyUserEmail")
                 .build();
         UserEntity toUpdateUser = UserEntity.builder()
                 .username("toUpdateUser")
                 .mobile("321123312")
-                .password(ENCODED_PASSWORD)
+                .password(encodedPassword)
                 .email("toUpdateUserEmail")
                 .build();
         this.userRepository.saveAll(List.of(userEntity, encodedPasswordUser, otherUser, logOutUser, expenseCategoryUser, toUpdateExpenseCategoryUserEntity, onlyUser, toUpdateUser));
@@ -151,11 +163,15 @@ public class DatabaseSeeder {
                 .iban("to_delete_bank_account_entity_with_credit_card_and_expense")
                 .user(encodedPasswordUser)
                 .build();
+        BankAccountEntity otherBankAccountEntity = BankAccountEntity.builder()
+                .iban("ES004120003120034333")
+                .user(encodedPasswordUser)
+                .build();
         BankAccountEntity otherUserBankAccountEntity = BankAccountEntity.builder()
                 .iban("ES004120003120034013")
                 .user(otherUser)
                 .build();
-        this.bankAccountRepository.saveAll(List.of(bankAccountEntity, otherUserBankAccountEntity, toDeleteBankAccountEntity, toDeleteBankAccountEntityWithCreditCard, toDeleteBankAccountEntityWithCreditCardAndExpense));
+        this.bankAccountRepository.saveAll(List.of(bankAccountEntity, otherUserBankAccountEntity, toDeleteBankAccountEntity, toDeleteBankAccountEntityWithCreditCard, toDeleteBankAccountEntityWithCreditCardAndExpense, otherBankAccountEntity));
 
         // Credit cards
         CreditCardEntity creditCardEntity = CreditCardEntity.builder()
@@ -170,6 +186,11 @@ public class DatabaseSeeder {
                 .creditCardNumber("004120012352345632")
                 .user(encodedPasswordUser)
                 .bankAccount(bankAccountEntity)
+                .build();
+        CreditCardEntity creditCardWithOtherBankAccountEntity = CreditCardEntity.builder()
+                .creditCardNumber("004120012352345630")
+                .user(encodedPasswordUser)
+                .bankAccount(otherBankAccountEntity)
                 .build();
         CreditCardEntity toDeleteCreditCard = CreditCardEntity.builder()
             .creditCardNumber("to_delete_credit_card_number")
@@ -189,7 +210,8 @@ public class DatabaseSeeder {
                 .user(encodedPasswordUser)
                 .creditCardNumber("bank_account_will_be_deleted_and_expense")
                 .build();
-        this.creditCardRepository.saveAll(List.of(creditCardEntity, toDeleteCreditCard, creditCardToDelete, creditCardWithBankAccountToDelete, creditCardWithBankAccountEntity, creditCardWithBankAccountToDeleteAndExpense, creditCardEntityWithIncomeResource));
+        this.creditCardRepository.saveAll(List.of(creditCardEntity, toDeleteCreditCard, creditCardToDelete, creditCardWithBankAccountToDelete, creditCardWithBankAccountEntity,
+                creditCardWithBankAccountToDeleteAndExpense, creditCardEntityWithIncomeResource, creditCardWithOtherBankAccountEntity));
 
         // Expenses
         ExpenseEntity expenseEntity = ExpenseEntity.builder()

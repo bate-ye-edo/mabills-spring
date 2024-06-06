@@ -10,6 +10,7 @@ import es.upm.mabills.model.Expense;
 import es.upm.mabills.model.ExpenseCategory;
 import es.upm.mabills.model.FormOfPayment;
 import es.upm.mabills.model.UserPrincipal;
+import es.upm.mabills.persistence.chart_data_dtos.DateChartData;
 import es.upm.mabills.persistence.entities.ExpenseEntity;
 import es.upm.mabills.persistence.entities.UserEntity;
 import es.upm.mabills.persistence.repositories.UserRepository;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -168,6 +170,18 @@ class ExpensePersistenceIT {
     @Test
     void testDeleteExpenseExpenseNotFound() {
         assertThrows(ExpenseNotFoundException.class, () -> expensePersistence.deleteExpense(encodedUserPrincipal, RANDOM_UUID));
+    }
+
+    @Test
+    void testGetExpensesGroupByDateChartDataSuccess() {
+        List<DateChartData> dateChartDataList = expensePersistence.getExpensesGroupByDateChartData(encodedUserPrincipal);
+        assertNotNull(dateChartDataList);
+        assertFalse(dateChartDataList.isEmpty());
+    }
+
+    @Test
+    void testGetExpensesGroupByDateChartDataUserNotFound() {
+        assertTrue(expensePersistence.getExpensesGroupByDateChartData(NOT_FOUND_USER_PRINCIPAL).isEmpty());
     }
 
     private Expense buildExpenseToUpdateWithAllDependencies() {

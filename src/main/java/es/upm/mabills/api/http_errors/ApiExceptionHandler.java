@@ -29,6 +29,7 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
 import java.util.List;
 
 @ControllerAdvice
+@SuppressWarnings({"unused", "squid:S1068"})
 public class ApiExceptionHandler {
     private static final Logger LOGGER = LogManager.getLogger(ApiExceptionHandler.class);
 
@@ -158,6 +159,7 @@ public class ApiExceptionHandler {
     @ResponseBody
     public ErrorMessage exception(Exception exception) {
         LOGGER.error(() -> "Error: " + exception.getMessage());
+        LOGGER.error(() -> "Stack trace: ", exception);
         return new ErrorMessage(exception, HttpStatus.INTERNAL_SERVER_ERROR.value());
     }
 
