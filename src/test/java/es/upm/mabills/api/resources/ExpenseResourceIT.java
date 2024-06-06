@@ -400,7 +400,7 @@ class ExpenseResourceIT {
                 .expenseDate(Timestamp.valueOf(LocalDateTime.now()))
                 .description(ANOTHER_DESCRIPTION)
                 .formOfPayment(FormOfPayment.CASH)
-                .creditCard(buildCreditCardEntityReference())
+                .creditCard(buildNotRelatedCreditCardEntityReference())
                 .expenseCategory(buildExpenseCategoryEntity())
                 .build();
     }
@@ -414,7 +414,7 @@ class ExpenseResourceIT {
                 .orElseThrow();
     }
 
-    private CreditCard buildCreditCardEntityReference() {
+    private CreditCard buildNotRelatedCreditCardEntityReference() {
         return CreditCard.builder()
                 .uuid(encodedUserEntity.getCreditCards().get(0).getUuid().toString())
                 .creditCardNumber(encodedUserEntity.getCreditCards().get(0).getCreditCardNumber())
@@ -508,7 +508,7 @@ class ExpenseResourceIT {
     private Expense buildExpenseWithDependencies() {
         return getDefaultExpenseBuilder()
                 .bankAccount(buildBankAccountWithCreditCard())
-                .creditCard(buildCreditCardWithBankAccountRelated())
+                .creditCard(buildNotRelatedCreditCardWithBankAccountRelated())
                 .expenseCategory(buildExpenseCategory())
                 .build();
     }
@@ -525,7 +525,7 @@ class ExpenseResourceIT {
                 .build();
     }
 
-    private CreditCard buildCreditCardWithBankAccountRelated() {
+    private CreditCard buildNotRelatedCreditCardWithBankAccountRelated() {
         return CreditCard.builder()
                 .uuid(creditCardRepository.findByUserId(encodedUserEntity.getId(), RepositorySort.BY_CREATION_DATE.value())
                         .stream()
@@ -542,7 +542,7 @@ class ExpenseResourceIT {
         BankAccount bankAccount = buildBankAccount();
         return getDefaultExpenseBuilder()
                 .bankAccount(bankAccount)
-                .creditCard(buildCreditCard(bankAccount))
+                .creditCard(buildNotRelatedCreditCard(bankAccount))
                 .expenseCategory(buildExpenseCategory())
                 .build();
     }
@@ -550,18 +550,20 @@ class ExpenseResourceIT {
     private BankAccount buildBankAccount() {
         return BankAccount.builder()
                 .uuid(bankAccountRepository.findByUserId(encodedUserEntity.getId())
+                        .stream().filter(bankAccountEntity -> Objects.nonNull(bankAccountEntity.getIban()) && bankAccountEntity.getIban().equals("ES004120003120034012"))
+                        .toList()
                         .get(0)
                         .getUuid()
                         .toString())
                 .build();
     }
 
-    private CreditCard buildCreditCard(BankAccount bankAccount) {
+    private CreditCard buildNotRelatedCreditCard(BankAccount bankAccount) {
         return CreditCard.builder()
                 .uuid(creditCardRepository.findByUserId(encodedUserEntity.getId(), RepositorySort.BY_CREATION_DATE.value())
                         .stream()
                         .filter(creditCardEntity -> Objects.nonNull(creditCardEntity.getBankAccount())
-                                && !creditCardEntity.getBankAccount().getIban().equals(bankAccount.getIban()))
+                                && creditCardEntity.getBankAccount().getUuid().compareTo(UUID.fromString(bankAccount.getUuid())) != 0)
                         .toList()
                         .get(0)
                         .getUuid().toString()
