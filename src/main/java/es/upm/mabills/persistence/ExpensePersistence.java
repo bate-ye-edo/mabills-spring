@@ -2,6 +2,7 @@ package es.upm.mabills.persistence;
 
 import es.upm.mabills.exceptions.ExpenseCategoryNotFoundException;
 import es.upm.mabills.exceptions.ExpenseNotFoundException;
+import es.upm.mabills.model.ChartData;
 import es.upm.mabills.model.Expense;
 import es.upm.mabills.model.ExpenseCategory;
 import es.upm.mabills.model.FormOfPayment;
@@ -113,5 +114,9 @@ public class ExpensePersistence {
 
     public List<DateChartData> getExpensesGroupByDateChartData(UserPrincipal userPrincipal) {
         return expenseRepository.findExpensesGroupByDate(userPrincipal.getId());
+    }
+
+    public List<ChartData> getExpensesGroupByCategoryChartData(UserPrincipal userPrincipal) {
+        return expenseRepository.findExpensesGroupByExpenseCategory(userPrincipal.getId());
     }
 }

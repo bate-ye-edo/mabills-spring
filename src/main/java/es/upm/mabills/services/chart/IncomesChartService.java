@@ -26,7 +26,7 @@ public class IncomesChartService implements ChartService {
     }
 
     @Override
-    public Chart getChart(UserPrincipal userPrincipal) {
+    public Chart getChart(UserPrincipal userPrincipal, String groupBy) {
         return Chart.builder()
                 .data(this.getIncomesGroupByDateChartData(userPrincipal))
                 .build();

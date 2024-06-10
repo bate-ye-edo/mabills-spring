@@ -26,9 +26,9 @@ public class ExpensesChartService implements ChartService {
     }
 
     @Override
-    public Chart getChart(UserPrincipal userPrincipal) {
+    public Chart getChart(UserPrincipal userPrincipal, String groupBy) {
         return Chart.builder()
-                .data(this.getExpensesGroupByDateChartData(userPrincipal))
+                .data(this.getChartByGroupByType(userPrincipal, ExpenseChartGroupBy.fromString(groupBy)))
                 .build();
     }
 
@@ -39,5 +39,20 @@ public class ExpensesChartService implements ChartService {
                         .toList())
                 .getOrElseThrow(MaBillsServiceException::new);
     }
+
+    private List<ChartData> getExpensesGroupByCategoryChartData(UserPrincipal userPrincipal) {
+        return  Try.of(() -> this.expensePersistence.getExpensesGroupByCategoryChartData(userPrincipal)
+                        .stream()
+                        .toList())
+                .getOrElseThrow(MaBillsServiceException::new);
+    }
+
+    private List<ChartData> getChartByGroupByType(UserPrincipal userPrincipal, ExpenseChartGroupBy expenseChartGroupBy) {
+        return switch (expenseChartGroupBy) {
+            case EXPENSE_CATEGORY -> this.getExpensesGroupByCategoryChartData(userPrincipal);
+            case EXPENSE_DATE -> this.getExpensesGroupByDateChartData(userPrincipal);
+        };
+    }
+
 
 }

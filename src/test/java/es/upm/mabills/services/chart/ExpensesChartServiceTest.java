@@ -36,7 +36,7 @@ class ExpensesChartServiceTest {
     void testGetChartSuccess() {
         when(expensePersistence.getExpensesGroupByDateChartData(any(UserPrincipal.class)))
             .thenReturn(List.of(new DateChartData(new Timestamp(0), BigDecimal.ONE)));
-        Chart chart = expensesChartService.getChart(new UserPrincipal());
+        Chart chart = expensesChartService.getChart(new UserPrincipal(), null);
         assertNotNull(chart);
         assertFalse(chart.getData().isEmpty());
         assertNotBlank(chart.getData().get(0).getName());
@@ -48,14 +48,14 @@ class ExpensesChartServiceTest {
         when(expensePersistence.getExpensesGroupByDateChartData(any(UserPrincipal.class)))
             .thenThrow(new RuntimeException());
         UserPrincipal userPrincipal = new UserPrincipal();
-        assertThrows(MaBillsServiceException.class, () -> expensesChartService.getChart(userPrincipal));
+        assertThrows(MaBillsServiceException.class, () -> expensesChartService.getChart(userPrincipal, null));
     }
 
     @Test
     void testGetChartEmpty() {
         when(expensePersistence.getExpensesGroupByDateChartData(any(UserPrincipal.class)))
             .thenReturn(List.of());
-        Chart chart = expensesChartService.getChart(new UserPrincipal());
+        Chart chart = expensesChartService.getChart(new UserPrincipal(), null);
         assertNotNull(chart);
         assertTrue(chart.getData().isEmpty());
     }
@@ -65,6 +65,6 @@ class ExpensesChartServiceTest {
         when(expensePersistence.getExpensesGroupByDateChartData(any(UserPrincipal.class)))
             .thenThrow(new DataIntegrityViolationException(""));
         UserPrincipal userPrincipal = new UserPrincipal();
-        assertThrows(MaBillsServiceException.class, () -> expensesChartService.getChart(userPrincipal));
+        assertThrows(MaBillsServiceException.class, () -> expensesChartService.getChart(userPrincipal, null));
     }
 }

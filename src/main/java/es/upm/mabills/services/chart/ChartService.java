@@ -8,5 +8,5 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public interface ChartService {
-    Chart getChart(UserPrincipal userPrincipal);
+    Chart getChart(UserPrincipal userPrincipal, String groupBy);
 }

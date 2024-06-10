@@ -13,4 +13,5 @@ import java.util.List;
 @NoArgsConstructor
 public class Chart {
     private List<ChartData> data;
+    private List<SeriesChartData> series;
 }

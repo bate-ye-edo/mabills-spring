@@ -1,5 +1,6 @@
 package es.upm.mabills.persistence.repositories;
 
+import es.upm.mabills.model.ChartData;
 import es.upm.mabills.persistence.chart_data_dtos.DateChartData;
 import es.upm.mabills.persistence.entities.ExpenseEntity;
 import org.springframework.data.domain.Sort;
@@ -34,6 +35,13 @@ public interface ExpenseRepository extends JpaRepository<ExpenseEntity, UUID> {
     void decoupleExpenseCategory(Integer expenseCategoryId);
 
     @Query("select new es.upm.mabills.persistence.chart_data_dtos.DateChartData(e.expenseDate, sum(e.amount)) from ExpenseEntity e where e.user.id = ?1 " +
-            "group by e.expenseDate order by e.expenseDate asc")
+            " group by e.expenseDate " +
+            " order by e.expenseDate asc")
     List<DateChartData> findExpensesGroupByDate(int id);
+
+    @Query("select new es.upm.mabills.model.ChartData(ec.name, sum(e.amount)) from ExpenseEntity e" +
+            " join e.expenseCategory ec " +
+            " where e.user.id = ?1 " +
+            " group by ec.name ")
+    List<ChartData> findExpensesGroupByExpenseCategory(int id);
 }

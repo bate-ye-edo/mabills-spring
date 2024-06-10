@@ -4,7 +4,7 @@ import es.upm.mabills.api.ApiTestConfig;
 import es.upm.mabills.api.RestClientTestService;
 import es.upm.mabills.api.dtos.LoginDto;
 import es.upm.mabills.model.Chart;
-import es.upm.mabills.model.ChartDataType;
+import es.upm.mabills.services.chart.ChartCategory;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -32,7 +32,7 @@ class ChartResourceIT {
         restClientTestService
                 .loginDefault(webTestClient)
                 .get()
-                .uri(ChartResource.CHARTS + ChartResource.DATA_TYPE, ChartDataType.EXPENSES)
+                .uri(ChartResource.CHARTS + ChartResource.CHART_CATEGORY, ChartCategory.EXPENSES)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(Chart.class)
@@ -48,7 +48,7 @@ class ChartResourceIT {
         restClientTestService
                 .loginDefault(webTestClient)
                 .get()
-                .uri(ChartResource.CHARTS + ChartResource.DATA_TYPE, ChartDataType.INCOMES)
+                .uri(ChartResource.CHARTS + ChartResource.CHART_CATEGORY, ChartCategory.INCOMES)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(Chart.class)
@@ -64,7 +64,7 @@ class ChartResourceIT {
         restClientTestService
                 .loginDefault(webTestClient)
                 .get()
-                .uri(ChartResource.CHARTS + ChartResource.DATA_TYPE, "INVALID")
+                .uri(ChartResource.CHARTS + ChartResource.CHART_CATEGORY, "INVALID")
                 .exchange()
                 .expectStatus().isBadRequest();
     }
@@ -73,7 +73,7 @@ class ChartResourceIT {
     void getChartUnauthorized() {
         webTestClient
                 .get()
-                .uri(ChartResource.CHARTS + ChartResource.DATA_TYPE, ChartDataType.EXPENSES)
+                .uri(ChartResource.CHARTS + ChartResource.CHART_CATEGORY, ChartCategory.EXPENSES)
                 .exchange()
                 .expectStatus().isUnauthorized();
     }
@@ -83,7 +83,7 @@ class ChartResourceIT {
         restClientTestService
                 .login(webTestClient, OTHER_USER_LOGIN)
                 .get()
-                .uri(ChartResource.CHARTS + ChartResource.DATA_TYPE, ChartDataType.EXPENSES)
+                .uri(ChartResource.CHARTS + ChartResource.CHART_CATEGORY, ChartCategory.EXPENSES)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(Chart.class)
@@ -99,7 +99,7 @@ class ChartResourceIT {
         restClientTestService
                 .login(webTestClient, OTHER_USER_LOGIN)
                 .get()
-                .uri(ChartResource.CHARTS + ChartResource.DATA_TYPE, ChartDataType.INCOMES)
+                .uri(ChartResource.CHARTS + ChartResource.CHART_CATEGORY, ChartCategory.INCOMES)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(Chart.class)

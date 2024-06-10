@@ -23,6 +23,7 @@
 		<jjwt.version>0.9.1</jjwt.version>
 		<jacoco.version>0.8.7</jacoco.version>
 		<reactivestreams.version>1.0.4</reactivestreams.version>
+		<easyrandom.version>4.0.0</easyrandom.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -130,6 +131,11 @@
 			<groupId>org.mapstruct</groupId>
 			<artifactId>mapstruct</artifactId>
 			<version>${mapstruct.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jeasy</groupId>
+			<artifactId>easy-random-core</artifactId>
+			<version>${easyrandom.version}</version>
 		</dependency>
 	</dependencies>
 

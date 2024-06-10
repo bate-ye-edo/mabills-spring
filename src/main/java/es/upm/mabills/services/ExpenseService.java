@@ -8,6 +8,8 @@ import es.upm.mabills.persistence.ExpensePersistence;
 import es.upm.mabills.services.dependency_validators.DependencyValidator;
 import es.upm.mabills.services.exception_mappers.EntityNotFoundExceptionMapper;
 import io.vavr.control.Try;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import java.util.List;
 @Service
 @Transactional
 public class ExpenseService {
+    private static final Logger LOGGER = LogManager.getLogger(ExpenseService.class);
     private final ExpenseMapper expenseMapper;
     private final ExpensePersistence expensePersistence;
     private final DependencyValidator dependencyValidator;
@@ -35,7 +38,10 @@ public class ExpenseService {
                         .stream()
                         .map(expenseMapper::toExpense)
                         .toList())
-                .getOrElseThrow(e -> new MaBillsServiceException());
+                .getOrElseThrow(e -> {
+                    LOGGER.error(e);
+                    return new MaBillsServiceException();
+                });
     }
 
     public Expense createExpense(UserPrincipal userPrincipal, Expense expense) {

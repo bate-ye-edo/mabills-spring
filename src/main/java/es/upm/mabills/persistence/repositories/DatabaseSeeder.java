@@ -9,6 +9,10 @@ import es.upm.mabills.persistence.entities.IncomeEntity;
 import es.upm.mabills.persistence.entities.UserEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jeasy.random.EasyRandom;
+import org.jeasy.random.EasyRandomParameters;
+import org.jeasy.random.FieldPredicates;
+import org.jeasy.random.TypePredicates;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
@@ -17,8 +21,12 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 @Repository
 @Profile("test")
@@ -26,13 +34,16 @@ import java.util.List;
 public class DatabaseSeeder {
     private static final Logger LOGGER = LogManager.getLogger(DatabaseSeeder.class);
     private static final String DESCRIPTION = "description";
-    private static final Timestamp TODAY = new Timestamp(System.currentTimeMillis());
+    private static final Timestamp TODAY = new Timestamp(Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime());
+    private static final int LAST_DAY_OF_MONTH = LocalDate.now().lengthOfMonth();
+    private static final Random RANDOM = new Random();
     private final UserRepository userRepository;
     private final ExpenseCategoryRepository expenseCategoryRepository;
     private final CreditCardRepository creditCardRepository;
     private final BankAccountRepository bankAccountRepository;
     private final ExpenseRepository expenseRepository;
     private final IncomeRepository incomeRepository;
+    private final Environment environment;
     private String encodedPassword = "$2a$10$KyShpWQl4pS7KybIIZLkZ.6Mo2YBkPFuXT82cEOguWW3lpSMHgSEe";
     private String encodedPasswordUserName = "encodedPasswordUser";
 
@@ -46,7 +57,7 @@ public class DatabaseSeeder {
             encodedPassword = passwordEncoder.encode("1");
             encodedPasswordUserName = "1";
         }
-
+        this.environment = environment;
         LOGGER.warn("----- Initialize database seeding -----");
         this.userRepository = userRepository;
         this.expenseCategoryRepository = expenseCategoryRepository;
@@ -318,6 +329,67 @@ public class DatabaseSeeder {
                 .build();
         this.incomeRepository.saveAll(List.of(incomeEntity, toUpdateIncomeResource, toUpdateIncome, toUpdateIncome, toUpdateIncomeWithDependencies, toDeleteIncome, toDeleteIncomeResource));
 
+        if(Arrays.asList(environment.getActiveProfiles()).contains("dev")){
+            seedDevDatabase(encodedPasswordUser);
+        }
+
         LOGGER.warn("----- End seeding database -----");
+    }
+
+    private void seedDevDatabase(UserEntity encodedPasswordUser) {
+        EasyRandomParameters parameters = new EasyRandomParameters()
+                .excludeType(TypePredicates.named("UUID"))
+                .excludeField(FieldPredicates.named("id"))
+                .excludeField(FieldPredicates.named("uuid"));
+
+        EasyRandom easyRandom = new EasyRandom(parameters);
+
+        List<BankAccountEntity> bankAccountEntities = easyRandom.objects(BankAccountEntity.class, 10)
+                .peek(bankAccountEntity -> bankAccountEntity.setUser(encodedPasswordUser))
+                .toList();
+        this.bankAccountRepository.saveAll(bankAccountEntities);
+
+        List<CreditCardEntity> creditCardEntities = easyRandom.objects(CreditCardEntity.class, 20)
+                .peek(creditCardEntity -> {
+                    BankAccountEntity bankAccountEntity = bankAccountEntities.get(easyRandom.nextInt(0, bankAccountEntities.size()));
+                    creditCardEntity.setUser(encodedPasswordUser);
+                    creditCardEntity.setBankAccount(bankAccountEntity);
+                })
+                .toList();
+        this.creditCardRepository.saveAll(creditCardEntities);
+
+        List<ExpenseCategoryEntity> expenseCategoryEntities = easyRandom.objects(ExpenseCategoryEntity.class, 10)
+                .peek(expenseCategoryEntity -> expenseCategoryEntity.setUser(encodedPasswordUser))
+                .toList();
+        this.expenseCategoryRepository.saveAll(expenseCategoryEntities);
+
+        List<ExpenseEntity> expenseEntities = easyRandom.objects(ExpenseEntity.class, 100)
+                .peek(expenseEntity -> {
+                    CreditCardEntity creditCardEntity = creditCardEntities.get(easyRandom.nextInt(0, creditCardEntities.size()));
+                    expenseEntity.setUser(encodedPasswordUser);
+                    expenseEntity.setCreditCard(creditCardEntity);
+                    expenseEntity.setExpenseCategory(expenseCategoryEntities.get(easyRandom.nextInt(0, expenseCategoryEntities.size())));
+                    expenseEntity.setBankAccount(creditCardEntity.getBankAccount());
+                    expenseEntity.setFormOfPayment(easyRandom.nextObject(FormOfPayment.class).name());
+                    expenseEntity.setExpenseDate(getRandomDayOfMonth());
+                })
+                .toList();
+        this.expenseRepository.saveAll(expenseEntities);
+
+        List<IncomeEntity> incomeEntities = easyRandom.objects(IncomeEntity.class, 100)
+                .peek(incomeEntity -> {
+                    CreditCardEntity creditCardEntity = creditCardEntities.get(easyRandom.nextInt(0, creditCardEntities.size()));
+                    incomeEntity.setUser(encodedPasswordUser);
+                    incomeEntity.setCreditCard(creditCardEntity);
+                    incomeEntity.setBankAccount(creditCardEntity.getBankAccount());
+                    incomeEntity.setIncomeDate(getRandomDayOfMonth());
+                })
+                .toList();
+        this.incomeRepository.saveAll(incomeEntities);
+    }
+
+    private Timestamp getRandomDayOfMonth() {
+        int day = RANDOM.nextInt(1, LAST_DAY_OF_MONTH);
+        return new Timestamp(Date.from(LocalDate.now().withDayOfMonth(day).atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime());
     }
 }
