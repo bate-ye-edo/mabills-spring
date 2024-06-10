@@ -4,14 +4,19 @@ import es.upm.mabills.api.ApiTestConfig;
 import es.upm.mabills.api.RestClientTestService;
 import es.upm.mabills.api.dtos.LoginDto;
 import es.upm.mabills.model.Chart;
+import es.upm.mabills.services.TokenCacheService;
 import es.upm.mabills.services.chart.ChartCategory;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 @ApiTestConfig
 class ChartResourceIT {
@@ -26,6 +31,14 @@ class ChartResourceIT {
 
     @Autowired
     private RestClientTestService restClientTestService;
+
+    @MockBean
+    private TokenCacheService tokenCacheService;
+
+    @BeforeEach
+    void setUp() {
+        when(tokenCacheService.isTokenBlackListed(anyString())).thenReturn(false);
+    }
 
     @Test
     void getExpensesChartSuccess() {

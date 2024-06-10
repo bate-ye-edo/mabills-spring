@@ -3,21 +3,32 @@ package es.upm.mabills.api.resources;
 import es.upm.mabills.api.ApiTestConfig;
 import es.upm.mabills.api.RestClientTestService;
 import es.upm.mabills.api.dtos.LoginDto;
+import es.upm.mabills.mappers.BankAccountMapper;
 import es.upm.mabills.model.BankAccount;
 import es.upm.mabills.model.CreditCard;
+import es.upm.mabills.persistence.entities.UserEntity;
+import es.upm.mabills.persistence.repositories.BankAccountRepository;
+import es.upm.mabills.persistence.repositories.UserRepository;
+import es.upm.mabills.services.TokenCacheService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 @ApiTestConfig
 class BankAccountResourceIT {
     private static final String ONLY_USER = "onlyUser";
+    private static final String ENCODED_PASSWORD_USER = "encodedPasswordUser";
     private static final String PASSWORD = "password";
     private static final String OTHER_USER = "otherUser";
     private static final String NEW_IBAN = "ES7921000813610123456789";
@@ -33,6 +44,26 @@ class BankAccountResourceIT {
 
     @Autowired
     private WebTestClient webTestClient;
+
+    @Autowired
+    private BankAccountRepository bankAccountRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private BankAccountMapper bankAccountMapper;
+
+    @MockBean
+    private TokenCacheService tokenCacheService;
+
+    private UserEntity encodedPasswordUser;
+
+    @BeforeEach
+    void setUp() {
+        when(tokenCacheService.isTokenBlackListed(anyString())).thenReturn(false);
+        encodedPasswordUser = userRepository.findByUsername(ENCODED_PASSWORD_USER);
+    }
 
 
     @Test
@@ -114,6 +145,7 @@ class BankAccountResourceIT {
     }
 
     @Test
+    @Transactional
     void testDeleteBankAccountSuccess() {
         String toDeleteUuid = getToDeleteBankAccountUuid();
         restClientTestService
@@ -126,6 +158,7 @@ class BankAccountResourceIT {
     }
 
     @Test
+    @Transactional
     void testDeleteBankAccountForAnotherUserException() {
         String otherUuid = getDefaultUserFirstBankAccountUuid();
         restClientTestService
@@ -138,6 +171,7 @@ class BankAccountResourceIT {
     }
 
     @Test
+    @Transactional
     void testDeleteBankAccountWithCreditCard() {
         String toDeleteBankAccountUuid = getBankAccountWithCreditCardUuid();
         restClientTestService
@@ -151,6 +185,7 @@ class BankAccountResourceIT {
     }
 
     @Test
+    @Transactional
     void testDeleteBankAccountWithCreditCardAndExpense() {
         String toDeleteBankAccountUuid = getBankAccountWithCreditCardAndExpenseUuid();
         restClientTestService
@@ -211,15 +246,8 @@ class BankAccountResourceIT {
     }
 
     private Stream<BankAccount> getDefaultUserBankAccountsStream() {
-        return Objects.requireNonNull(restClientTestService
-                        .loginDefault(webTestClient)
-                        .get()
-                        .uri(BankAccountResource.BANK_ACCOUNTS)
-                        .exchange()
-                        .expectBodyList(BankAccount.class)
-                        .returnResult()
-                        .getResponseBody())
-                .stream();
+        return Objects.requireNonNull(bankAccountRepository.findByUserId(encodedPasswordUser.getId()))
+                .stream().map(bankAccountMapper::toBankAccount);
     }
 
     private LoginDto buildOnlyUserLoginDto() {

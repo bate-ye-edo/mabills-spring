@@ -32,9 +32,8 @@ public class JwtService {
     public String extractToken(String bearer) {
         if (bearer != null && bearer.startsWith(BEARER) && PARTIES == bearer.split("\\.").length) {
             return bearer.substring(BEARER.length());
-        } else {
-            return "";
         }
+        return "";
     }
 
     public String createToken(String username) {
