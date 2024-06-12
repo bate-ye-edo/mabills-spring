@@ -6,6 +6,7 @@ import es.upm.mabills.api.dtos.LoginDto;
 import es.upm.mabills.model.Chart;
 import es.upm.mabills.services.TokenCacheService;
 import es.upm.mabills.services.chart.ChartCategory;
+import es.upm.mabills.services.chart.ExpenseChartGroupBy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -121,5 +122,82 @@ class ChartResourceIT {
                     assertNotNull(chart.getData());
                     assertTrue(chart.getData().isEmpty());
                 });
+    }
+
+    @Test
+    void getExpensesChartGroupByCategorySuccess() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .get()
+                .uri(ChartResource.CHARTS + ChartResource.CHART_CATEGORY + ChartResource.CHART_GROUP_BY_TYPE, ChartCategory.EXPENSES, ExpenseChartGroupBy.EXPENSE_CATEGORY)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(Chart.class)
+                .value(chart -> {
+                    assertNotNull(chart);
+                    assertNotNull(chart.getData());
+                    assertFalse(chart.getData().isEmpty());
+                });
+    }
+
+    @Test
+    void getExpensesChartGroupByDateSuccess() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .get()
+                .uri(ChartResource.CHARTS + ChartResource.CHART_CATEGORY + ChartResource.CHART_GROUP_BY_TYPE, ChartCategory.EXPENSES, ExpenseChartGroupBy.EXPENSE_DATE)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(Chart.class)
+                .value(chart -> {
+                    assertNotNull(chart);
+                    assertNotNull(chart.getData());
+                    assertFalse(chart.getData().isEmpty());
+                });
+    }
+
+    @Test
+    void getExpensesChartGroupByEmpty() {
+        restClientTestService
+                .login(webTestClient, OTHER_USER_LOGIN)
+                .get()
+                .uri(ChartResource.CHARTS + ChartResource.CHART_CATEGORY + ChartResource.CHART_GROUP_BY_TYPE, ChartCategory.EXPENSES, ExpenseChartGroupBy.EXPENSE_CATEGORY)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(Chart.class)
+                .value(chart -> {
+                    assertNotNull(chart);
+                    assertNotNull(chart.getData());
+                    assertTrue(chart.getData().isEmpty());
+                });
+    }
+
+    @Test
+    void getExpensesChartGroupByInvalidDataType() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .get()
+                .uri(ChartResource.CHARTS + ChartResource.CHART_CATEGORY + ChartResource.CHART_GROUP_BY_TYPE, "INVALID", ExpenseChartGroupBy.EXPENSE_CATEGORY)
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void getExpensesChartGroupByInvalidGroupBy() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .get()
+                .uri(ChartResource.CHARTS + ChartResource.CHART_CATEGORY + ChartResource.CHART_GROUP_BY_TYPE, ChartCategory.EXPENSES, "INVALID")
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void getExpensesChartGroupByUnauthorized() {
+        webTestClient
+                .get()
+                .uri(ChartResource.CHARTS + ChartResource.CHART_CATEGORY + ChartResource.CHART_GROUP_BY_TYPE, ChartCategory.EXPENSES, ExpenseChartGroupBy.EXPENSE_CATEGORY)
+                .exchange()
+                .expectStatus().isUnauthorized();
     }
 }

@@ -73,4 +73,9 @@ class JwtServiceTest {
     void testExtractUserNameFromTokenWhenTokenCorrect() {
         assertEquals(USERNAME, jwtService.username(this.token));
     }
+
+    @Test
+    void testWrongTokenWithoutThreeParts() {
+        assertEquals("", jwtService.extractToken("Bearer xxxxx.xxxxx"));
+    }
 }

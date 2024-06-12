@@ -1,5 +1,6 @@
 package es.upm.mabills.services.chart;
 
+import es.upm.mabills.exceptions.MaBillsServiceException;
 import es.upm.mabills.mappers.ChartDataMapper;
 import es.upm.mabills.model.Chart;
 import es.upm.mabills.model.ChartData;
@@ -8,6 +9,7 @@ import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.ExpensePersistence;
 import es.upm.mabills.persistence.IncomePersistence;
 import es.upm.mabills.persistence.chart_data_dtos.DateChartData;
+import io.vavr.control.Try;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -38,8 +40,9 @@ public class ExpenseIncomeSeriesChartService implements ChartService {
 
     @Override
     public Chart getChart(UserPrincipal userPrincipal, String groupBy) {
-        return buildSeriesChartFromCharts(incomePersistence.getIncomesGroupByDateChartData(userPrincipal),
-                expensePersistence.getExpensesGroupByDateChartData(userPrincipal));
+        return Try.of(()->buildSeriesChartFromCharts(incomePersistence.getIncomesGroupByDateChartData(userPrincipal),
+                    expensePersistence.getExpensesGroupByDateChartData(userPrincipal)))
+                .getOrElseThrow(MaBillsServiceException::new);
     }
 
     private Chart buildSeriesChartFromCharts(List<DateChartData> incomeChart, List<DateChartData> expenseChart) {

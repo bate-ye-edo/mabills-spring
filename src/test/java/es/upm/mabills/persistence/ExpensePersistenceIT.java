@@ -5,6 +5,7 @@ import es.upm.mabills.TestConfig;
 import es.upm.mabills.exceptions.ExpenseCategoryNotFoundException;
 import es.upm.mabills.exceptions.ExpenseNotFoundException;
 import es.upm.mabills.model.BankAccount;
+import es.upm.mabills.model.ChartData;
 import es.upm.mabills.model.CreditCard;
 import es.upm.mabills.model.Expense;
 import es.upm.mabills.model.ExpenseCategory;
@@ -183,6 +184,29 @@ class ExpensePersistenceIT {
     void testGetExpensesGroupByDateChartDataUserNotFound() {
         assertTrue(expensePersistence.getExpensesGroupByDateChartData(NOT_FOUND_USER_PRINCIPAL).isEmpty());
     }
+
+    @Test
+    void testGetExpensesGroupByDateChartDataEmpty() {
+        assertTrue(expensePersistence.getExpensesGroupByDateChartData(UserPrincipal.builder().id(0).username("emptyUser").build()).isEmpty());
+    }
+
+    @Test
+    void testGetExpensesGroupByDateChartDataNotEmpty() {
+        assertFalse(expensePersistence.getExpensesGroupByDateChartData(encodedUserPrincipal).isEmpty());
+    }
+
+    @Test
+    void testGetExpensesGroupByCategoryChartDataSuccess() {
+        List<ChartData> dateChartDataList = expensePersistence.getExpensesGroupByCategoryChartData(encodedUserPrincipal);
+        assertNotNull(dateChartDataList);
+        assertFalse(dateChartDataList.isEmpty());
+    }
+
+    @Test
+    void testGetExpensesGroupByCategoryChartDataEmpty() {
+        assertTrue(expensePersistence.getExpensesGroupByCategoryChartData(NOT_FOUND_USER_PRINCIPAL).isEmpty());
+    }
+
 
     private Expense buildExpenseToUpdateWithAllDependencies() {
         return Expense.builder()

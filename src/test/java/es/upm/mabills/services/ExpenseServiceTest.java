@@ -5,6 +5,7 @@ import es.upm.mabills.exceptions.BankAccountNotFoundException;
 import es.upm.mabills.exceptions.CreditCardNotFoundException;
 import es.upm.mabills.exceptions.ExpenseCategoryNotFoundException;
 import es.upm.mabills.exceptions.ExpenseNotFoundException;
+import es.upm.mabills.exceptions.MaBillsServiceException;
 import es.upm.mabills.model.Expense;
 import es.upm.mabills.model.FormOfPayment;
 import es.upm.mabills.model.UserPrincipal;
@@ -52,6 +53,13 @@ class ExpenseServiceTest {
     void testFindExpenseByUserIdNotFound() {
         when(expensePersistence.findExpenseByUserId(any())).thenReturn(List.of());
         assertTrue(expensePersistence.findExpenseByUserId(UserPrincipal.builder().build()).isEmpty());
+    }
+
+    @Test
+    void testFindUserExpensesThrowsException() {
+        when(expensePersistence.findExpenseByUserId(any())).thenThrow(new RuntimeException());
+        UserPrincipal userPrincipal = UserPrincipal.builder().build();
+        assertThrows(MaBillsServiceException.class, () -> expenseService.getUserExpenses(userPrincipal));
     }
 
     @Test

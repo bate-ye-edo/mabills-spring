@@ -1,8 +1,10 @@
 package es.upm.mabills.services.chart;
 
 import es.upm.mabills.UnitTestConfig;
+import es.upm.mabills.exceptions.InvalidRequestException;
 import es.upm.mabills.exceptions.MaBillsServiceException;
 import es.upm.mabills.model.Chart;
+import es.upm.mabills.model.ChartData;
 import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.ExpensePersistence;
 import es.upm.mabills.persistence.chart_data_dtos.DateChartData;
@@ -36,7 +38,7 @@ class ExpensesChartServiceTest {
     void testGetChartSuccess() {
         when(expensePersistence.getExpensesGroupByDateChartData(any(UserPrincipal.class)))
             .thenReturn(List.of(new DateChartData(new Timestamp(0), BigDecimal.ONE)));
-        Chart chart = expensesChartService.getChart(new UserPrincipal(), null);
+        Chart chart = expensesChartService.getChart(new UserPrincipal(), ExpenseChartGroupBy.EXPENSE_DATE.name());
         assertNotNull(chart);
         assertFalse(chart.getData().isEmpty());
         assertNotBlank(chart.getData().get(0).getName());
@@ -66,5 +68,42 @@ class ExpensesChartServiceTest {
             .thenThrow(new DataIntegrityViolationException(""));
         UserPrincipal userPrincipal = new UserPrincipal();
         assertThrows(MaBillsServiceException.class, () -> expensesChartService.getChart(userPrincipal, null));
+    }
+
+    @Test
+    void testGetChartByGroupByType() {
+        UserPrincipal userPrincipal = new UserPrincipal();
+        when(expensePersistence.getExpensesGroupByCategoryChartData(userPrincipal))
+            .thenReturn(List.of(new ChartData("", BigDecimal.ONE)));
+        Chart chart = expensesChartService.getChart(userPrincipal, ExpenseChartGroupBy.EXPENSE_CATEGORY.name());
+        assertNotNull(chart);
+        assertFalse(chart.getData().isEmpty());
+        assertEquals(BigDecimal.ONE, chart.getData().get(0).getValue());
+    }
+
+    @Test
+    void testGetChartByGroupByTypeRuntimeException() {
+        when(expensePersistence.getExpensesGroupByCategoryChartData(any(UserPrincipal.class)))
+            .thenThrow(new RuntimeException());
+        UserPrincipal userPrincipal = new UserPrincipal();
+        String groupBy = ExpenseChartGroupBy.EXPENSE_CATEGORY.name();
+        assertThrows(MaBillsServiceException.class, () -> expensesChartService.getChart(userPrincipal, groupBy));
+    }
+
+    @Test
+    void testGetChartByGroupByTypeEmpty() {
+        when(expensePersistence.getExpensesGroupByCategoryChartData(any(UserPrincipal.class)))
+            .thenReturn(List.of());
+        Chart chart = expensesChartService.getChart(new UserPrincipal(), ExpenseChartGroupBy.EXPENSE_CATEGORY.name());
+        assertNotNull(chart);
+        assertTrue(chart.getData().isEmpty());
+    }
+
+    @Test
+    void testGetChartWrongGroupBy() {
+        UserPrincipal userPrincipal = new UserPrincipal();
+        when(expensePersistence.getExpensesGroupByDateChartData(userPrincipal))
+            .thenReturn(List.of(new DateChartData(new Timestamp(0), BigDecimal.ONE)));
+        assertThrows(InvalidRequestException.class, () -> expensesChartService.getChart(userPrincipal, "WRONG_GROUP_BY"));
     }
 }
