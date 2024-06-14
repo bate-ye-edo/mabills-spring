@@ -71,7 +71,7 @@ class ExpensesChartServiceTest {
     }
 
     @Test
-    void testGetChartByGroupByType() {
+    void testGetChartByGroupByCategory() {
         UserPrincipal userPrincipal = new UserPrincipal();
         when(expensePersistence.getExpensesGroupByCategoryChartData(userPrincipal))
             .thenReturn(List.of(new ChartData("", BigDecimal.ONE)));
@@ -91,7 +91,7 @@ class ExpensesChartServiceTest {
     }
 
     @Test
-    void testGetChartByGroupByTypeEmpty() {
+    void testGetChartByGroupByCategoryEmpty() {
         when(expensePersistence.getExpensesGroupByCategoryChartData(any(UserPrincipal.class)))
             .thenReturn(List.of());
         Chart chart = expensesChartService.getChart(new UserPrincipal(), ExpenseChartGroupBy.EXPENSE_CATEGORY.name());
@@ -106,4 +106,38 @@ class ExpensesChartServiceTest {
             .thenReturn(List.of(new DateChartData(new Timestamp(0), BigDecimal.ONE)));
         assertThrows(InvalidRequestException.class, () -> expensesChartService.getChart(userPrincipal, "WRONG_GROUP_BY"));
     }
+
+    @Test
+    void testGetChartByGroupByCreditCard() {
+        UserPrincipal userPrincipal = new UserPrincipal();
+        when(expensePersistence.getExpensesGroupByCreditCardChartData(userPrincipal))
+            .thenReturn(List.of(new ChartData("", BigDecimal.ONE)));
+        Chart chart = expensesChartService.getChart(userPrincipal, ExpenseChartGroupBy.EXPENSE_CREDIT_CARD.name());
+        assertNotNull(chart);
+        assertFalse(chart.getData().isEmpty());
+        assertEquals(BigDecimal.ONE, chart.getData().get(0).getValue());
+    }
+
+    @Test
+    void testGetChartByGroupByBankAccount() {
+        UserPrincipal userPrincipal = new UserPrincipal();
+        when(expensePersistence.getExpensesGroupByBankAccountChartData(userPrincipal))
+            .thenReturn(List.of(new ChartData("", BigDecimal.ONE)));
+        Chart chart = expensesChartService.getChart(userPrincipal, ExpenseChartGroupBy.EXPENSE_BANK_ACCOUNT.name());
+        assertNotNull(chart);
+        assertFalse(chart.getData().isEmpty());
+        assertEquals(BigDecimal.ONE, chart.getData().get(0).getValue());
+    }
+
+    @Test
+    void testGetChartByGroupByFormOfPayment() {
+        UserPrincipal userPrincipal = new UserPrincipal();
+        when(expensePersistence.getExpensesGroupByFOPChartData(userPrincipal))
+            .thenReturn(List.of(new ChartData("", BigDecimal.ONE)));
+        Chart chart = expensesChartService.getChart(userPrincipal, ExpenseChartGroupBy.EXPENSE_FORM_OF_PAYMENT.name());
+        assertNotNull(chart);
+        assertFalse(chart.getData().isEmpty());
+        assertEquals(BigDecimal.ONE, chart.getData().get(0).getValue());
+    }
+
 }

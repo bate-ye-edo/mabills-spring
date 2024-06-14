@@ -28,8 +28,26 @@ public class IncomesChartService implements ChartService {
     @Override
     public Chart getChart(UserPrincipal userPrincipal, String groupBy) {
         return Chart.builder()
-                .data(this.getIncomesGroupByDateChartData(userPrincipal))
+                .data(this.getChartByGroupByType(userPrincipal, IncomeChartGroupBy.fromString(groupBy)))
                 .build();
+    }
+
+    private List<ChartData> getChartByGroupByType(UserPrincipal userPrincipal, IncomeChartGroupBy groupBy) {
+        return switch (groupBy){
+            case INCOME_DATE -> getIncomesGroupByDateChartData(userPrincipal);
+            case INCOME_BANK_ACCOUNT -> getIncomesGroupByBankAccountChartData(userPrincipal);
+            case INCOME_CREDIT_CARD -> getIncomesGroupByCreditCardChartData(userPrincipal);
+        };
+    }
+
+    private List<ChartData> getIncomesGroupByCreditCardChartData(UserPrincipal userPrincipal) {
+        return Try.of(() -> this.incomePersistence.getIncomesGroupByCreditCardChartData(userPrincipal))
+                .getOrElseThrow(MaBillsServiceException::new);
+    }
+
+    private List<ChartData> getIncomesGroupByBankAccountChartData(UserPrincipal userPrincipal) {
+        return Try.of(() -> this.incomePersistence.getIncomesGroupByBankAccountChartData(userPrincipal))
+                .getOrElseThrow(MaBillsServiceException::new);
     }
 
     private List<ChartData> getIncomesGroupByDateChartData(UserPrincipal userPrincipal) {

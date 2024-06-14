@@ -21,7 +21,6 @@ class UserPersistenceIT {
     private static final String NEW_REGISTER_USER = UUID.randomUUID().toString();
     private static final String TO_UPDATE_USER = "toUpdateUser";
     private static final String NOT_FOUND_USER = "notFoundUser";
-    private static final String ENCODED_PASSWORD_USER = "encodedPasswordUser";
 
     @Autowired
     private UserPersistence userPersistence;

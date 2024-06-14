@@ -3,6 +3,7 @@ package es.upm.mabills.persistence;
 import es.upm.mabills.TestConfig;
 import es.upm.mabills.exceptions.IncomeNotFoundException;
 import es.upm.mabills.model.BankAccount;
+import es.upm.mabills.model.ChartData;
 import es.upm.mabills.model.CreditCard;
 import es.upm.mabills.model.Income;
 import es.upm.mabills.model.UserPrincipal;
@@ -156,9 +157,34 @@ class IncomePersistenceIT {
     }
 
     @Test
-    void testGetExpensesGroupByDateChartDataUserNotFound() {
+    void testGetExpensesGroupByDateChartDataEmpty() {
         assertTrue(incomePersistence.getIncomesGroupByDateChartData(onlyUserPrincipal).isEmpty());
     }
+
+    @Test
+    void testGetExpensesGroupByBankAccountChartDataSuccess() {
+        List<ChartData> dateChartDataList = incomePersistence.getIncomesGroupByBankAccountChartData(encodedUserPrincipal);
+        assertNotNull(dateChartDataList);
+        assertFalse(dateChartDataList.isEmpty());
+    }
+
+    @Test
+    void testGetExpensesGroupByBankAccountChartDataEmpty() {
+        assertTrue(incomePersistence.getIncomesGroupByBankAccountChartData(onlyUserPrincipal).isEmpty());
+    }
+
+    @Test
+    void testGetExpensesGroupByCreditCardChartDataSuccess() {
+        List<ChartData> dateChartDataList = incomePersistence.getIncomesGroupByCreditCardChartData(encodedUserPrincipal);
+        assertNotNull(dateChartDataList);
+        assertFalse(dateChartDataList.isEmpty());
+    }
+
+    @Test
+    void testGetExpensesGroupByCreditCardChartDataEmpty() {
+        assertTrue(incomePersistence.getIncomesGroupByCreditCardChartData(onlyUserPrincipal).isEmpty());
+    }
+
 
     private Income buildIncomeWithDependencies() {
         return Income.builder()

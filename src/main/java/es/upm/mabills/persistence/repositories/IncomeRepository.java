@@ -1,5 +1,6 @@
 package es.upm.mabills.persistence.repositories;
 
+import es.upm.mabills.model.ChartData;
 import es.upm.mabills.persistence.chart_data_dtos.DateChartData;
 import es.upm.mabills.persistence.entities.IncomeEntity;
 import org.springframework.data.domain.Sort;
@@ -31,4 +32,17 @@ public interface IncomeRepository extends JpaRepository<IncomeEntity, UUID> {
     @Query("select new es.upm.mabills.persistence.chart_data_dtos.DateChartData(i.incomeDate, sum(i.amount)) from IncomeEntity i where i.user.id = ?1 " +
             "group by i.incomeDate order by i.incomeDate asc")
     List<DateChartData> findIncomesGroupByDate(int id);
+
+
+    @Query("select new es.upm.mabills.model.ChartData(COALESCE(ib.iban, '') , sum(i.amount)) from IncomeEntity i" +
+            " left join i.bankAccount ib " +
+            " where i.user.id = ?1 " +
+            " group by ib.iban ")
+    List<ChartData> findIncomesGroupByBankAccount(int id);
+
+    @Query("select new es.upm.mabills.model.ChartData(COALESCE(ic.creditCardNumber, '') , sum(i.amount)) from IncomeEntity i" +
+            " left join i.creditCard ic " +
+            " where i.user.id = ?1 " +
+            " group by ic.creditCardNumber ")
+    List<ChartData> findIncomesGroupByCreditCard(int id);
 }

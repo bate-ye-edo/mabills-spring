@@ -44,4 +44,21 @@ public interface ExpenseRepository extends JpaRepository<ExpenseEntity, UUID> {
             " where e.user.id = ?1 " +
             " group by ec.name ")
     List<ChartData> findExpensesGroupByExpenseCategory(int id);
+
+    @Query("select new es.upm.mabills.model.ChartData(COALESCE(ec.creditCardNumber, '') , sum(e.amount)) from ExpenseEntity e" +
+            " left join e.creditCard ec " +
+            " where e.user.id = ?1 " +
+            " group by ec.creditCardNumber ")
+    List<ChartData> findExpensesGroupByCreditCard(int id);
+
+    @Query("select new es.upm.mabills.model.ChartData(COALESCE(ec.iban, '') , sum(e.amount)) from ExpenseEntity e" +
+            " left join e.bankAccount ec " +
+            " where e.user.id = ?1 " +
+            " group by ec.iban ")
+    List<ChartData> findExpensesGroupByBankAccount(int id);
+
+    @Query("select new es.upm.mabills.model.ChartData(COALESCE(e.formOfPayment, '') , sum(e.amount)) from ExpenseEntity e" +
+            " where e.user.id = ?1 " +
+            " group by e.formOfPayment ")
+    List<ChartData> findExpensesGroupByFormOfPayment(int id);
 }

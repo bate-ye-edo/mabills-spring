@@ -28,14 +28,14 @@ public class ChartResource {
     }
 
     @GetMapping(CHART_CATEGORY)
-    public Chart getChart(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("chart-category") String dataType) {
-        return this.chartServiceFactory.getChartService(ChartCategory.fromString(dataType))
+    public Chart getChart(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("chart-category") String chartCategory) {
+        return this.chartServiceFactory.getChartService(ChartCategory.fromString(chartCategory))
                 .getChart(userPrincipal, null);
     }
 
     @GetMapping(CHART_CATEGORY + CHART_GROUP_BY_TYPE)
-    public Chart getChartGroupByType(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("chart-category") String dataType, @PathVariable("group-by") String type) {
-        return this.chartServiceFactory.getChartService(ChartCategory.fromString(dataType))
+    public Chart getChartGroupByType(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable("chart-category") String chartCategory, @PathVariable("group-by") String type) {
+        return this.chartServiceFactory.getChartService(ChartCategory.fromString(chartCategory))
                 .getChart(userPrincipal, type);
     }
 }

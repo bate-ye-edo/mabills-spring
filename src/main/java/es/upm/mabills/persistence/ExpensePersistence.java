@@ -119,4 +119,16 @@ public class ExpensePersistence {
     public List<ChartData> getExpensesGroupByCategoryChartData(UserPrincipal userPrincipal) {
         return expenseRepository.findExpensesGroupByExpenseCategory(userPrincipal.getId());
     }
+
+    public List<ChartData> getExpensesGroupByCreditCardChartData(UserPrincipal userPrincipal) {
+        return expenseRepository.findExpensesGroupByCreditCard(userPrincipal.getId());
+    }
+
+    public List<ChartData> getExpensesGroupByBankAccountChartData(UserPrincipal userPrincipal) {
+        return expenseRepository.findExpensesGroupByBankAccount(userPrincipal.getId());
+    }
+
+    public List<ChartData> getExpensesGroupByFOPChartData(UserPrincipal userPrincipal) {
+        return expenseRepository.findExpensesGroupByFormOfPayment(userPrincipal.getId());
+    }
 }

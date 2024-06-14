@@ -181,18 +181,8 @@ class ExpensePersistenceIT {
     }
 
     @Test
-    void testGetExpensesGroupByDateChartDataUserNotFound() {
-        assertTrue(expensePersistence.getExpensesGroupByDateChartData(NOT_FOUND_USER_PRINCIPAL).isEmpty());
-    }
-
-    @Test
     void testGetExpensesGroupByDateChartDataEmpty() {
         assertTrue(expensePersistence.getExpensesGroupByDateChartData(UserPrincipal.builder().id(0).username("emptyUser").build()).isEmpty());
-    }
-
-    @Test
-    void testGetExpensesGroupByDateChartDataNotEmpty() {
-        assertFalse(expensePersistence.getExpensesGroupByDateChartData(encodedUserPrincipal).isEmpty());
     }
 
     @Test
@@ -206,6 +196,43 @@ class ExpensePersistenceIT {
     void testGetExpensesGroupByCategoryChartDataEmpty() {
         assertTrue(expensePersistence.getExpensesGroupByCategoryChartData(NOT_FOUND_USER_PRINCIPAL).isEmpty());
     }
+
+    @Test
+    void testGetExpensesGroupByFOPChartDataSuccess() {
+        List<ChartData> dateChartDataList = expensePersistence.getExpensesGroupByFOPChartData(encodedUserPrincipal);
+        assertNotNull(dateChartDataList);
+        assertFalse(dateChartDataList.isEmpty());
+    }
+
+    @Test
+    void testGetExpensesGroupByFOPChartDataEmpty() {
+        assertTrue(expensePersistence.getExpensesGroupByFOPChartData(NOT_FOUND_USER_PRINCIPAL).isEmpty());
+    }
+
+    @Test
+    void testGetExpensesGroupByCreditCardChartDataSuccess() {
+        List<ChartData> dateChartDataList = expensePersistence.getExpensesGroupByCreditCardChartData(encodedUserPrincipal);
+        assertNotNull(dateChartDataList);
+        assertFalse(dateChartDataList.isEmpty());
+    }
+
+    @Test
+    void testGetExpensesGroupByCreditCardChartDataEmpty() {
+        assertTrue(expensePersistence.getExpensesGroupByCreditCardChartData(NOT_FOUND_USER_PRINCIPAL).isEmpty());
+    }
+
+    @Test
+    void testGetExpensesGroupByBankAccountChartDataSuccess() {
+        List<ChartData> dateChartDataList = expensePersistence.getExpensesGroupByBankAccountChartData(encodedUserPrincipal);
+        assertNotNull(dateChartDataList);
+        assertFalse(dateChartDataList.isEmpty());
+    }
+
+    @Test
+    void testGetExpensesGroupByBankAccountChartDataEmpty() {
+        assertTrue(expensePersistence.getExpensesGroupByBankAccountChartData(NOT_FOUND_USER_PRINCIPAL).isEmpty());
+    }
+
 
 
     private Expense buildExpenseToUpdateWithAllDependencies() {

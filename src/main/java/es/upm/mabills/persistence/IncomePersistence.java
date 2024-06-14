@@ -1,6 +1,7 @@
 package es.upm.mabills.persistence;
 
 import es.upm.mabills.exceptions.IncomeNotFoundException;
+import es.upm.mabills.model.ChartData;
 import es.upm.mabills.model.Income;
 import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.chart_data_dtos.DateChartData;
@@ -79,5 +80,13 @@ public class IncomePersistence {
 
     public List<DateChartData> getIncomesGroupByDateChartData(UserPrincipal userPrincipal) {
         return incomeRepository.findIncomesGroupByDate(userPrincipal.getId());
+    }
+
+    public List<ChartData> getIncomesGroupByBankAccountChartData(UserPrincipal userPrincipal) {
+        return incomeRepository.findIncomesGroupByBankAccount(userPrincipal.getId());
+    }
+
+    public List<ChartData> getIncomesGroupByCreditCardChartData(UserPrincipal userPrincipal) {
+        return incomeRepository.findIncomesGroupByCreditCard(userPrincipal.getId());
     }
 }

@@ -1,8 +1,10 @@
 package es.upm.mabills.services.chart;
 
 import es.upm.mabills.UnitTestConfig;
+import es.upm.mabills.exceptions.InvalidRequestException;
 import es.upm.mabills.exceptions.MaBillsServiceException;
 import es.upm.mabills.model.Chart;
+import es.upm.mabills.model.ChartData;
 import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.IncomePersistence;
 import es.upm.mabills.persistence.chart_data_dtos.DateChartData;
@@ -67,5 +69,54 @@ class IncomeChartServiceTest {
                 .thenThrow(new DataIntegrityViolationException(""));
         UserPrincipal userPrincipal = new UserPrincipal();
         assertThrows(MaBillsServiceException.class, () -> incomesChartService.getChart(userPrincipal, null));
+    }
+
+    @Test
+    void testGetChartByGroupByBankAccount() {
+        when(incomePersistence.getIncomesGroupByBankAccountChartData(any(UserPrincipal.class)))
+                .thenReturn(List.of(new ChartData("Chart", BigDecimal.ONE)));
+        Chart chart = incomesChartService.getChart(new UserPrincipal(), IncomeChartGroupBy.INCOME_BANK_ACCOUNT.name());
+        assertNotNull(chart);
+        assertFalse(chart.getData().isEmpty());
+        assertNotBlank(chart.getData().get(0).getName());
+        assertEquals(BigDecimal.ONE, chart.getData().get(0).getValue());
+    }
+
+    @Test
+    void testGetChartByGroupByCreditCard() {
+        when(incomePersistence.getIncomesGroupByCreditCardChartData(any(UserPrincipal.class)))
+                .thenReturn(List.of(new ChartData("Chart", BigDecimal.ONE)));
+        Chart chart = incomesChartService.getChart(new UserPrincipal(), IncomeChartGroupBy.INCOME_CREDIT_CARD.name());
+        assertNotNull(chart);
+        assertFalse(chart.getData().isEmpty());
+        assertNotBlank(chart.getData().get(0).getName());
+        assertEquals(BigDecimal.ONE, chart.getData().get(0).getValue());
+    }
+
+    @Test
+    void testGetChartByGroupByDate() {
+        when(incomePersistence.getIncomesGroupByDateChartData(any(UserPrincipal.class)))
+                .thenReturn(List.of(new DateChartData(new Timestamp(0), BigDecimal.ONE)));
+        Chart chart = incomesChartService.getChart(new UserPrincipal(), IncomeChartGroupBy.INCOME_DATE.name());
+        assertNotNull(chart);
+        assertFalse(chart.getData().isEmpty());
+        assertNotBlank(chart.getData().get(0).getName());
+        assertEquals(BigDecimal.ONE, chart.getData().get(0).getValue());
+    }
+
+    @Test
+    void testGetChartByGroupByTypeRuntimeException() {
+        when(incomePersistence.getIncomesGroupByBankAccountChartData(any(UserPrincipal.class)))
+                .thenThrow(new RuntimeException());
+        UserPrincipal userPrincipal = new UserPrincipal();
+        String groupBy = IncomeChartGroupBy.INCOME_BANK_ACCOUNT.name();
+        assertThrows(MaBillsServiceException.class, () -> incomesChartService.getChart(userPrincipal, groupBy));
+    }
+
+    @Test
+    void testGetChartWrongGroupByType() {
+        UserPrincipal userPrincipal = new UserPrincipal();
+        String groupBy = "WRONG_GROUP_BY";
+        assertThrows(InvalidRequestException.class, () -> incomesChartService.getChart(userPrincipal, groupBy));
     }
 }

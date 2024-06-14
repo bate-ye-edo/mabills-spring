@@ -41,16 +41,33 @@ public class ExpensesChartService implements ChartService {
     }
 
     private List<ChartData> getExpensesGroupByCategoryChartData(UserPrincipal userPrincipal) {
-        return  Try.of(() -> this.expensePersistence.getExpensesGroupByCategoryChartData(userPrincipal)
-                        .stream()
-                        .toList())
+        return  Try.of(() -> this.expensePersistence.getExpensesGroupByCategoryChartData(userPrincipal))
+                .getOrElseThrow(MaBillsServiceException::new);
+    }
+
+    private List<ChartData> getExpensesGroupByCreditCardChartData(UserPrincipal userPrincipal) {
+        return Try.of(() -> this.expensePersistence.getExpensesGroupByCreditCardChartData(userPrincipal))
+                .getOrElseThrow(MaBillsServiceException::new);
+    }
+
+
+    private List<ChartData> getExpensesGroupByBankAccountChartData(UserPrincipal userPrincipal) {
+        return Try.of(() -> this.expensePersistence.getExpensesGroupByBankAccountChartData(userPrincipal))
+                .getOrElseThrow(MaBillsServiceException::new);
+    }
+
+    private List<ChartData> getExpensesGroupByFOPChartData(UserPrincipal userPrincipal) {
+        return Try.of(() -> this.expensePersistence.getExpensesGroupByFOPChartData(userPrincipal))
                 .getOrElseThrow(MaBillsServiceException::new);
     }
 
     private List<ChartData> getChartByGroupByType(UserPrincipal userPrincipal, ExpenseChartGroupBy expenseChartGroupBy) {
         return switch (expenseChartGroupBy) {
-            case EXPENSE_CATEGORY -> this.getExpensesGroupByCategoryChartData(userPrincipal);
-            case EXPENSE_DATE -> this.getExpensesGroupByDateChartData(userPrincipal);
+            case EXPENSE_CATEGORY -> getExpensesGroupByCategoryChartData(userPrincipal);
+            case EXPENSE_DATE -> getExpensesGroupByDateChartData(userPrincipal);
+            case EXPENSE_CREDIT_CARD -> getExpensesGroupByCreditCardChartData(userPrincipal);
+            case EXPENSE_FORM_OF_PAYMENT -> getExpensesGroupByFOPChartData(userPrincipal);
+            case EXPENSE_BANK_ACCOUNT -> getExpensesGroupByBankAccountChartData(userPrincipal);
         };
     }
 
