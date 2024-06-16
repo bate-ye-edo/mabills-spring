@@ -2,9 +2,9 @@ package es.upm.mabills.api.resources;
 
 import es.upm.mabills.api.Rest;
 import es.upm.mabills.model.Chart;
-import es.upm.mabills.services.chart.ChartCategory;
+import es.upm.mabills.services.charts.ChartCategory;
 import es.upm.mabills.model.UserPrincipal;
-import es.upm.mabills.services.chart.ChartServiceFactory;
+import es.upm.mabills.services.charts.ChartServiceFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;

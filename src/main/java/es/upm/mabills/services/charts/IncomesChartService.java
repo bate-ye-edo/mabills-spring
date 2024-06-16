@@ -1,4 +1,4 @@
-package es.upm.mabills.services.chart;
+package es.upm.mabills.services.charts;
 
 import es.upm.mabills.exceptions.MaBillsServiceException;
 import es.upm.mabills.mappers.ChartDataMapper;

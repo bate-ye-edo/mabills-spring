@@ -2,10 +2,13 @@ package es.upm.mabills.api.resources;
 
 import es.upm.mabills.api.ApiTestConfig;
 import es.upm.mabills.api.RestClientTestService;
+import es.upm.mabills.api.dtos.FilterDto;
 import es.upm.mabills.api.dtos.LoginDto;
 import es.upm.mabills.model.BankAccount;
 import es.upm.mabills.model.CreditCard;
 import es.upm.mabills.model.Income;
+import es.upm.mabills.model.filters.FilterComparisons;
+import es.upm.mabills.model.filters.FilterField;
 import es.upm.mabills.persistence.entities.BankAccountEntity;
 import es.upm.mabills.persistence.entities.CreditCardEntity;
 import es.upm.mabills.persistence.entities.IncomeEntity;
@@ -25,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -313,6 +317,49 @@ class IncomeResourceIT {
                 .exchange()
                 .expectStatus()
                 .isNotFound();
+    }
+
+    @Test
+    void testSearchExpensesUnauthorized() {
+        webTestClient
+                .post()
+                .uri(IncomeResource.INCOMES + IncomeResource.SEARCH)
+                .bodyValue(List.of(FilterDto.builder().filterValue(BigDecimal.ONE.toString())
+                        .filterField(FilterField.AMOUNT.name())
+                        .filterComparison(FilterComparisons.EQUAL.name())
+                        .build()))
+                .exchange()
+                .expectStatus()
+                .isUnauthorized();
+    }
+
+    @Test
+    void testSearchExpensesBadRequest() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .post()
+                .uri(IncomeResource.INCOMES + IncomeResource.SEARCH)
+                .bodyValue(List.of(FilterDto.builder().build()))
+                .exchange()
+                .expectStatus()
+                .isBadRequest();
+    }
+
+    @Test
+    void testSearchExpensesSuccess() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .post()
+                .uri(IncomeResource.INCOMES + IncomeResource.SEARCH)
+                .bodyValue(List.of(FilterDto.builder().filterValue(BigDecimal.ONE.toString())
+                        .filterField(FilterField.AMOUNT.name())
+                        .filterComparison(FilterComparisons.EQUAL.name())
+                        .build()))
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBodyList(Income.class)
+                .value(expensesList -> assertFalse(expensesList.isEmpty()));
     }
 
     private Income buildIncome() {

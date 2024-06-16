@@ -9,11 +9,11 @@ import es.upm.mabills.model.User;
 import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.services.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -42,7 +42,7 @@ public class UserResource {
 
     @PreAuthorize("permitAll()")
     @PostMapping(UserResource.LOGIN)
-    public TokenDto loginUser(@Validated @RequestBody LoginDto loginDto) {
+    public TokenDto loginUser(@Valid @RequestBody LoginDto loginDto) {
         return TokenDto.builder()
                 .token(userService.login(loginDto.username(), loginDto.password()))
                 .build();
@@ -50,7 +50,7 @@ public class UserResource {
 
     @PreAuthorize("permitAll()")
     @PostMapping(UserResource.REGISTER)
-    public TokenDto registerUser(@Validated @RequestBody RegisterDto registerDto) {
+    public TokenDto registerUser(@Valid @RequestBody RegisterDto registerDto) {
         return TokenDto.builder()
                 .token(userService.register(userMapper.toUser(registerDto)))
                 .build();
@@ -76,7 +76,7 @@ public class UserResource {
     }
 
     @PutMapping
-    public User updateUserProfile(@AuthenticationPrincipal UserPrincipal userPrincipal, @Validated @RequestBody User user) {
+    public User updateUserProfile(@AuthenticationPrincipal UserPrincipal userPrincipal, @Valid @RequestBody User user) {
         return this.userService.updateUser(userPrincipal.getUsername(), user);
     }
 }

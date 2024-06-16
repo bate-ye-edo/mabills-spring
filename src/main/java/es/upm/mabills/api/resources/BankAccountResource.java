@@ -4,9 +4,9 @@ import es.upm.mabills.api.Rest;
 import es.upm.mabills.model.BankAccount;
 import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.services.BankAccountService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,7 +34,7 @@ public class BankAccountResource {
     }
 
     @PostMapping
-    public BankAccount createBankAccount(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestBody @Validated BankAccount bankAccount) {
+    public BankAccount createBankAccount(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestBody @Valid BankAccount bankAccount) {
         return bankAccountService.createBankAccount(userPrincipal, bankAccount);
     }
 

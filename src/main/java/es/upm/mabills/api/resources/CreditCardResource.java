@@ -4,9 +4,9 @@ import es.upm.mabills.api.Rest;
 import es.upm.mabills.model.CreditCard;
 import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.services.CreditCardService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,7 +35,7 @@ public class CreditCardResource {
     }
 
     @PostMapping
-    public CreditCard createCreditCard(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestBody @Validated CreditCard creditCard) {
+    public CreditCard createCreditCard(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestBody @Valid CreditCard creditCard) {
         return creditCardService.createCreditCard(userPrincipal, creditCard);
     }
 

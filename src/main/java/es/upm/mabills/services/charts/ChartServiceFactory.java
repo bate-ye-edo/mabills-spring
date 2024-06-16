@@ -1,4 +1,4 @@
-package es.upm.mabills.services.chart;
+package es.upm.mabills.services.charts;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
