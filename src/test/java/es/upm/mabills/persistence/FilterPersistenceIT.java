@@ -11,12 +11,16 @@ import es.upm.mabills.persistence.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @TestConfig
@@ -26,6 +30,8 @@ class FilterPersistenceIT {
     private static final String EXIST_CREDIT_CARD_PART = "412";
     private static final String NOT_EXIST_CREDIT_CARD = "XXXXXXXXXXXXXXXXX";
     private static final String NOT_EXIST_CREDIT_CARD_PART = "XXX";
+    private static final String TODAY_STRING = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
+    private static final String TOMORROW_STRING = LocalDate.now().plusDays(1).format(DateTimeFormatter.ISO_DATE);
 
     @Autowired
     private FilterPersistence filterPersistence;
@@ -200,4 +206,77 @@ class FilterPersistenceIT {
         assertNotNull(expenses);
         assertFalse(expenses.isEmpty());
     }
+
+    @Test
+    void testApplyFiltersExpensesTodayDate() {
+        Filter expenseDateFilter = Filter.builder()
+            .filterField(FilterField.EXPENSE_DATE)
+            .filterComparison(FilterComparisons.EQUAL)
+            .filterValue(TODAY_STRING)
+            .build();
+        List<ExpenseEntity> expenses = filterPersistence.applyFilters(List.of(expenseDateFilter), ExpenseEntity.class, userPrincipal);
+        assertNotNull(expenses);
+        assertFalse(expenses.isEmpty());
+    }
+
+    @Test
+    void testApplyFiltersExpensesTodayDateEmpty() {
+        Filter expenseDateFilter = Filter.builder()
+            .filterField(FilterField.EXPENSE_DATE)
+            .filterComparison(FilterComparisons.EQUAL)
+            .filterValue(TOMORROW_STRING)
+            .build();
+        List<ExpenseEntity> expenses = filterPersistence.applyFilters(List.of(expenseDateFilter), ExpenseEntity.class, userPrincipal);
+        assertNotNull(expenses);
+        assertTrue(expenses.isEmpty());
+    }
+
+    @Test
+    void testApplyFiltersExpensesDateBetweenTwoDays() {
+        Filter filter = Filter.builder()
+            .filterField(FilterField.EXPENSE_DATE)
+            .filterComparison(FilterComparisons.BETWEEN)
+            .filterValue(TODAY_STRING)
+            .secondFilterValue(TOMORROW_STRING)
+            .build();
+        List<ExpenseEntity> expenses = filterPersistence.applyFilters(List.of(filter), ExpenseEntity.class, userPrincipal);
+        assertNotNull(expenses);
+        assertFalse(expenses.isEmpty());
+    }
+
+    @Test
+    void testApplyFiltersExpensesDateThrownInvalidArgumentException() {
+        Filter filter = Filter.builder()
+            .filterField(FilterField.EXPENSE_DATE)
+            .filterComparison(FilterComparisons.BETWEEN)
+            .filterValue("WRONG_DATE")
+            .build();
+        List<Filter> filters = List.of(filter);
+        assertThrows(InvalidDataAccessApiUsageException.class, () -> filterPersistence.applyFilters(filters, ExpenseEntity.class, userPrincipal));
+    }
+
+    @Test
+    void testApplyFiltersExpenseDateEmpty() {
+        Filter filter = Filter.builder()
+            .filterField(FilterField.EXPENSE_DATE)
+            .filterComparison(FilterComparisons.EQUAL)
+            .filterValue("")
+            .build();
+        List<ExpenseEntity> expenses = filterPersistence.applyFilters(List.of(filter), ExpenseEntity.class, userPrincipal);
+        assertNotNull(expenses);
+        assertTrue(expenses.isEmpty());
+    }
+
+    @Test
+    void testApplyFiltersExpenseDateNull() {
+        Filter filter = Filter.builder()
+            .filterField(FilterField.EXPENSE_DATE)
+            .filterComparison(FilterComparisons.EQUAL)
+            .filterValue(null)
+            .build();
+        List<ExpenseEntity> expenses = filterPersistence.applyFilters(List.of(filter), ExpenseEntity.class, userPrincipal);
+        assertNotNull(expenses);
+        assertTrue(expenses.isEmpty());
+    }
+
 }

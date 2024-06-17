@@ -35,7 +35,7 @@ public class IncomeService {
                         .stream()
                         .map(incomeMapper::toIncome)
                         .toList())
-                .getOrElseThrow(MaBillsServiceException::new);
+                .getOrElseThrow(() -> new MaBillsServiceException());
     }
 
     public Income createIncome(UserPrincipal userPrincipal, Income income) {

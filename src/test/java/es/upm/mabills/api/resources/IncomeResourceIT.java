@@ -27,7 +27,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -51,6 +53,7 @@ class IncomeResourceIT {
     private static final String TO_UPDATE_INCOME_RESOURCE_CREDIT_CARD_NUMBER = "004120003120034000";
     private static final String TO_DELETE_INCOME_RESOURCE = "to_delete_income_resource";
     private static final String ANOTHER_DESCRIPTION = "anotherDescription";
+    private static final String TODAY_STRING = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
 
     @Autowired
     private RestClientTestService restClientTestService;
@@ -320,7 +323,7 @@ class IncomeResourceIT {
     }
 
     @Test
-    void testSearchExpensesUnauthorized() {
+    void testSearchIncomesUnauthorized() {
         webTestClient
                 .post()
                 .uri(IncomeResource.INCOMES + IncomeResource.SEARCH)
@@ -334,7 +337,7 @@ class IncomeResourceIT {
     }
 
     @Test
-    void testSearchExpensesBadRequest() {
+    void testSearchIncomesBadRequest() {
         restClientTestService
                 .loginDefault(webTestClient)
                 .post()
@@ -346,7 +349,7 @@ class IncomeResourceIT {
     }
 
     @Test
-    void testSearchExpensesSuccess() {
+    void testSearchIncomesSuccess() {
         restClientTestService
                 .loginDefault(webTestClient)
                 .post()
@@ -360,6 +363,83 @@ class IncomeResourceIT {
                 .isOk()
                 .expectBodyList(Income.class)
                 .value(expensesList -> assertFalse(expensesList.isEmpty()));
+    }
+
+    @Test
+    void testSearchIncomeByDateSuccess() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .post()
+                .uri(IncomeResource.INCOMES +  IncomeResource.SEARCH)
+                .bodyValue(List.of(FilterDto.builder().filterValue(TODAY_STRING)
+                        .filterField(FilterField.INCOME_DATE.name())
+                        .filterComparison(FilterComparisons.EQUAL.name())
+                        .build()))
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBodyList(Income.class)
+                .value(expensesList -> assertFalse(expensesList.isEmpty()));
+    }
+
+    @Test
+    void testSearchIncomeByExpenseDateError() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .post()
+                .uri(IncomeResource.INCOMES +  IncomeResource.SEARCH)
+                .bodyValue(List.of(FilterDto.builder().filterValue(TODAY_STRING)
+                        .filterField(FilterField.EXPENSE_DATE.name())
+                        .filterComparison(FilterComparisons.EQUAL.name())
+                        .build()))
+                .exchange()
+                .expectStatus()
+                .isBadRequest();
+    }
+
+    @Test
+    void testSearchIncomeByDateBadRequest() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .post()
+                .uri(IncomeResource.INCOMES + IncomeResource.SEARCH)
+                .bodyValue(List.of(FilterDto.builder().filterValue("2021-51-01")
+                        .filterField(FilterField.INCOME_DATE.name())
+                        .filterComparison(FilterComparisons.EQUAL.name())
+                        .build()))
+                .exchange()
+                .expectStatus()
+                .isBadRequest();
+    }
+
+    @Test
+    void testSearchIncomesBadFilterField() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .post()
+                .uri(IncomeResource.INCOMES + IncomeResource.SEARCH)
+                .bodyValue(List.of(FilterDto.builder().filterValue(BigDecimal.ONE.toString())
+                        .filterField("BAD_FILTER_FIELD")
+                        .filterComparison(FilterComparisons.EQUAL.name())
+                        .build()))
+                .exchange()
+                .expectStatus()
+                .isBadRequest();
+    }
+
+    @Test
+    void testSearchIncomesBadFilterComparison() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .post()
+                .uri(IncomeResource.INCOMES + IncomeResource.SEARCH)
+                .bodyValue(List.of(FilterDto.builder().filterValue(BigDecimal.ONE.toString())
+                        .filterField(FilterField.AMOUNT.name())
+                        .filterComparison("BAD_FILTER_COMPARISON")
+                        .build()))
+                .exchange()
+                .expectStatus()
+                .isBadRequest();
     }
 
     private Income buildIncome() {

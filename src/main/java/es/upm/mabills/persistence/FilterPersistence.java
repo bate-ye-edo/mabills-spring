@@ -12,7 +12,9 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
 import java.util.List;
+import java.util.Objects;
 
 @Repository
 public class FilterPersistence {
@@ -32,13 +34,7 @@ public class FilterPersistence {
     private Predicate buildPredicates(List<Filter> filterList, CriteriaBuilder builder, Root<?> root) {
         Predicate predicate = builder.conjunction();
         for (Filter filter : filterList) {
-            predicate = builder.and(predicate, filter.getFilterComparison().getPredicate(
-                    builder,
-                    addRelatedEntityNameToRoot(root, filter.getFilterField()),
-                    filter.getFilterField().getFieldName(),
-                    filter.getFilterValue(),
-                    filter.getSecondFilterValue()
-            ));
+            predicate = builder.and(predicate, getFilterPredicate(filter, builder, root));
         }
         return predicate;
     }
@@ -48,5 +44,41 @@ public class FilterPersistence {
             return root.get(field.getEntityName());
         }
         return root;
+    }
+
+    private Predicate getFilterPredicate(Filter filter, CriteriaBuilder builder, Root<?> root) {
+        if(filter.getFilterField().equals(FilterField.EXPENSE_DATE) || filter.getFilterField().equals(FilterField.INCOME_DATE)) {
+            return getDatePredicate(filter, builder, root);
+        }
+        return getDefaultPredicate(filter, builder, root);
+    }
+
+    private Predicate getDefaultPredicate(Filter filter, CriteriaBuilder builder, Root<?> root) {
+        return filter.getFilterComparison()
+                .getPredicate(
+                        builder,
+                        addRelatedEntityNameToRoot(root, filter.getFilterField()),
+                        filter.getFilterField().getFieldName(),
+                        filter.getFilterValue(),
+                        filter.getSecondFilterValue()
+                );
+    }
+
+    private Predicate getDatePredicate(Filter filter, CriteriaBuilder builder, Root<?> root) {
+        return filter.getFilterComparison()
+                .getPredicate(
+                        builder,
+                        addRelatedEntityNameToRoot(root, filter.getFilterField()),
+                        filter.getFilterField().getFieldName(),
+                        getTimestampFromDate(filter.getFilterValue()),
+                        getTimestampFromDate(filter.getSecondFilterValue())
+                );
+    }
+
+    private Timestamp getTimestampFromDate(String date) {
+        if(Objects.isNull(date) || date.isEmpty()) {
+            return null;
+        }
+        return Timestamp.valueOf(date + " 00:00:00");
     }
 }

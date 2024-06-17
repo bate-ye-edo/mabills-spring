@@ -42,12 +42,12 @@ public class IncomesChartService implements ChartService {
 
     private List<ChartData> getIncomesGroupByCreditCardChartData(UserPrincipal userPrincipal) {
         return Try.of(() -> this.incomePersistence.getIncomesGroupByCreditCardChartData(userPrincipal))
-                .getOrElseThrow(MaBillsServiceException::new);
+                .getOrElseThrow(() -> new MaBillsServiceException());
     }
 
     private List<ChartData> getIncomesGroupByBankAccountChartData(UserPrincipal userPrincipal) {
         return Try.of(() -> this.incomePersistence.getIncomesGroupByBankAccountChartData(userPrincipal))
-                .getOrElseThrow(MaBillsServiceException::new);
+                .getOrElseThrow(() -> new MaBillsServiceException());
     }
 
     private List<ChartData> getIncomesGroupByDateChartData(UserPrincipal userPrincipal) {
@@ -55,6 +55,6 @@ public class IncomesChartService implements ChartService {
                         .stream()
                         .map(chartDataMapper::toChartData)
                         .toList())
-                .getOrElseThrow(MaBillsServiceException::new);
+                .getOrElseThrow(() -> new MaBillsServiceException());
     }
 }

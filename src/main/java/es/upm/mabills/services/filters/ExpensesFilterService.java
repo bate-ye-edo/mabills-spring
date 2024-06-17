@@ -6,6 +6,8 @@ import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.model.filters.Filter;
 import es.upm.mabills.persistence.FilterPersistence;
 import es.upm.mabills.persistence.entities.ExpenseEntity;
+import es.upm.mabills.services.exception_mappers.FilterExceptionMapper;
+import io.vavr.control.Try;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -26,9 +28,10 @@ public class ExpensesFilterService implements FilterService<Expense> {
 
     @Override
     public List<Expense> applyFilters(List<Filter> filters, UserPrincipal userPrincipal) {
-        return filterPersistence.applyFilters(filters, ExpenseEntity.class, userPrincipal)
-                .stream()
-                .map(expenseMapper::toExpense)
-                .toList();
+        return Try.of(() -> filterPersistence.applyFilters(filters, ExpenseEntity.class, userPrincipal))
+                .map(expenseEntities -> expenseEntities.stream()
+                        .map(expenseMapper::toExpense)
+                        .toList())
+                .getOrElseThrow(FilterExceptionMapper::map);
     }
 }

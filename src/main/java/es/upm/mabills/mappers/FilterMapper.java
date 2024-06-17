@@ -14,10 +14,10 @@ public interface FilterMapper {
     Filter toFilter(FilterDto filterDto);
 
     default FilterField toFilterField(String filterField) {
-        return FilterField.valueOf(filterField);
+        return FilterField.fromString(filterField);
     }
 
     default FilterComparisons toFilterComparisons(String filterComparison) {
-        return FilterComparisons.valueOf(filterComparison);
+        return FilterComparisons.fromString(filterComparison);
     }
 }

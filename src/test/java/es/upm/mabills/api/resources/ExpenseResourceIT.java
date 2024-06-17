@@ -29,7 +29,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -50,6 +52,7 @@ class ExpenseResourceIT {
     private static final String TO_UPDATE_EXPENSE_CREDIT_CARD_NUMBER = "004120003120034012";
     private static final String TO_DELETE_EXPENSE_RESOURCE = "to_delete_expense_resource";
     private static final String ANOTHER_DESCRIPTION = "anotherDescription";
+    private static final String TODAY_STRING = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
 
     @Autowired
     private WebTestClient webTestClient;
@@ -399,6 +402,68 @@ class ExpenseResourceIT {
                 .isOk()
                 .expectBodyList(Expense.class)
                 .value(expensesList -> assertFalse(expensesList.isEmpty()));
+    }
+
+    @Test
+    void testSearchExpenseByDateSuccess() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .post()
+                .uri(ExpenseResource.EXPENSES + ExpenseResource.SEARCH)
+                .bodyValue(List.of(FilterDto.builder().filterValue(TODAY_STRING)
+                        .filterField(FilterField.EXPENSE_DATE.name())
+                        .filterComparison(FilterComparisons.EQUAL.name())
+                        .build()))
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBodyList(Expense.class)
+                .value(expensesList -> assertFalse(expensesList.isEmpty()));
+    }
+
+    @Test
+    void testSearchExpenseByDateBadRequest() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .post()
+                .uri(ExpenseResource.EXPENSES + ExpenseResource.SEARCH)
+                .bodyValue(List.of(FilterDto.builder().filterValue("2021-51-01")
+                        .filterField(FilterField.EXPENSE_DATE.name())
+                        .filterComparison(FilterComparisons.EQUAL.name())
+                        .build()))
+                .exchange()
+                .expectStatus()
+                .isBadRequest();
+    }
+
+    @Test
+    void testSearchExpensesBadFilterField() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .post()
+                .uri(ExpenseResource.EXPENSES + ExpenseResource.SEARCH)
+                .bodyValue(List.of(FilterDto.builder().filterValue(BigDecimal.ONE.toString())
+                        .filterField("BAD_FILTER_FIELD")
+                        .filterComparison(FilterComparisons.EQUAL.name())
+                        .build()))
+                .exchange()
+                .expectStatus()
+                .isBadRequest();
+    }
+
+    @Test
+    void testSearchExpensesBadFilterComparison() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .post()
+                .uri(ExpenseResource.EXPENSES + ExpenseResource.SEARCH)
+                .bodyValue(List.of(FilterDto.builder().filterValue(BigDecimal.ONE.toString())
+                        .filterField(FilterField.AMOUNT.name())
+                        .filterComparison("BAD_FILTER_COMPARISON")
+                        .build()))
+                .exchange()
+                .expectStatus()
+                .isBadRequest();
     }
 
     private ExpenseEntity findExpenseToDelete() {

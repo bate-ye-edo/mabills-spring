@@ -37,28 +37,28 @@ public class ExpensesChartService implements ChartService {
                         .stream()
                         .map(chartDataMapper::toChartData)
                         .toList())
-                .getOrElseThrow(MaBillsServiceException::new);
+                .getOrElseThrow(() -> new MaBillsServiceException());
     }
 
     private List<ChartData> getExpensesGroupByCategoryChartData(UserPrincipal userPrincipal) {
         return  Try.of(() -> this.expensePersistence.getExpensesGroupByCategoryChartData(userPrincipal))
-                .getOrElseThrow(MaBillsServiceException::new);
+                .getOrElseThrow(() -> new MaBillsServiceException());
     }
 
     private List<ChartData> getExpensesGroupByCreditCardChartData(UserPrincipal userPrincipal) {
         return Try.of(() -> this.expensePersistence.getExpensesGroupByCreditCardChartData(userPrincipal))
-                .getOrElseThrow(MaBillsServiceException::new);
+                .getOrElseThrow(() -> new MaBillsServiceException());
     }
 
 
     private List<ChartData> getExpensesGroupByBankAccountChartData(UserPrincipal userPrincipal) {
         return Try.of(() -> this.expensePersistence.getExpensesGroupByBankAccountChartData(userPrincipal))
-                .getOrElseThrow(MaBillsServiceException::new);
+                .getOrElseThrow(() -> new MaBillsServiceException());
     }
 
     private List<ChartData> getExpensesGroupByFOPChartData(UserPrincipal userPrincipal) {
         return Try.of(() -> this.expensePersistence.getExpensesGroupByFOPChartData(userPrincipal))
-                .getOrElseThrow(MaBillsServiceException::new);
+                .getOrElseThrow(() -> new MaBillsServiceException());
     }
 
     private List<ChartData> getChartByGroupByType(UserPrincipal userPrincipal, ExpenseChartGroupBy expenseChartGroupBy) {

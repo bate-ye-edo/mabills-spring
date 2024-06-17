@@ -33,7 +33,7 @@ public class ExpenseCategoryPersistence {
 
     public List<ExpenseCategoryEntity> findExpenseCategoryByUserName(String username) {
         return Try.of(() -> expenseCategoryRepository.findByUser_Username(username))
-                .getOrElseThrow(MaBillsServiceException::new);
+                .getOrElseThrow(() -> new MaBillsServiceException());
     }
 
     public ExpenseCategoryEntity createExpenseCategory(String username, ExpenseCategory expenseCategory) {

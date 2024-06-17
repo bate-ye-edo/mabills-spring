@@ -2,17 +2,27 @@ package es.upm.mabills.api.resources;
 
 import es.upm.mabills.api.ApiTestConfig;
 import es.upm.mabills.api.RestClientTestService;
+import es.upm.mabills.api.dtos.FilterChartDto;
+import es.upm.mabills.api.dtos.FilterDto;
 import es.upm.mabills.api.dtos.LoginDto;
 import es.upm.mabills.model.Chart;
+import es.upm.mabills.model.filters.FilterComparisons;
+import es.upm.mabills.model.filters.FilterField;
 import es.upm.mabills.services.TokenCacheService;
 import es.upm.mabills.services.charts.ChartCategory;
 import es.upm.mabills.services.charts.ExpenseChartGroupBy;
+import es.upm.mabills.services.charts.IncomeChartGroupBy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -21,7 +31,7 @@ import static org.mockito.Mockito.when;
 
 @ApiTestConfig
 class ChartResourceIT {
-
+    private static final String TODAY_STRING = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
     private static final LoginDto OTHER_USER_LOGIN = LoginDto.builder()
             .username("otherUser")
             .password("password")
@@ -42,7 +52,7 @@ class ChartResourceIT {
     }
 
     @Test
-    void getExpensesChartSuccess() {
+    void testGetExpensesChartSuccess() {
         restClientTestService
                 .loginDefault(webTestClient)
                 .get()
@@ -58,7 +68,7 @@ class ChartResourceIT {
     }
 
     @Test
-    void getIncomesChartSuccess() {
+    void testGetIncomesChartSuccess() {
         restClientTestService
                 .loginDefault(webTestClient)
                 .get()
@@ -74,7 +84,7 @@ class ChartResourceIT {
     }
 
     @Test
-    void getChartInvalidDataType() {
+    void testGetChartInvalidDataType() {
         restClientTestService
                 .loginDefault(webTestClient)
                 .get()
@@ -84,7 +94,7 @@ class ChartResourceIT {
     }
 
     @Test
-    void getChartUnauthorized() {
+    void testGetChartUnauthorized() {
         webTestClient
                 .get()
                 .uri(ChartResource.CHARTS + ChartResource.CHART_CATEGORY, ChartCategory.EXPENSES)
@@ -93,7 +103,7 @@ class ChartResourceIT {
     }
 
     @Test
-    void getExpensesChartEmpty() {
+    void testGetExpensesChartEmpty() {
         restClientTestService
                 .login(webTestClient, OTHER_USER_LOGIN)
                 .get()
@@ -109,7 +119,7 @@ class ChartResourceIT {
     }
 
     @Test
-    void getIncomesChartEmpty() {
+    void testGetIncomesChartEmpty() {
         restClientTestService
                 .login(webTestClient, OTHER_USER_LOGIN)
                 .get()
@@ -125,7 +135,7 @@ class ChartResourceIT {
     }
 
     @Test
-    void getExpensesChartGroupByCategorySuccess() {
+    void testGetExpensesChartGroupByCategorySuccess() {
         restClientTestService
                 .loginDefault(webTestClient)
                 .get()
@@ -141,7 +151,7 @@ class ChartResourceIT {
     }
 
     @Test
-    void getExpensesChartGroupByDateSuccess() {
+    void testGetExpensesChartGroupByDateSuccess() {
         restClientTestService
                 .loginDefault(webTestClient)
                 .get()
@@ -157,7 +167,7 @@ class ChartResourceIT {
     }
 
     @Test
-    void getExpensesChartGroupByEmpty() {
+    void testGetExpensesChartGroupByEmpty() {
         restClientTestService
                 .login(webTestClient, OTHER_USER_LOGIN)
                 .get()
@@ -173,7 +183,7 @@ class ChartResourceIT {
     }
 
     @Test
-    void getExpensesChartGroupByInvalidDataType() {
+    void testGetExpensesChartGroupByInvalidDataType() {
         restClientTestService
                 .loginDefault(webTestClient)
                 .get()
@@ -183,7 +193,7 @@ class ChartResourceIT {
     }
 
     @Test
-    void getExpensesChartGroupByInvalidGroupBy() {
+    void testGetExpensesChartGroupByInvalidGroupBy() {
         restClientTestService
                 .loginDefault(webTestClient)
                 .get()
@@ -193,11 +203,188 @@ class ChartResourceIT {
     }
 
     @Test
-    void getExpensesChartGroupByUnauthorized() {
+    void testGetExpensesChartGroupByUnauthorized() {
         webTestClient
                 .get()
                 .uri(ChartResource.CHARTS + ChartResource.CHART_CATEGORY + ChartResource.CHART_GROUP_BY_TYPE, ChartCategory.EXPENSES, ExpenseChartGroupBy.EXPENSE_CATEGORY)
                 .exchange()
                 .expectStatus().isUnauthorized();
+    }
+
+    @Test
+    void testGetFilteredChartNoFiltersBadRequest() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .post()
+                .uri(ChartResource.CHARTS + ChartResource.FILTER)
+                .bodyValue(FilterChartDto.builder()
+                        .chartCategory(ChartCategory.EXPENSES.name())
+                        .chartGroupByType(ExpenseChartGroupBy.EXPENSE_CATEGORY.name())
+                        .build())
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void testGetFilteredChartChartCategoryBadRequest() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .post()
+                .uri(ChartResource.CHARTS + ChartResource.FILTER)
+                .bodyValue(FilterChartDto.builder()
+                        .chartCategory("INVALID")
+                        .chartGroupByType(ExpenseChartGroupBy.EXPENSE_CATEGORY.name())
+                        .filterDtos(List.of(FilterDto.builder().build()))
+                        .build())
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void testGetFilteredChartChartGroupByTypeBadRequest() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .post()
+                .uri(ChartResource.CHARTS + ChartResource.FILTER)
+                .bodyValue(FilterChartDto.builder()
+                        .chartCategory(ChartCategory.EXPENSES.name())
+                        .chartGroupByType("INVALID")
+                        .filterDtos(List.of(FilterDto.builder().build()))
+                        .build())
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void testGetFilteredChartUnauthorized() {
+        webTestClient
+                .post()
+                .uri(ChartResource.CHARTS + ChartResource.FILTER)
+                .bodyValue(FilterChartDto.builder()
+                        .chartCategory(ChartCategory.EXPENSES.name())
+                        .chartGroupByType(ExpenseChartGroupBy.EXPENSE_CATEGORY.name())
+                        .filterDtos(List.of(FilterDto.builder().build()))
+                        .build())
+                .exchange()
+                .expectStatus().isUnauthorized();
+    }
+
+    @Test
+    void testGetFilteredChartChartCategoryNullBadRequest() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .post()
+                .uri(ChartResource.CHARTS + ChartResource.FILTER)
+                .bodyValue(FilterChartDto.builder()
+                        .chartCategory(null)
+                        .chartGroupByType(ExpenseChartGroupBy.EXPENSE_CATEGORY.name())
+                        .filterDtos(List.of(FilterDto.builder().build()))
+                        .build())
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void testGetFilteredChartFilterDtoBadRequest() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .post()
+                .uri(ChartResource.CHARTS + ChartResource.FILTER)
+                .bodyValue(FilterChartDto.builder()
+                        .chartCategory(ChartCategory.EXPENSES.name())
+                        .chartGroupByType(ExpenseChartGroupBy.EXPENSE_CATEGORY.name())
+                        .filterDtos(List.of(FilterDto.builder().filterComparison(null).filterField(FilterField.AMOUNT.name()).filterValue("1.22").build()))
+                        .build())
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void testGetFilteredChartSuccess() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .post()
+                .uri(ChartResource.CHARTS + ChartResource.FILTER)
+                .bodyValue(FilterChartDto.builder()
+                        .chartCategory(ChartCategory.EXPENSES.name())
+                        .chartGroupByType(ExpenseChartGroupBy.EXPENSE_CATEGORY.name())
+                        .filterDtos(List.of(FilterDto.builder().filterComparison(FilterComparisons.EQUAL.name())
+                                .filterField(FilterField.AMOUNT.name())
+                                .filterValue("1")
+                                .build()))
+                        .build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(Chart.class)
+                .value(chart -> {
+                    assertNotNull(chart);
+                    assertNotNull(chart.getData());
+                    assertFalse(chart.getData().isEmpty());
+                });
+    }
+
+    @Test
+    void testGetFilteredChartIncomesSuccess() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .post()
+                .uri(ChartResource.CHARTS + ChartResource.FILTER)
+                .bodyValue(FilterChartDto.builder()
+                        .chartCategory(ChartCategory.INCOMES.name())
+                        .chartGroupByType(IncomeChartGroupBy.INCOME_DATE.name())
+                        .filterDtos(List.of(FilterDto.builder().filterComparison(FilterComparisons.EQUAL.name())
+                                .filterField(FilterField.AMOUNT.name())
+                                .filterValue("1")
+                                .build()))
+                        .build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(Chart.class)
+                .value(chart -> {
+                    assertNotNull(chart);
+                    assertNotNull(chart.getData());
+                    assertFalse(chart.getData().isEmpty());
+                });
+    }
+
+    @Test
+    void testGetFilteredSeriesChartSuccess() {
+        restClientTestService
+                .loginDefault(webTestClient)
+                .post()
+                .uri(ChartResource.CHARTS + ChartResource.FILTER)
+                .bodyValue(FilterChartDto.builder()
+                        .chartCategory(ChartCategory.EXPENSE_INCOME_SERIES.name())
+                        .filterDtos(List.of(
+                                FilterDto.builder().filterComparison(FilterComparisons.EQUAL.name())
+                                    .filterField(FilterField.AMOUNT.name())
+                                    .filterValue("1")
+                                    .build(),
+                                FilterDto.builder().filterComparison(FilterComparisons.EQUAL.name())
+                                    .filterField(FilterField.INCOME_DATE.name())
+                                    .filterValue(TODAY_STRING)
+                                    .build(),
+                                FilterDto.builder().filterComparison(FilterComparisons.EQUAL.name())
+                                    .filterField(FilterField.EXPENSE_DATE.name())
+                                    .filterValue(TODAY_STRING)
+                                    .build(),
+                                FilterDto.builder().filterComparison(FilterComparisons.EQUAL.name())
+                                    .filterField(FilterField.EXPENSE_CATEGORY.name())
+                                    .filterValue("userNameUserExpenseCategory")
+                                    .build()
+                        ))
+                        .build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(Chart.class)
+                .value(chart -> {
+                    assertNotNull(chart);
+                    assertNotNull(chart.getSeries());
+                    assertFalse(chart.getSeries().isEmpty());
+                    assertTrue(chart.getSeries().stream().anyMatch(sc -> sc.getName().contains(TODAY_STRING)));
+                    assertEquals(2, chart.getSeries().stream().filter(sc -> sc.getName().contains(TODAY_STRING))
+                            .mapToLong(sc -> sc.getSeries().size())
+                            .sum());
+                });
     }
 }
