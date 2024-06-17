@@ -4,7 +4,7 @@ import es.upm.mabills.UnitTestConfig;
 import es.upm.mabills.exceptions.BankAccountNotFoundException;
 import es.upm.mabills.exceptions.CreditCardAlreadyExistsException;
 import es.upm.mabills.exceptions.CreditCardNotFoundException;
-import es.upm.mabills.exceptions.MaBillsServiceException;
+import es.upm.mabills.exceptions.MaBillsUnexpectedException;
 import es.upm.mabills.exceptions.UserNotFoundException;
 import es.upm.mabills.model.CreditCard;
 import es.upm.mabills.model.UserPrincipal;
@@ -176,7 +176,7 @@ class CreditCardServiceTest {
     @Test
     void testDeleteCreditCardDBException() {
         doThrow(RuntimeException.class).when(creditCardPersistence).deleteCreditCard(any(), anyString());
-        assertThrows(MaBillsServiceException.class, () -> creditCardService.deleteCreditCard(ENCODED_PASSWORD_USER_PRINCIPAL, "uuid"));
+        assertThrows(MaBillsUnexpectedException.class, () -> creditCardService.deleteCreditCard(ENCODED_PASSWORD_USER_PRINCIPAL, "uuid"));
     }
 
     @Test

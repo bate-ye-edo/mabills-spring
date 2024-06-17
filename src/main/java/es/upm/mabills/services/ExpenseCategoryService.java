@@ -1,7 +1,7 @@
 package es.upm.mabills.services;
 
 import es.upm.mabills.exceptions.ExpenseCategoryNotFoundException;
-import es.upm.mabills.exceptions.MaBillsServiceException;
+import es.upm.mabills.exceptions.MaBillsUnexpectedException;
 import es.upm.mabills.mappers.ExpenseCategoryMapper;
 import es.upm.mabills.model.ExpenseCategory;
 import es.upm.mabills.persistence.ExpenseCategoryPersistence;
@@ -45,7 +45,7 @@ public class ExpenseCategoryService {
         } catch (ExpenseCategoryNotFoundException ex){
             throw ex;
         } catch (Exception e) {
-            throw new MaBillsServiceException();
+            throw new MaBillsUnexpectedException();
         }
     }
 }

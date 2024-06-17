@@ -3,7 +3,7 @@ package es.upm.mabills.services;
 import es.upm.mabills.UnitTestConfig;
 import es.upm.mabills.exceptions.BankAccountAlreadyExistsException;
 import es.upm.mabills.exceptions.BankAccountNotFoundException;
-import es.upm.mabills.exceptions.MaBillsServiceException;
+import es.upm.mabills.exceptions.MaBillsUnexpectedException;
 import es.upm.mabills.model.BankAccount;
 import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.BankAccountPersistence;
@@ -100,7 +100,7 @@ class BankAccountServiceTest {
     @Test
     void testDeleteBankAccountDBException() {
         doThrow(RuntimeException.class).when(bankAccountPersistence).deleteBankAccount(any(), anyString());
-        assertThrows(MaBillsServiceException.class, () -> bankAccountService.deleteBankAccount(ENCODED_PASSWORD_USER_PRINCIPAL, "uuid"));
+        assertThrows(MaBillsUnexpectedException.class, () -> bankAccountService.deleteBankAccount(ENCODED_PASSWORD_USER_PRINCIPAL, "uuid"));
     }
 
     @Test

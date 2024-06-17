@@ -1,7 +1,7 @@
 package es.upm.mabills.services;
 
 import es.upm.mabills.exceptions.CreditCardNotFoundException;
-import es.upm.mabills.exceptions.MaBillsServiceException;
+import es.upm.mabills.exceptions.MaBillsUnexpectedException;
 import es.upm.mabills.mappers.CreditCardMapper;
 import es.upm.mabills.model.CreditCard;
 import es.upm.mabills.model.UserPrincipal;
@@ -56,7 +56,7 @@ public class CreditCardService {
             LOGGER.error("Couldn't found credit card with id: {} for user: {}", uuid, userPrincipal.getUsername());
             throw cEx;
         } catch (Exception e) {
-            throw new MaBillsServiceException();
+            throw new MaBillsUnexpectedException();
         }
     }
 }

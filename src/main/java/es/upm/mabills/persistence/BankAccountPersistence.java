@@ -1,7 +1,7 @@
 package es.upm.mabills.persistence;
 
 import es.upm.mabills.exceptions.BankAccountNotFoundException;
-import es.upm.mabills.exceptions.MaBillsServiceException;
+import es.upm.mabills.exceptions.MaBillsUnexpectedException;
 import es.upm.mabills.model.BankAccount;
 import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.entities.BankAccountEntity;
@@ -69,7 +69,7 @@ public class BankAccountPersistence {
             throw new BankAccountNotFoundException(uuid);
         }
         LOGGER.error("Unexpected exception: ", ex);
-        throw new MaBillsServiceException();
+        throw new MaBillsUnexpectedException();
     }
 
     public BankAccountEntity findBankAccountByUserAndUuid(UserPrincipal userPrincipal, String uuid) {

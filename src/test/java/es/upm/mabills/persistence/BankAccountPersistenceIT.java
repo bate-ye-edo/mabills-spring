@@ -2,7 +2,7 @@ package es.upm.mabills.persistence;
 
 import es.upm.mabills.TestConfig;
 import es.upm.mabills.exceptions.BankAccountNotFoundException;
-import es.upm.mabills.exceptions.MaBillsServiceException;
+import es.upm.mabills.exceptions.MaBillsUnexpectedException;
 import es.upm.mabills.model.BankAccount;
 import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.entities.BankAccountEntity;
@@ -169,7 +169,7 @@ class BankAccountPersistenceIT {
         doThrow(DataIntegrityViolationException.class).when(repository).deleteById(any());
         doNothing().when(entityDependentManager).decouple(any());
         when(repository.findByUserIdAndUuid(anyInt(), any())).thenReturn(BankAccountEntity.builder().uuid(UUID.fromString(RANDOM_UUID)).build());
-        assertThrows(MaBillsServiceException.class, () -> bankAccountPersistence1.deleteBankAccount(encodedUserPrincipal, RANDOM_UUID));
+        assertThrows(MaBillsUnexpectedException.class, () -> bankAccountPersistence1.deleteBankAccount(encodedUserPrincipal, RANDOM_UUID));
     }
 
     @Test

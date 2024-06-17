@@ -2,7 +2,7 @@ package es.upm.mabills.services;
 
 import es.upm.mabills.exceptions.BankAccountAlreadyExistsException;
 import es.upm.mabills.exceptions.BankAccountNotFoundException;
-import es.upm.mabills.exceptions.MaBillsServiceException;
+import es.upm.mabills.exceptions.MaBillsUnexpectedException;
 import es.upm.mabills.mappers.BankAccountMapper;
 import es.upm.mabills.model.BankAccount;
 import es.upm.mabills.model.UserPrincipal;
@@ -48,7 +48,7 @@ public class BankAccountService {
             LOGGER.error("Bank account {} for user {} not found", uuid, userPrincipal.getUsername());
             throw bEx;
         } catch (Exception e) {
-            throw new MaBillsServiceException();
+            throw new MaBillsUnexpectedException();
         }
     }
 }

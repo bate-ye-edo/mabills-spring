@@ -11,6 +11,7 @@ import es.upm.mabills.exceptions.ExpenseNotFoundException;
 import es.upm.mabills.exceptions.IncomeNotFoundException;
 import es.upm.mabills.exceptions.InvalidRequestException;
 import es.upm.mabills.exceptions.MaBillsServiceException;
+import es.upm.mabills.exceptions.MaBillsUnexpectedException;
 import es.upm.mabills.exceptions.UserAlreadyExistsException;
 import es.upm.mabills.exceptions.UserNotFoundException;
 import org.apache.logging.log4j.LogManager;
@@ -154,6 +155,7 @@ public class ApiExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler({
         MaBillsServiceException.class,
+        MaBillsUnexpectedException.class,
         Exception.class
     })
     @ResponseBody

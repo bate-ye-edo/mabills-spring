@@ -24,7 +24,7 @@ public abstract class AbstractChartFilterService<T> implements FilterChartServic
         return Try.of(() -> buildFilteredChartByGroupByType(userPrincipal, groupBy, filters))
                 .getOrElseThrow(e -> {
                     LOGGER.error("Error getting chart", e);
-                    return new MaBillsServiceException();
+                    return new MaBillsServiceException("Could not get chart.");
                 });
     }
     protected abstract Chart buildFilteredChartByGroupByType(UserPrincipal userPrincipal, String groupBy, List<Filter> filters);

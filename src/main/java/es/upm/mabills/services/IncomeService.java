@@ -1,6 +1,6 @@
 package es.upm.mabills.services;
 
-import es.upm.mabills.exceptions.MaBillsServiceException;
+import es.upm.mabills.exceptions.MaBillsUnexpectedException;
 import es.upm.mabills.mappers.IncomeMapper;
 import es.upm.mabills.model.Income;
 import es.upm.mabills.model.UserPrincipal;
@@ -35,7 +35,7 @@ public class IncomeService {
                         .stream()
                         .map(incomeMapper::toIncome)
                         .toList())
-                .getOrElseThrow(() -> new MaBillsServiceException());
+                .getOrElseThrow(MaBillsUnexpectedException::new);
     }
 
     public Income createIncome(UserPrincipal userPrincipal, Income income) {

@@ -2,7 +2,7 @@ package es.upm.mabills.services.charts;
 
 import es.upm.mabills.UnitTestConfig;
 import es.upm.mabills.exceptions.InvalidRequestException;
-import es.upm.mabills.exceptions.MaBillsServiceException;
+import es.upm.mabills.exceptions.MaBillsUnexpectedException;
 import es.upm.mabills.model.Chart;
 import es.upm.mabills.model.ChartData;
 import es.upm.mabills.model.UserPrincipal;
@@ -50,7 +50,7 @@ class ExpensesChartServiceTest {
         when(expensePersistence.getExpensesGroupByDateChartData(any(UserPrincipal.class)))
             .thenThrow(new RuntimeException());
         UserPrincipal userPrincipal = new UserPrincipal();
-        assertThrows(MaBillsServiceException.class, () -> expensesChartService.getChart(userPrincipal, null));
+        assertThrows(MaBillsUnexpectedException.class, () -> expensesChartService.getChart(userPrincipal, null));
     }
 
     @Test
@@ -67,7 +67,7 @@ class ExpensesChartServiceTest {
         when(expensePersistence.getExpensesGroupByDateChartData(any(UserPrincipal.class)))
             .thenThrow(new DataIntegrityViolationException(""));
         UserPrincipal userPrincipal = new UserPrincipal();
-        assertThrows(MaBillsServiceException.class, () -> expensesChartService.getChart(userPrincipal, null));
+        assertThrows(MaBillsUnexpectedException.class, () -> expensesChartService.getChart(userPrincipal, null));
     }
 
     @Test
@@ -87,7 +87,7 @@ class ExpensesChartServiceTest {
             .thenThrow(new RuntimeException());
         UserPrincipal userPrincipal = new UserPrincipal();
         String groupBy = ExpenseChartGroupBy.EXPENSE_CATEGORY.name();
-        assertThrows(MaBillsServiceException.class, () -> expensesChartService.getChart(userPrincipal, groupBy));
+        assertThrows(MaBillsUnexpectedException.class, () -> expensesChartService.getChart(userPrincipal, groupBy));
     }
 
     @Test

@@ -2,7 +2,7 @@ package es.upm.mabills.persistence;
 
 import es.upm.mabills.exceptions.ExpenseCategoryAlreadyExistsException;
 import es.upm.mabills.exceptions.ExpenseCategoryNotFoundException;
-import es.upm.mabills.exceptions.MaBillsServiceException;
+import es.upm.mabills.exceptions.MaBillsUnexpectedException;
 import es.upm.mabills.exceptions.UserNotFoundException;
 import es.upm.mabills.model.ExpenseCategory;
 import es.upm.mabills.persistence.entities.ExpenseCategoryEntity;
@@ -33,7 +33,7 @@ public class ExpenseCategoryPersistence {
 
     public List<ExpenseCategoryEntity> findExpenseCategoryByUserName(String username) {
         return Try.of(() -> expenseCategoryRepository.findByUser_Username(username))
-                .getOrElseThrow(() -> new MaBillsServiceException());
+                .getOrElseThrow(MaBillsUnexpectedException::new);
     }
 
     public ExpenseCategoryEntity createExpenseCategory(String username, ExpenseCategory expenseCategory) {

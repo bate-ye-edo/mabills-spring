@@ -1,7 +1,7 @@
 package es.upm.mabills.services.charts;
 
 import es.upm.mabills.UnitTestConfig;
-import es.upm.mabills.exceptions.MaBillsServiceException;
+import es.upm.mabills.exceptions.MaBillsUnexpectedException;
 import es.upm.mabills.model.Chart;
 import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.persistence.ExpensePersistence;
@@ -78,13 +78,13 @@ class ExpenseIncomeSeriesChartServiceTest {
     void testGetChartExpensePersistenceThrowsException() {
         doThrow(RuntimeException.class).when(expensePersistence).getExpensesGroupByDateChartData(any(UserPrincipal.class));
         UserPrincipal userPrincipal = new UserPrincipal();
-        assertThrows(MaBillsServiceException.class, () -> expenseIncomeSeriesChartService.getChart(userPrincipal, null));
+        assertThrows(MaBillsUnexpectedException.class, () -> expenseIncomeSeriesChartService.getChart(userPrincipal, null));
     }
 
     @Test
     void testGetChartIncomePersistenceThrowsException() {
         doThrow(RuntimeException.class).when(incomePersistence).getIncomesGroupByDateChartData(any(UserPrincipal.class));
         UserPrincipal userPrincipal = new UserPrincipal();
-        assertThrows(MaBillsServiceException.class, () -> expenseIncomeSeriesChartService.getChart(userPrincipal, null));
+        assertThrows(MaBillsUnexpectedException.class, () -> expenseIncomeSeriesChartService.getChart(userPrincipal, null));
     }
 }

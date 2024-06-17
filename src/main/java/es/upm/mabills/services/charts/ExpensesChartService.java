@@ -1,6 +1,6 @@
 package es.upm.mabills.services.charts;
 
-import es.upm.mabills.exceptions.MaBillsServiceException;
+import es.upm.mabills.exceptions.MaBillsUnexpectedException;
 import es.upm.mabills.mappers.ChartDataMapper;
 import es.upm.mabills.model.Chart;
 import es.upm.mabills.model.ChartData;
@@ -37,28 +37,28 @@ public class ExpensesChartService implements ChartService {
                         .stream()
                         .map(chartDataMapper::toChartData)
                         .toList())
-                .getOrElseThrow(() -> new MaBillsServiceException());
+                .getOrElseThrow(MaBillsUnexpectedException::new);
     }
 
     private List<ChartData> getExpensesGroupByCategoryChartData(UserPrincipal userPrincipal) {
         return  Try.of(() -> this.expensePersistence.getExpensesGroupByCategoryChartData(userPrincipal))
-                .getOrElseThrow(() -> new MaBillsServiceException());
+                .getOrElseThrow(MaBillsUnexpectedException::new);
     }
 
     private List<ChartData> getExpensesGroupByCreditCardChartData(UserPrincipal userPrincipal) {
         return Try.of(() -> this.expensePersistence.getExpensesGroupByCreditCardChartData(userPrincipal))
-                .getOrElseThrow(() -> new MaBillsServiceException());
+                .getOrElseThrow(MaBillsUnexpectedException::new);
     }
 
 
     private List<ChartData> getExpensesGroupByBankAccountChartData(UserPrincipal userPrincipal) {
         return Try.of(() -> this.expensePersistence.getExpensesGroupByBankAccountChartData(userPrincipal))
-                .getOrElseThrow(() -> new MaBillsServiceException());
+                .getOrElseThrow(MaBillsUnexpectedException::new);
     }
 
     private List<ChartData> getExpensesGroupByFOPChartData(UserPrincipal userPrincipal) {
         return Try.of(() -> this.expensePersistence.getExpensesGroupByFOPChartData(userPrincipal))
-                .getOrElseThrow(() -> new MaBillsServiceException());
+                .getOrElseThrow(MaBillsUnexpectedException::new);
     }
 
     private List<ChartData> getChartByGroupByType(UserPrincipal userPrincipal, ExpenseChartGroupBy expenseChartGroupBy) {

@@ -1,6 +1,6 @@
 package es.upm.mabills.services;
 
-import es.upm.mabills.exceptions.MaBillsServiceException;
+import es.upm.mabills.exceptions.MaBillsUnexpectedException;
 import es.upm.mabills.mappers.ExpenseMapper;
 import es.upm.mabills.model.Expense;
 import es.upm.mabills.model.UserPrincipal;
@@ -40,7 +40,7 @@ public class ExpenseService {
                         .toList())
                 .getOrElseThrow(e -> {
                     LOGGER.error(e);
-                    return new MaBillsServiceException();
+                    return new MaBillsUnexpectedException();
                 });
     }
 

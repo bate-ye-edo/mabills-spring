@@ -1,6 +1,6 @@
 package es.upm.mabills.services.charts;
 
-import es.upm.mabills.exceptions.MaBillsServiceException;
+import es.upm.mabills.exceptions.MaBillsUnexpectedException;
 import es.upm.mabills.mappers.ChartDataMapper;
 import es.upm.mabills.model.Chart;
 import es.upm.mabills.model.ChartData;
@@ -42,12 +42,12 @@ public class IncomesChartService implements ChartService {
 
     private List<ChartData> getIncomesGroupByCreditCardChartData(UserPrincipal userPrincipal) {
         return Try.of(() -> this.incomePersistence.getIncomesGroupByCreditCardChartData(userPrincipal))
-                .getOrElseThrow(() -> new MaBillsServiceException());
+                .getOrElseThrow(MaBillsUnexpectedException::new);
     }
 
     private List<ChartData> getIncomesGroupByBankAccountChartData(UserPrincipal userPrincipal) {
         return Try.of(() -> this.incomePersistence.getIncomesGroupByBankAccountChartData(userPrincipal))
-                .getOrElseThrow(() -> new MaBillsServiceException());
+                .getOrElseThrow(MaBillsUnexpectedException::new);
     }
 
     private List<ChartData> getIncomesGroupByDateChartData(UserPrincipal userPrincipal) {
@@ -55,6 +55,6 @@ public class IncomesChartService implements ChartService {
                         .stream()
                         .map(chartDataMapper::toChartData)
                         .toList())
-                .getOrElseThrow(() -> new MaBillsServiceException());
+                .getOrElseThrow(MaBillsUnexpectedException::new);
     }
 }
