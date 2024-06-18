@@ -10,6 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractChartFilterService<T> implements FilterChartService {
     private static final Logger LOGGER = LogManager.getLogger(AbstractChartFilterService.class);
+    protected final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy");
 
     @Override
     public Chart getChart(UserPrincipal userPrincipal, String groupBy, List<Filter> filters) {

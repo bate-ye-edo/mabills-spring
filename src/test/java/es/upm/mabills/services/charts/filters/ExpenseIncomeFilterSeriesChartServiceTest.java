@@ -14,6 +14,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -29,6 +30,9 @@ import static org.mockito.Mockito.when;
 class ExpenseIncomeFilterSeriesChartServiceTest {
     private static final Timestamp TODAY = new Timestamp(System.currentTimeMillis());
     private static final Timestamp YESTERDAY = new Timestamp(System.currentTimeMillis() - 24 * 60 * 60 * 1000);
+    private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("dd-MM-yyyy");
+    private static final String TODAY_STRING = DATE_FORMATTER.format(TODAY);
+    private static final String YESTERDAY_STRING = DATE_FORMATTER.format(YESTERDAY);
 
     @Autowired
     private ExpenseIncomeFilterSeriesChartService expenseIncomeFilterSeriesChartService;
@@ -59,8 +63,8 @@ class ExpenseIncomeFilterSeriesChartServiceTest {
         assertNotNull(chart.getSeries().get(1).getSeries());
         assertFalse(chart.getSeries().get(1).getSeries().isEmpty());
         List<SeriesChartData> series = chart.getSeries();
-        assertTrue(series.stream().anyMatch(sc -> sc.getName().equals(TODAY.toString()) && sc.getSeries().size() == 2));
-        assertTrue(series.stream().anyMatch(sc -> sc.getName().equals(YESTERDAY.toString()) && sc.getSeries().size() == 2));
+        assertTrue(series.stream().anyMatch(sc -> sc.getName().equals(TODAY_STRING) && sc.getSeries().size() == 2));
+        assertTrue(series.stream().anyMatch(sc -> sc.getName().equals(YESTERDAY_STRING) && sc.getSeries().size() == 2));
     }
 
     @Test
@@ -100,7 +104,7 @@ class ExpenseIncomeFilterSeriesChartServiceTest {
         assertNotNull(chart.getSeries().get(1).getSeries());
         assertFalse(chart.getSeries().get(1).getSeries().isEmpty());
         List<SeriesChartData> series = chart.getSeries();
-        assertTrue(series.stream().anyMatch(sc -> sc.getName().equals(TODAY.toString()) && sc.getSeries().size() == 1));
+        assertTrue(series.stream().anyMatch(sc -> sc.getName().equals(TODAY_STRING) && sc.getSeries().size() == 1));
         assertTrue(series.stream().anyMatch(sc -> sc.getName().isEmpty() && sc.getSeries().size() == 1));
     }
 
@@ -127,7 +131,7 @@ class ExpenseIncomeFilterSeriesChartServiceTest {
         assertNotNull(chart.getSeries().get(1).getSeries());
         assertFalse(chart.getSeries().get(1).getSeries().isEmpty());
         List<SeriesChartData> series = chart.getSeries();
-        assertTrue(series.stream().anyMatch(sc -> sc.getName().equals(TODAY.toString()) && sc.getSeries().size() == 2));
+        assertTrue(series.stream().anyMatch(sc -> sc.getName().equals(TODAY_STRING) && sc.getSeries().size() == 2));
         assertTrue(series.stream().anyMatch(sc -> sc.getName().isEmpty() && sc.getSeries().size() == 2));
     }
 }

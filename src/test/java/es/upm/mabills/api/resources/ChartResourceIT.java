@@ -18,8 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,7 +31,11 @@ import static org.mockito.Mockito.when;
 
 @ApiTestConfig
 class ChartResourceIT {
-    private static final String TODAY_STRING = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
+    private static final String TODAY_STRING = new SimpleDateFormat("yyyy-MM-dd")
+        .format(new Timestamp(System.currentTimeMillis()));
+
+    private static final String RETURNED_TODAY_STRING = new SimpleDateFormat("dd-MM-yyyy")
+            .format(new Timestamp(System.currentTimeMillis()));
     private static final LoginDto OTHER_USER_LOGIN = LoginDto.builder()
             .username("otherUser")
             .password("password")
@@ -381,8 +385,9 @@ class ChartResourceIT {
                     assertNotNull(chart);
                     assertNotNull(chart.getSeries());
                     assertFalse(chart.getSeries().isEmpty());
-                    assertTrue(chart.getSeries().stream().anyMatch(sc -> sc.getName().contains(TODAY_STRING)));
-                    assertEquals(2, chart.getSeries().stream().filter(sc -> sc.getName().contains(TODAY_STRING))
+                    System.out.println(chart.getSeries().get(0).getName());
+                    assertTrue(chart.getSeries().stream().anyMatch(sc -> sc.getName().contains(RETURNED_TODAY_STRING)));
+                    assertEquals(2, chart.getSeries().stream().filter(sc -> sc.getName().contains(RETURNED_TODAY_STRING))
                             .mapToLong(sc -> sc.getSeries().size())
                             .sum());
                 });

@@ -6,6 +6,7 @@ import es.upm.mabills.model.ChartData;
 import es.upm.mabills.model.Income;
 import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.model.filters.Filter;
+import es.upm.mabills.model.filters.FilterField;
 import es.upm.mabills.persistence.FilterPersistence;
 import es.upm.mabills.persistence.entities.IncomeEntity;
 import es.upm.mabills.services.charts.IncomeChartGroupBy;
@@ -39,7 +40,11 @@ public class IncomesFilterChartService extends AbstractChartFilterService<Income
     }
 
     private List<ChartData> buildChartDataList(UserPrincipal userPrincipal, IncomeChartGroupBy expenseChartGroupBy, List<Filter> filters) {
-        return filterPersistence.applyFilters(filters, IncomeEntity.class, userPrincipal).stream()
+        List<Filter> incomeFilters = filters.stream()
+                .filter(filter -> !filter.getFilterField().equals(FilterField.EXPENSE_CATEGORY)
+                        && !filter.getFilterField().equals(FilterField.EXPENSE_DATE))
+                .toList();
+        return filterPersistence.applyFilters(incomeFilters, IncomeEntity.class, userPrincipal).stream()
                 .map(incomeMapper::toIncome)
                 .collect(getCollectorByGroupByType(expenseChartGroupBy))
                 .entrySet()
@@ -51,7 +56,7 @@ public class IncomesFilterChartService extends AbstractChartFilterService<Income
 
     private Collector<Income, ?, Map<String, BigDecimal>> getCollectorByGroupByType(IncomeChartGroupBy expenseChartGroupBy) {
         return switch (expenseChartGroupBy) {
-            case INCOME_DATE -> getCollector(income -> emptyStringIfNull(in->in.getIncomeDate().toString(), income),
+            case INCOME_DATE -> getCollector(income -> emptyStringIfNull(in->simpleDateFormat.format(in.getIncomeDate()), income),
                     Income::getAmount);
             case INCOME_CREDIT_CARD -> getCollector(income -> emptyStringIfNull(in -> in.getCreditCard().getCreditCardNumber(), income),
                     Income::getAmount);

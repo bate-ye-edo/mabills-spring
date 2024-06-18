@@ -11,11 +11,14 @@ import es.upm.mabills.persistence.FilterPersistence;
 import es.upm.mabills.persistence.entities.ExpenseEntity;
 import es.upm.mabills.persistence.entities.IncomeEntity;
 import io.vavr.control.Try;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -28,8 +31,9 @@ import java.util.stream.Stream;
 public class ExpenseIncomeFilterSeriesChartService implements FilterChartService {
     private static final String INCOME_SERIES_NAME = "Income";
     private static final String EXPENSE_SERIES_NAME = "Expense";
-
+    private static final Logger LOGGER = LogManager.getLogger(ExpenseIncomeFilterSeriesChartService.class);
     private final FilterPersistence filterPersistence;
+    protected final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy");
 
     @Autowired
     public ExpenseIncomeFilterSeriesChartService(FilterPersistence filterPersistence) {
@@ -41,7 +45,10 @@ public class ExpenseIncomeFilterSeriesChartService implements FilterChartService
         return Try.of(() -> Chart.builder()
                     .series(buildSeriesChartData(userPrincipal, filters))
                     .build())
-                .getOrElseThrow(() -> new MaBillsServiceException("Could not retrieve chart data."));
+                .getOrElseThrow(e ->{
+                    LOGGER.error(e);
+                    return new MaBillsServiceException("Could not retrieve chart data.");
+                });
     }
 
     private List<SeriesChartData> buildSeriesChartData(UserPrincipal userPrincipal, List<Filter> filters) {
@@ -67,7 +74,8 @@ public class ExpenseIncomeFilterSeriesChartService implements FilterChartService
                 .toList();
         return this.filterPersistence.applyFilters(expensesFilters, ExpenseEntity.class, userPrincipal)
                 .stream()
-                .collect(Collectors.groupingBy(ex -> Objects.isNull(ex.getExpenseDate()) ? "":ex.getExpenseDate().toString(),
+                .collect(Collectors.groupingBy(ex -> Objects.isNull(ex.getExpenseDate()) ? "" :
+                                simpleDateFormat.format(ex.getExpenseDate()),
                         Collectors.reducing(BigDecimal.ZERO, ExpenseEntity::getAmount, BigDecimal::add)))
                 .entrySet()
                 .stream()
@@ -81,7 +89,8 @@ public class ExpenseIncomeFilterSeriesChartService implements FilterChartService
                 .toList();
         return this.filterPersistence.applyFilters(incomeFilters, IncomeEntity.class, userPrincipal)
                 .stream()
-                .collect(Collectors.groupingBy(in -> Objects.isNull(in.getIncomeDate()) ? "":in.getIncomeDate().toString(),
+                .collect(Collectors.groupingBy(in -> Objects.isNull(in.getIncomeDate()) ? "" :
+                                simpleDateFormat.format(in.getIncomeDate()),
                         Collectors.reducing(BigDecimal.ZERO, IncomeEntity::getAmount, BigDecimal::add)))
                 .entrySet()
                 .stream()

@@ -16,6 +16,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,6 +32,9 @@ import static org.mockito.Mockito.when;
 class IncomesFilterChartServiceTest {
     private static final Timestamp TODAY = new Timestamp(System.currentTimeMillis());
     private static final Timestamp YESTERDAY = new Timestamp(System.currentTimeMillis() - 24 * 60 * 60 * 1000);
+    private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("dd-MM-yyyy");
+    private static final String TODAY_STRING = DATE_FORMATTER.format(TODAY);
+    private static final String YESTERDAY_STRING = DATE_FORMATTER.format(YESTERDAY);
 
     @Autowired
     private IncomesFilterChartService IncomesFilterChartService;
@@ -52,9 +56,9 @@ class IncomesFilterChartServiceTest {
         assertNull(chart.getSeries());
         assertNotNull(chart.getData());
         assertEquals(2, chart.getData().size());
-        assertTrue(chart.getData().stream().anyMatch(chartData -> chartData.getName().equals(TODAY.toString())
+        assertTrue(chart.getData().stream().anyMatch(chartData -> chartData.getName().equals(TODAY_STRING)
                 && chartData.getValue().equals(BigDecimal.valueOf(2))));
-        assertTrue(chart.getData().stream().anyMatch(chartData -> chartData.getName().equals(YESTERDAY.toString())
+        assertTrue(chart.getData().stream().anyMatch(chartData -> chartData.getName().equals(YESTERDAY_STRING)
                 && chartData.getValue().equals(BigDecimal.TEN)));
     }
 

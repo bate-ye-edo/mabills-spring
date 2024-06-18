@@ -6,6 +6,7 @@ import es.upm.mabills.model.ChartData;
 import es.upm.mabills.model.Expense;
 import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.model.filters.Filter;
+import es.upm.mabills.model.filters.FilterField;
 import es.upm.mabills.persistence.FilterPersistence;
 import es.upm.mabills.persistence.entities.ExpenseEntity;
 import es.upm.mabills.services.charts.ExpenseChartGroupBy;
@@ -40,7 +41,10 @@ public class ExpensesFilterChartService extends AbstractChartFilterService<Expen
     }
 
     private List<ChartData> buildChartDataList(UserPrincipal userPrincipal, ExpenseChartGroupBy expenseChartGroupBy, List<Filter> filters) {
-        return filterPersistence.applyFilters(filters, ExpenseEntity.class, userPrincipal).stream()
+        List<Filter> expensesFilters = filters.stream()
+                .filter(filter -> !filter.getFilterField().equals(FilterField.INCOME_DATE))
+                .toList();
+        return filterPersistence.applyFilters(expensesFilters, ExpenseEntity.class, userPrincipal).stream()
                 .map(expenseMapper::toExpense)
                 .collect(getCollectorByGroupByType(expenseChartGroupBy))
                 .entrySet()
@@ -52,7 +56,7 @@ public class ExpensesFilterChartService extends AbstractChartFilterService<Expen
 
     protected Collector<Expense, ?, Map<String, BigDecimal>> getCollectorByGroupByType(ExpenseChartGroupBy expenseChartGroupBy) {
         return switch (expenseChartGroupBy) {
-            case EXPENSE_DATE -> getCollector(expense -> emptyStringIfNull(ex -> ex.getExpenseDate().toString(), expense),
+            case EXPENSE_DATE -> getCollector(expense -> emptyStringIfNull(ex -> simpleDateFormat.format(ex.getExpenseDate()), expense),
                     Expense::getAmount);
             case EXPENSE_CATEGORY -> getCollector(expense -> emptyStringIfNull(ex -> ex.getExpenseCategory().getName(), expense),
                     Expense::getAmount);
