@@ -13,5 +13,5 @@ services:
       MYSQL_PASSWORD: dev
 networks:
   default:
-    external:
-      name: mabills
+    name: mabills
+    external: true
