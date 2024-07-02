@@ -5,6 +5,7 @@ import es.upm.mabills.exceptions.MaBillsServiceException;
 import es.upm.mabills.model.Chart;
 import es.upm.mabills.model.UserPrincipal;
 import es.upm.mabills.model.filters.Filter;
+import es.upm.mabills.model.filters.FilterField;
 import es.upm.mabills.persistence.FilterPersistence;
 import es.upm.mabills.persistence.entities.BankAccountEntity;
 import es.upm.mabills.persistence.entities.CreditCardEntity;
@@ -107,6 +108,28 @@ class IncomesFilterChartServiceTest {
         assertTrue(chart.getData().stream().anyMatch(chartData -> chartData.getName().equals(bankAccount.getIban())
                 && chartData.getValue().equals(BigDecimal.valueOf(2))));
         assertTrue(chart.getData().stream().anyMatch(chartData -> chartData.getName().equals(bankAccount2.getIban())
+                && chartData.getValue().equals(BigDecimal.TEN)));
+    }
+
+    @Test
+    void testFilterIncomeChartByExpenseFiltersSuccess() {
+        when(filterPersistence.applyFilters(anyList(), any(), any())).thenReturn(List.of(
+                IncomeEntity.builder().amount(BigDecimal.ONE).incomeDate(TODAY).build(),
+                IncomeEntity.builder().amount(BigDecimal.ONE).incomeDate(TODAY).build(),
+                IncomeEntity.builder().amount(BigDecimal.TEN).incomeDate(YESTERDAY).build()
+        ));
+        Chart chart = IncomesFilterChartService.getChart(userPrincipal, IncomeChartGroupBy.INCOME_DATE.name(), List.of(
+                Filter.builder().filterField(FilterField.EXPENSE_DATE).build(),
+                Filter.builder().filterField(FilterField.EXPENSE_CATEGORY).build(),
+                Filter.builder().filterField(FilterField.FORM_OF_PAYMENT).build()
+        ));
+        assertNotNull(chart);
+        assertNull(chart.getSeries());
+        assertNotNull(chart.getData());
+        assertEquals(2, chart.getData().size());
+        assertTrue(chart.getData().stream().anyMatch(chartData -> chartData.getName().equals(TODAY_STRING)
+                && chartData.getValue().equals(BigDecimal.valueOf(2))));
+        assertTrue(chart.getData().stream().anyMatch(chartData -> chartData.getName().equals(YESTERDAY_STRING)
                 && chartData.getValue().equals(BigDecimal.TEN)));
     }
 }

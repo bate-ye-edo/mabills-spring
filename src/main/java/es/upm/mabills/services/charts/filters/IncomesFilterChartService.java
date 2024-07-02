@@ -42,7 +42,8 @@ public class IncomesFilterChartService extends AbstractChartFilterService<Income
     private List<ChartData> buildChartDataList(UserPrincipal userPrincipal, IncomeChartGroupBy expenseChartGroupBy, List<Filter> filters) {
         List<Filter> incomeFilters = filters.stream()
                 .filter(filter -> !filter.getFilterField().equals(FilterField.EXPENSE_CATEGORY)
-                        && !filter.getFilterField().equals(FilterField.EXPENSE_DATE))
+                        && !filter.getFilterField().equals(FilterField.EXPENSE_DATE)
+                        && !filter.getFilterField().equals(FilterField.FORM_OF_PAYMENT))
                 .toList();
         return filterPersistence.applyFilters(incomeFilters, IncomeEntity.class, userPrincipal).stream()
                 .map(incomeMapper::toIncome)

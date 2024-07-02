@@ -85,7 +85,8 @@ public class ExpenseIncomeFilterSeriesChartService implements FilterChartService
     private Stream<SeriesChartData> getFilteredIncomes(UserPrincipal userPrincipal, List<Filter> filters) {
         List<Filter> incomeFilters = filters.stream()
                 .filter(filter -> !filter.getFilterField().equals(FilterField.EXPENSE_CATEGORY)
-                        && !filter.getFilterField().equals(FilterField.EXPENSE_DATE))
+                        && !filter.getFilterField().equals(FilterField.EXPENSE_DATE)
+                        && !filter.getFilterField().equals(FilterField.FORM_OF_PAYMENT))
                 .toList();
         return this.filterPersistence.applyFilters(incomeFilters, IncomeEntity.class, userPrincipal)
                 .stream()
