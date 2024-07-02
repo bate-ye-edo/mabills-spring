@@ -38,7 +38,7 @@ class IncomesFilterChartServiceTest {
     private static final String YESTERDAY_STRING = DATE_FORMATTER.format(YESTERDAY);
 
     @Autowired
-    private IncomesFilterChartService IncomesFilterChartService;
+    private IncomesFilterChartService incomesFilterChartService;
 
     @MockBean
     private FilterPersistence filterPersistence;
@@ -52,7 +52,7 @@ class IncomesFilterChartServiceTest {
                 IncomeEntity.builder().amount(BigDecimal.ONE).incomeDate(TODAY).build(),
                 IncomeEntity.builder().amount(BigDecimal.TEN).incomeDate(YESTERDAY).build()
         ));
-        Chart chart = IncomesFilterChartService.getChart(userPrincipal, IncomeChartGroupBy.INCOME_DATE.name(), List.of());
+        Chart chart = incomesFilterChartService.getChart(userPrincipal, IncomeChartGroupBy.INCOME_DATE.name(), List.of());
         assertNotNull(chart);
         assertNull(chart.getSeries());
         assertNotNull(chart.getData());
@@ -68,7 +68,7 @@ class IncomesFilterChartServiceTest {
         when(filterPersistence.applyFilters(anyList(), any(), any())).thenThrow(new RuntimeException());
         List<Filter> filters = List.of();
         String groupBy = IncomeChartGroupBy.INCOME_DATE.name();
-        assertThrows(MaBillsServiceException.class, () -> IncomesFilterChartService.getChart(userPrincipal, groupBy, filters));
+        assertThrows(MaBillsServiceException.class, () -> incomesFilterChartService.getChart(userPrincipal, groupBy, filters));
     }
 
     @Test
@@ -80,7 +80,7 @@ class IncomesFilterChartServiceTest {
                 IncomeEntity.builder().amount(BigDecimal.ONE).incomeDate(TODAY).creditCard(creditCard).build(),
                 IncomeEntity.builder().amount(BigDecimal.TEN).incomeDate(YESTERDAY).creditCard(creditCard2).build()
         ));
-        Chart chart = IncomesFilterChartService.getChart(userPrincipal, IncomeChartGroupBy.INCOME_CREDIT_CARD.name(), List.of());
+        Chart chart = incomesFilterChartService.getChart(userPrincipal, IncomeChartGroupBy.INCOME_CREDIT_CARD.name(), List.of());
         assertNotNull(chart);
         assertNull(chart.getSeries());
         assertNotNull(chart.getData());
@@ -100,7 +100,7 @@ class IncomesFilterChartServiceTest {
                 IncomeEntity.builder().amount(BigDecimal.ONE).incomeDate(TODAY).bankAccount(bankAccount).build(),
                 IncomeEntity.builder().amount(BigDecimal.TEN).incomeDate(YESTERDAY).bankAccount(bankAccount2).build()
         ));
-        Chart chart = IncomesFilterChartService.getChart(userPrincipal, IncomeChartGroupBy.INCOME_BANK_ACCOUNT.name(), List.of());
+        Chart chart = incomesFilterChartService.getChart(userPrincipal, IncomeChartGroupBy.INCOME_BANK_ACCOUNT.name(), List.of());
         assertNotNull(chart);
         assertNull(chart.getSeries());
         assertNotNull(chart.getData());
@@ -118,7 +118,7 @@ class IncomesFilterChartServiceTest {
                 IncomeEntity.builder().amount(BigDecimal.ONE).incomeDate(TODAY).build(),
                 IncomeEntity.builder().amount(BigDecimal.TEN).incomeDate(YESTERDAY).build()
         ));
-        Chart chart = IncomesFilterChartService.getChart(userPrincipal, IncomeChartGroupBy.INCOME_DATE.name(), List.of(
+        Chart chart = incomesFilterChartService.getChart(userPrincipal, IncomeChartGroupBy.INCOME_DATE.name(), List.of(
                 Filter.builder().filterField(FilterField.EXPENSE_DATE).build(),
                 Filter.builder().filterField(FilterField.EXPENSE_CATEGORY).build(),
                 Filter.builder().filterField(FilterField.FORM_OF_PAYMENT).build()
